@@ -9,68 +9,6 @@ const appState = {
   },
 };
 
-const lesson = {
-  title: 'Autumn Leaves',
-  subtitle: 'A-Section Survival Map',
-  time: '15 min',
-  objective: 'Map the first eight bars with form, harmony, shell tones, arpeggio targets, and one contained fretboard position.',
-  why: 'Autumn Leaves teaches major ii–V–I and minor iiø–V–i movement inside one tune. That makes it one of the cleanest standards for learning how jazz harmony actually moves.',
-  target: 'Connect Cm7 → F7 → Bbmaj7 using shell tones first. Add pentatonic color only after the resolution is clear.',
-  history: 'Originally a French song, Autumn Leaves became a jazz standard because the harmony is memorable, practical, and endlessly reusable.',
-  position: '8th position',
-  fretWindow: 'Frets 8–12',
-  form: ['A1', 'A2', 'B', 'A3'],
-  progression: ['Cm7', 'F7', 'Bbmaj7', 'Ebmaj7', 'Am7b5', 'D7', 'Gm7', 'Gm7'],
-  practice: [
-    'Say the form out loud: A1, A2, B, A3.',
-    'Tap through the A1 progression and name each chord function.',
-    'Play only the shell tones through the first four bars.',
-    'Turn on arpeggios and target one chord tone per bar.',
-    'Use G minor pentatonic briefly, then resolve back to shell tones.',
-  ],
-  listening: [
-    { title: 'Cannonball Adderley', note: 'Hear the standard in a classic small-group setting.', url: 'https://www.youtube.com/results?search_query=Cannonball+Adderley+Autumn+Leaves' },
-    { title: 'Bill Evans Trio', note: 'Listen for form, space, and harmonic movement.', url: 'https://www.youtube.com/results?search_query=Bill+Evans+Autumn+Leaves' },
-    { title: 'Joe Pass', note: 'Study solo guitar vocabulary and chord movement.', url: 'https://www.youtube.com/results?search_query=Joe+Pass+Autumn+Leaves' },
-  ],
-};
-
-const chords = {
-  Cm7: { fn: 'ii in Bb', shell: ['Eb', 'Bb'], arp: ['C', 'Eb', 'G', 'Bb'], cue: 'Minor ii: hear Eb and Bb before the dominant.' },
-  F7: { fn: 'V in Bb', shell: ['A', 'Eb'], arp: ['F', 'A', 'C', 'Eb'], cue: 'Dominant: A defines the sound; Eb wants to resolve.' },
-  Bbmaj7: { fn: 'I in Bb', shell: ['D', 'A'], arp: ['Bb', 'D', 'F', 'A'], cue: 'Resolution: land clearly before moving on.' },
-  Ebmaj7: { fn: 'IV in Bb', shell: ['G', 'D'], arp: ['Eb', 'G', 'Bb', 'D'], cue: 'Major color: the IV chord opens the section.' },
-  Am7b5: { fn: 'iiø in Gm', shell: ['C', 'G'], arp: ['A', 'C', 'Eb', 'G'], cue: 'Half-diminished setup into D7.' },
-  D7: { fn: 'V in Gm', shell: ['F#', 'C'], arp: ['D', 'F#', 'A', 'C'], cue: 'Strong pull into the minor home chord.' },
-  Gm7: { fn: 'i in Gm', shell: ['Bb', 'F'], arp: ['G', 'Bb', 'D', 'F'], cue: 'Minor home base. Let the phrase settle.' },
-};
-
-const fretDots = {
-  pentatonic: [
-    [250, 52, 'D'], [90, 76, 'Bb'], [250, 76, 'C'], [250, 100, 'F'],
-    [90, 124, 'Bb'], [250, 124, 'C'], [170, 148, 'G'], [250, 148, 'Bb'],
-    [170, 172, 'D'], [250, 172, 'F'],
-  ],
-  shells: {
-    Cm7: [[250, 100, 'Eb'], [90, 76, 'Bb']],
-    F7: [[170, 124, 'A'], [250, 100, 'Eb']],
-    Bbmaj7: [[250, 52, 'D'], [170, 76, 'A']],
-    Ebmaj7: [[170, 148, 'G'], [250, 52, 'D']],
-    Am7b5: [[250, 76, 'C'], [170, 148, 'G']],
-    D7: [[170, 100, 'F#'], [250, 76, 'C']],
-    Gm7: [[90, 76, 'Bb'], [250, 172, 'F']],
-  },
-  arpeggios: {
-    Cm7: [[250, 76, 'C'], [250, 100, 'Eb'], [170, 148, 'G'], [90, 76, 'Bb']],
-    F7: [[250, 172, 'F'], [170, 124, 'A'], [250, 76, 'C'], [250, 100, 'Eb']],
-    Bbmaj7: [[90, 76, 'Bb'], [250, 52, 'D'], [250, 172, 'F'], [170, 76, 'A']],
-    Ebmaj7: [[250, 100, 'Eb'], [170, 148, 'G'], [90, 76, 'Bb'], [250, 52, 'D']],
-    Am7b5: [[170, 76, 'A'], [250, 76, 'C'], [250, 100, 'Eb'], [170, 148, 'G']],
-    D7: [[250, 52, 'D'], [170, 100, 'F#'], [170, 76, 'A'], [250, 76, 'C']],
-    Gm7: [[170, 148, 'G'], [90, 76, 'Bb'], [250, 52, 'D'], [250, 172, 'F']],
-  },
-};
-
 function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
 }
@@ -108,7 +46,6 @@ function renderTabs() {
     ['visuals', 'Visuals'],
     ['practice', 'Practice'],
   ];
-
   return `<nav class="tabs">${tabs.map(([id, label]) => `<button class="tab ${appState.tab === id ? 'active' : ''}" data-tab="${id}">${label}</button>`).join('')}</nav>`;
 }
 
@@ -151,7 +88,6 @@ function renderProgressionCard() {
     const active = chord === appState.selectedChord ? 'active' : '';
     return `<button class="bar ${active}" data-chord="${chord}"><small>${index + 1} · ${chords[chord].fn}</small>${chord}</button>`;
   }).join('');
-
   return card(`<p class="section-label">Harmonic map · tap a bar</p><div class="chart">${bars}</div>`);
 }
 
