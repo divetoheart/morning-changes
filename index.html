@@ -1,13 +1,54 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#F8F2E8" />
-    <title>Morning Changes</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="./src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f8f2e8">
+  <title>Morning Changes</title>
+  <style>
+    body{margin:0;background:#f8f2e8;color:#1e1a16;font-family:Arial,sans-serif;}
+    main{max-width:720px;margin:0 auto;padding:28px;}
+    .kicker{font-size:12px;letter-spacing:4px;color:#7a4b2a;font-weight:700;}
+    h1{font-size:44px;line-height:1;margin:8px 0 12px;}
+    .subtitle{color:#746b60;font-size:18px;}
+    .card{background:#fffdf7;border:1px solid #e4d7c7;border-radius:28px;padding:24px;margin-top:28px;box-shadow:0 18px 50px rgba(80,50,20,.08);}
+    .meta{color:#7a4b2a;font-weight:700;margin:0 0 8px;}
+    h2{font-size:30px;margin:0 0 10px;}
+    .visual{margin:22px 0;padding:30px;border-radius:22px;background:#f3e7d7;color:#7a4b2a;text-align:center;font-weight:700;line-height:1.6;}
+    li{margin:10px 0;}
+    .tempo{display:inline-block;margin-top:12px;padding:10px 16px;border-radius:999px;background:#e7d0b7;font-weight:700;}
+    .history{margin-top:20px;color:#746b60;line-height:1.5;}
+    nav{display:flex;justify-content:space-around;margin-top:28px;padding:16px;border-radius:999px;background:#fffdf7;border:1px solid #e4d7c7;color:#746b60;font-weight:700;}
+  </style>
+</head>
+<body>
+  <main>
+    <p class="kicker">MORNING CHANGES</p>
+    <h1>Today's Lesson</h1>
+    <p class="subtitle">One excellent jazz guitar lesson every morning.</p>
+
+    <section class="card">
+      <p class="meta">12 MIN · AUTUMN LEAVES</p>
+      <h2>First Shell Voicings</h2>
+      <p>Guide tones create motion with minimal movement.</p>
+
+      <div class="visual">
+        Gm7 → C7 → Fmaj7<br>
+        3rds + 7ths across the fretboard
+      </div>
+
+      <h3>Warm-up</h3>
+      <ul>
+        <li>Play 3rd + 7th shell voicings through ii-V-I.</li>
+        <li>Repeat slowly at 70 BPM before moving up.</li>
+      </ul>
+
+      <div class="tempo">Tempo: 70 → 110 BPM</div>
+
+      <p class="history">Autumn Leaves became one of the defining entry standards in modern jazz education because its harmony clearly teaches minor and major ii-V-I movement.</p>
+    </section>
+
+    <nav><span>Today</span><span>Library</span><span>Standards</span></nav>
+  </main>
+</body>
 </html>
