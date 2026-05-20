@@ -2,25 +2,24 @@
   "name": "morning-changes",
   "version": "0.1.0",
   "private": true,
-  "main": "index.ts",
+  "type": "module",
+  "homepage": "https://divetoheart.github.io/morning-changes/",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "expo": "~54.0.33",
-    "expo-status-bar": "~3.0.9",
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "typescript": "~5.9.2",
     "react": "19.1.0",
-    "react-native": "0.81.5",
-    "react-native-svg": "15.12.1"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
-    "babel-preset-expo": "~54.0.10",
-    "typescript": "~5.9.2"
+    "@types/react-dom": "latest"
   },
   "engines": {
     "node": ">=20.19.4"
