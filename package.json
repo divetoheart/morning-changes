@@ -2,26 +2,8 @@
   "name": "morning-changes",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
-  "homepage": "https://divetoheart.github.io/morning-changes/",
+  "description": "A personal daily jazz guitar lesson companion published with GitHub Pages.",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --base=/morning-changes/",
-    "build": "tsc && vite build --base=/morning-changes/",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "typescript": "~5.9.2",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
-  },
-  "devDependencies": {
-    "@types/react": "~19.1.10",
-    "@types/react-dom": "latest"
-  },
-  "engines": {
-    "node": ">=20.19.4"
+    "check": "node --check app.js"
   }
 }
