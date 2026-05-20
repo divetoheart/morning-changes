@@ -5,8 +5,8 @@
   "type": "module",
   "homepage": "https://divetoheart.github.io/morning-changes/",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "tsc && vite build",
+    "dev": "vite --host 0.0.0.0 --base=/morning-changes/",
+    "build": "tsc && vite build --base=/morning-changes/",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
