@@ -1,0 +1,1 @@
+export const autumnLeavesLesson={title:'Autumn Leaves — First Shell Voicings',thesis:'Guide tones create motion with minimal movement.',estimatedMinutes:12,warmup:['Play 3rd + 7th shells through ii-V-I','Repeat at 70 BPM'],tempo:{start:70,goal:110},history:'Autumn Leaves became one of the defining entry standards in modern jazz education.'};
