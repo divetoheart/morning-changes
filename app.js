@@ -1,20 +1,11 @@
 const appState = {
   selectedChord: 'Cm7',
-  tab: 'today',
-  overlays: {
-    shells: true,
-    pentatonic: false,
-    caged: false,
-    arpeggio: false,
-  },
+  study: 'changes',
+  overlays: { shells: true, pentatonic: false, caged: false, arpeggio: false },
 };
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
-}
-
-function card(content, className = '') {
-  return `<article class="card ${className}">${content}</article>`;
 }
 
 function render() {
@@ -22,177 +13,129 @@ function render() {
   if (!app) return;
 
   app.innerHTML = `
-    <div class="top">
-      <div class="brand">Morning Changes</div>
-      <div class="day">${lesson.title} · ${lesson.time}</div>
-    </div>
-    <section class="assignment">
-      <p>Today’s Lesson</p>
-      <h1>${lesson.title}: ${lesson.subtitle}</h1>
-      <small>${lesson.objective}</small>
-    </section>
-    ${renderTabs()}
-    ${renderPanels()}
-  `;
+    <header class="app-header">
+      <div class="mark">◒</div>
+      <div><strong>Morning Changes</strong><span>A daily jazz guitar lesson</span></div>
+    </header>
 
+    <section class="lesson-hero">
+      <p class="eyebrow">Standard No. 01 · ${lesson.time}</p>
+      <h1>${lesson.title}</h1>
+      <h2>${lesson.subtitle}</h2>
+      <p>${lesson.objective}</p>
+    </section>
+
+    <section class="note-block">
+      <p class="section-label">Why we study it</p>
+      <p>${lesson.why}</p>
+    </section>
+
+    ${renderStudyNav()}
+    ${renderStudySection()}
+    ${renderListeningSection()}
+    ${renderPracticeSection()}
+  `;
   bindEvents();
 }
 
-function renderTabs() {
-  const tabs = [
-    ['today', 'Today'],
-    ['library', 'Library'],
-    ['standards', 'Tunes'],
-    ['visuals', 'Visuals'],
-    ['practice', 'Practice'],
-  ];
-  return `<nav class="tabs">${tabs.map(([id, label]) => `<button class="tab ${appState.tab === id ? 'active' : ''}" data-tab="${id}">${label}</button>`).join('')}</nav>`;
+function renderStudyNav() {
+  const items = [['changes','Chords'],['fretboard','Fretboard'],['listen','Listen'],['practice','Practice']];
+  return `<nav class="study-tabs">${items.map(([id,label]) => `<button class="study-tab ${appState.study === id ? 'active' : ''}" data-study="${id}">${label}</button>`).join('')}</nav>`;
 }
 
-function renderPanels() {
+function renderStudySection() {
+  if (appState.study === 'fretboard') return renderFretboardStudy();
+  if (appState.study === 'listen') return renderListeningSection();
+  if (appState.study === 'practice') return renderPracticeSection();
+  return renderChangesStudy();
+}
+
+function renderChangesStudy() {
   return `
-    <section id="today" class="panel ${appState.tab === 'today' ? 'active' : ''}">${renderToday()}</section>
-    <section id="library" class="panel ${appState.tab === 'library' ? 'active' : ''}">${renderLibrary()}</section>
-    <section id="standards" class="panel ${appState.tab === 'standards' ? 'active' : ''}">${renderStandards()}</section>
-    <section id="visuals" class="panel ${appState.tab === 'visuals' ? 'active' : ''}">${renderVisuals()}</section>
-    <section id="practice" class="panel ${appState.tab === 'practice' ? 'active' : ''}">${renderPractice()}</section>
+    <section class="study-section">
+      <p class="section-label">Study changes / harmonic map</p>
+      <div class="form-line"><strong>A</strong><span>8 bars</span></div>
+      <div class="changes-grid">
+        ${lesson.progression.map((chord, index) => {
+          const active = chord === appState.selectedChord ? 'active' : '';
+          return `<button class="change-cell ${active}" data-chord="${chord}"><strong>${chord}</strong><span>${index + 1} · ${chords[chord].fn}</span></button>`;
+        }).join('')}
+      </div>
+      <p class="lesson-copy">${lesson.target}</p>
+    </section>
   `;
 }
 
-function renderToday() {
-  return [
-    renderEditorialCard('Why this matters', lesson.why),
-    renderEditorialCard('Practice target', lesson.target),
-    renderFormCard(),
-    renderProgressionCard(),
-    renderFretboardCard(),
-    renderListeningCard(),
-    renderPractice(),
-  ].join('');
-}
-
-function renderEditorialCard(label, text) {
-  return card(`<p class="section-label">${label}</p><p class="lead">${text}</p>`);
-}
-
-function renderFormCard() {
-  return card(`
-    <p class="section-label">Form</p>
-    <div class="form">${lesson.form.map((section) => `<div>${section}<small>8 bars</small></div>`).join('')}</div>
-    <p class="lead">Start with A1. Keep the form visible so the fretboard work stays connected to the tune.</p>
-  `);
-}
-
-function renderProgressionCard() {
-  const bars = lesson.progression.map((chord, index) => {
-    const active = chord === appState.selectedChord ? 'active' : '';
-    return `<button class="bar ${active}" data-chord="${chord}"><small>${index + 1} · ${chords[chord].fn}</small>${chord}</button>`;
-  }).join('');
-  return card(`<p class="section-label">Harmonic map · tap a bar</p><div class="chart">${bars}</div>`);
-}
-
-function renderFretboardCard() {
+function renderFretboardStudy() {
   const chord = chords[appState.selectedChord];
-  return card(`
-    <p class="section-label">Fretboard study</p>
-    <h2>${appState.selectedChord}: ${chord.shell.join(' + ')}</h2>
-    <p class="lead">${chord.cue}</p>
-    <div class="position-row"><span class="position-chip">${lesson.position}</span><span class="position-chip">${lesson.fretWindow}</span></div>
-    <div class="visual">${renderFretboard()}</div>
-    <div class="controls">
-      ${renderOverlayButton('shells', 'Shells')}
-      ${renderOverlayButton('pentatonic', 'Pentatonic')}
-      ${renderOverlayButton('caged', 'CAGED')}
-      ${renderOverlayButton('arpeggio', 'Arpeggio')}
-    </div>
-  `);
+  return `
+    <section class="study-section">
+      <p class="section-label">Fretboard study</p>
+      <h3>${appState.selectedChord}: ${chord.shell.join(' + ')}</h3>
+      <p class="lesson-copy">${chord.cue}</p>
+      <div class="meta-row"><span>${lesson.position}</span><span>${lesson.fretWindow}</span></div>
+      <div class="fretboard-frame">${renderFretboard()}</div>
+      <div class="overlay-tabs">
+        ${overlayButton('shells','Shells')}
+        ${overlayButton('pentatonic','Pentatonic')}
+        ${overlayButton('caged','CAGED')}
+        ${overlayButton('arpeggio','Arpeggio')}
+      </div>
+    </section>
+  `;
 }
 
-function renderOverlayButton(id, label) {
-  return `<button class="control ${appState.overlays[id] ? 'active' : ''}" data-overlay="${id}">${label}</button>`;
+function overlayButton(id, label) {
+  return `<button class="overlay-tab ${appState.overlays[id] ? 'active' : ''}" data-overlay="${id}">${label}</button>`;
 }
 
 function renderFretboard() {
   let svg = `<svg viewBox="0 0 360 250" role="img" aria-label="Fretboard map for ${appState.selectedChord}">
-    <rect x="14" y="14" width="332" height="218" rx="24" fill="#fbf5ea"/>
-    <g stroke="#8b7d70">
-      <line x1="50" y1="52" x2="318" y2="52"/><line x1="50" y1="76" x2="318" y2="76"/>
-      <line x1="50" y1="100" x2="318" y2="100"/><line x1="50" y1="124" x2="318" y2="124"/>
-      <line x1="50" y1="148" x2="318" y2="148"/><line x1="50" y1="172" x2="318" y2="172" stroke-width="2"/>
-    </g>
-    <g stroke="#d4c5b5">
-      <line x1="50" y1="40" x2="50" y2="184" stroke="#1e1a16" stroke-width="4"/>
-      <line x1="90" y1="40" x2="90" y2="184"/><line x1="130" y1="40" x2="130" y2="184"/>
-      <line x1="170" y1="40" x2="170" y2="184"/><line x1="210" y1="40" x2="210" y2="184"/>
-      <line x1="250" y1="40" x2="250" y2="184"/><line x1="290" y1="40" x2="290" y2="184"/>
-    </g>
+    <rect x="14" y="14" width="332" height="218" rx="24" fill="#f5eee2"/>
+    <g stroke="#988a7a"><line x1="50" y1="52" x2="318" y2="52"/><line x1="50" y1="76" x2="318" y2="76"/><line x1="50" y1="100" x2="318" y2="100"/><line x1="50" y1="124" x2="318" y2="124"/><line x1="50" y1="148" x2="318" y2="148"/><line x1="50" y1="172" x2="318" y2="172" stroke-width="2"/></g>
+    <g stroke="#d3c4b3"><line x1="50" y1="40" x2="50" y2="184" stroke="#1e1a16" stroke-width="4"/><line x1="90" y1="40" x2="90" y2="184"/><line x1="130" y1="40" x2="130" y2="184"/><line x1="170" y1="40" x2="170" y2="184"/><line x1="210" y1="40" x2="210" y2="184"/><line x1="250" y1="40" x2="250" y2="184"/><line x1="290" y1="40" x2="290" y2="184"/></g>
     <g font-size="11" fill="#746b60"><text x="30" y="56">e</text><text x="30" y="80">B</text><text x="30" y="104">G</text><text x="30" y="128">D</text><text x="30" y="152">A</text><text x="30" y="176">E</text></g>
     <g font-size="11" fill="#746b60"><text x="70" y="204">8</text><text x="110" y="204">9</text><text x="150" y="204">10</text><text x="190" y="204">11</text><text x="230" y="204">12</text></g>`;
-
-  if (appState.overlays.caged) {
-    svg += '<rect x="82" y="45" width="180" height="132" rx="18" fill="none" stroke="#7a4b2a" stroke-width="4" stroke-dasharray="8 6"/>';
-  }
+  if (appState.overlays.caged) svg += '<rect x="82" y="45" width="180" height="132" rx="18" fill="none" stroke="#7a4b2a" stroke-width="4" stroke-dasharray="8 6"/>';
   if (appState.overlays.pentatonic) svg += renderDots(fretDots.pentatonic, '#5f6f4f');
   if (appState.overlays.arpeggio) svg += renderDots(fretDots.arpeggios[appState.selectedChord], '#31536b');
   if (appState.overlays.shells) svg += renderDots(fretDots.shells[appState.selectedChord], '#7a4b2a');
-
-  svg += `<text x="38" y="228" font-family="Arial" font-size="12" font-weight="900" fill="#7a4b2a">Selected: ${appState.selectedChord} · use overlays as study lenses</text></svg>`;
+  svg += `<text x="38" y="228" font-family="Arial" font-size="12" font-weight="900" fill="#7a4b2a">Selected: ${appState.selectedChord}</text></svg>`;
   return svg;
 }
 
 function renderDots(points, color) {
-  return points.map(([x, y, label]) => `<circle cx="${x}" cy="${y}" r="11" fill="${color}"/><text x="${x}" y="${y + 4}" font-size="9" font-weight="900" text-anchor="middle" fill="#fffdf7">${escapeHtml(label)}</text>`).join('');
+  return points.map(([x,y,label]) => `<circle cx="${x}" cy="${y}" r="11" fill="${color}"/><text x="${x}" y="${y+4}" font-size="9" font-weight="900" text-anchor="middle" fill="#fffdf7">${escapeHtml(label)}</text>`).join('');
 }
 
-function renderListeningCard() {
-  const links = lesson.listening.map((item) => `<a class="linkcard" href="${item.url}" target="_blank" rel="noopener noreferrer"><strong>${item.title}</strong><small>${item.note}</small></a>`).join('');
-  return card(`<p class="section-label">Listen</p><div class="links">${links}</div><p class="lead">${lesson.history}</p>`);
+function renderListeningSection() {
+  return `
+    <section class="study-section">
+      <p class="section-label">Top renditions / selected for study</p>
+      <h3>Three for the headphones</h3>
+      <div class="listening-list">
+        ${lesson.listening.map(item => `<a class="listen-card" href="${item.url}" target="_blank" rel="noopener noreferrer"><strong>${item.title}</strong><span>${item.note}</span></a>`).join('')}
+      </div>
+      <p class="lesson-copy">${lesson.history}</p>
+    </section>
+  `;
 }
 
-function renderPractice() {
-  const tasks = lesson.practice.map((task) => `<button class="task"><span class="check"></span><span>${task}</span></button>`).join('');
-  return card(`<p class="section-label">Practice now</p><div class="practice">${tasks}</div><div class="tempo">Tempo ladder: 60 · 70 · 80 · 90</div>`);
-}
-
-function renderLibrary() {
-  return card(`<p class="section-label">Archive</p><div class="mini"><strong>Autumn Leaves</strong>A-section survival map. Fresh lessons will use the same reusable engine.</div>`);
-}
-
-function renderStandards() {
-  return card(`<p class="section-label">Tune data</p><div class="mini"><strong>A1 progression</strong>Cm7 · F7 · Bbmaj7 · Ebmaj7 · Am7b5 · D7 · Gm7 · Gm7</div>`);
-}
-
-function renderVisuals() {
-  const chord = chords[appState.selectedChord];
-  return card(`<p class="section-label">Selected chord</p><div class="mini"><strong>${appState.selectedChord}</strong><br>Function: ${chord.fn}<br>Shell: ${chord.shell.join(' + ')}<br>Arpeggio: ${chord.arp.join(' · ')}</div>`);
+function renderPracticeSection() {
+  return `
+    <section class="study-section">
+      <p class="section-label">Practice now</p>
+      <div class="practice-list">${lesson.practice.map(task => `<button class="practice-item"><span></span>${task}</button>`).join('')}</div>
+      <p class="tempo-line">Tempo ladder: 60 · 70 · 80 · 90</p>
+    </section>
+  `;
 }
 
 function bindEvents() {
-  document.querySelectorAll('[data-tab]').forEach((button) => {
-    button.addEventListener('click', () => {
-      appState.tab = button.dataset.tab;
-      render();
-    });
-  });
-
-  document.querySelectorAll('[data-chord]').forEach((button) => {
-    button.addEventListener('click', () => {
-      appState.selectedChord = button.dataset.chord;
-      render();
-    });
-  });
-
-  document.querySelectorAll('[data-overlay]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const overlay = button.dataset.overlay;
-      appState.overlays[overlay] = !appState.overlays[overlay];
-      render();
-    });
-  });
-
-  document.querySelectorAll('.task').forEach((button) => {
-    button.addEventListener('click', () => button.classList.toggle('done'));
-  });
+  document.querySelectorAll('[data-study]').forEach(button => button.addEventListener('click', () => { appState.study = button.dataset.study; render(); }));
+  document.querySelectorAll('[data-chord]').forEach(button => button.addEventListener('click', () => { appState.selectedChord = button.dataset.chord; appState.study = 'fretboard'; render(); }));
+  document.querySelectorAll('[data-overlay]').forEach(button => button.addEventListener('click', () => { appState.overlays[button.dataset.overlay] = !appState.overlays[button.dataset.overlay]; render(); }));
+  document.querySelectorAll('.practice-item').forEach(button => button.addEventListener('click', () => button.classList.toggle('done')));
 }
 
 render();
