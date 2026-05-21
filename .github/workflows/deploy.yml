@@ -40,32 +40,22 @@ jobs:
           page_dir.mkdir(parents=True, exist_ok=True)
 
           archive = json.loads(Path('morning-changes/archive/lesson-archive.json').read_text())
-          lessons = archive.get('lessons', [])
-          today_meta = lessons[0]
-          today = json.loads((Path('morning-changes/lessons/data') / f"{today_meta['id']}.json").read_text())
+          lessons_meta = archive.get('lessons', [])
+
+          lessons = []
+          for item in lessons_meta:
+              source = Path('morning-changes/lessons/data') / f"{item['id']}.json"
+              if source.exists():
+                  data = json.loads(source.read_text())
+                  data['day'] = item.get('day')
+                  lessons.append(data)
+
+          today = lessons[0]
 
           def esc(value):
               return str(value).replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
 
-          voicings = today.get('voicings', [])
-          first = voicings[0] if voicings else {}
-          listening = today.get('listening', {}) or {}
-          listening_artist = esc(listening.get('artist', ''))
-          listening_note = esc(listening.get('note', ''))
-
-          progression = ''.join(f'<button class="change"><strong>{esc(v.get("symbol", ""))}</strong><span>{esc(v.get("role", ""))}</span></button>' for v in voicings)
-          string_labels = ''.join(f'<span>{s}</span>' for s in ['E','A','D','G','B','e'])
-          frets = ''.join(
-              f'<div class="fret {"muted" if fret == "x" else "on"}"><strong>{esc(fret)}</strong><small>{"" if tone == "mute" else esc(tone)}</small></div>'
-              for fret, tone in zip(first.get('strings', []), first.get('tones', []))
-          )
-          practice = ''.join(f'<li>{esc(item)}</li>' for item in today.get('practice', []))
-
-          archive_cards = []
-          for item in lessons:
-              source = Path('morning-changes/lessons/data') / f"{item['id']}.json"
-              data = json.loads(source.read_text()) if source.exists() else item
-              archive_cards.append(f'<article class="archive-card"><span>Day {esc(item.get("day", ""))}</span><strong>{esc(data.get("title", ""))}</strong><em>{esc(data.get("standard", ""))}</em></article>')
+          lessons_json = json.dumps(lessons).replace('</', '<\\/')
 
           html = f'''<!doctype html>
           <html lang="en">
@@ -79,6 +69,7 @@ jobs:
               body{{margin:0;background:radial-gradient(circle at 90% 0%,rgba(120,72,24,.28),transparent 28%),var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Inter",Arial,sans-serif;}}
               main{{max-width:430px;margin:0 auto;padding:0 18px 72px;}}
               a{{color:inherit;text-decoration:none}}
+              button{{font:inherit;cursor:pointer}}
               .top{{position:sticky;top:0;z-index:10;margin:0 -18px 30px;padding:22px 18px;border-bottom:1px solid #2f261f;background:rgba(8,7,6,.92);backdrop-filter:blur(18px);display:flex;align-items:center;gap:14px;}}
               .moon{{font-size:30px;color:var(--gold)}}
               .brand strong{{display:block;font-family:Georgia,serif;font-size:24px;}}
@@ -91,7 +82,7 @@ jobs:
               .standard-link strong{{display:block;font-family:Georgia,serif;font-size:28px;margin-top:8px;}}
               .changes{{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--panel2);}}
               .change{{min-height:92px;border:1px solid var(--line);background:transparent;color:var(--ink);text-align:left;padding:16px;}}
-              .change:first-child{{background:var(--gold);color:#120d08;}}
+              .change.active{{background:var(--gold);color:#120d08;}}
               .change strong{{display:block;font-family:Georgia,serif;font-size:26px;}}
               .change span{{display:block;margin-top:8px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.75;}}
               .diagram-head{{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:18px;}}
@@ -107,7 +98,8 @@ jobs:
               ol{{padding-left:22px;color:#ded4c9;font-size:17px;line-height:1.8;}}
               .listen h2{{font-family:Georgia,serif;font-size:32px;margin:10px 0;}}
               .archive-grid{{display:grid;gap:12px;}}
-              .archive-card{{border:1px solid var(--line);background:var(--panel2);border-radius:20px;padding:17px;display:grid;gap:5px;}}
+              .archive-card{{width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:20px;padding:17px;display:grid;gap:5px;text-align:left;}}
+              .archive-card.active{{border-color:var(--gold);}}
               .archive-card span{{color:var(--gold);font-size:11px;letter-spacing:.3em;text-transform:uppercase;}}
               .archive-card strong{{font-family:Georgia,serif;font-size:22px;}}
               .archive-card em{{color:var(--muted);}}
@@ -117,16 +109,73 @@ jobs:
           <body>
             <main>
               <header class="top"><div class="moon">◒</div><div class="brand"><strong>After Hours</strong><span>Morning Changes</span></div></header>
-              <section class="hero"><p class="eyebrow">Today's Study · {esc(today.get('duration',''))}</p><h1>{esc(today.get('title',''))}</h1><p class="subtitle">{esc(today.get('standard',''))}: {esc(today.get('subtitle',''))}</p><p class="copy">{esc(today.get('promise',''))}</p></section>
+              <section class="hero"><p class="eyebrow" id="lessonMeta"></p><h1 id="lessonTitle"></h1><p class="subtitle" id="lessonSubtitle"></p><p class="copy" id="lessonPromise"></p></section>
               <a class="card standard-link" href="../"><p class="section-label">Full Standard</p><strong>Open Autumn Leaves Guide →</strong></a>
-              <section class="card"><p class="section-label">Why this matters</p><p class="copy">{esc(today.get('why',''))}</p></section>
-              <section><p class="section-label">Harmonic Map</p><div class="changes">{progression}</div></section>
-              <section class="card"><p class="section-label">Chord Grip</p><div class="diagram-head"><h2>{esc(first.get('symbol',''))}</h2><code>{esc(first.get('grip',''))}</code></div><div class="strings">{string_labels}</div><div class="frets">{frets}</div><p class="copy">{esc(first.get('note',''))}</p></section>
-              <section class="card"><p class="section-label">Practice Path</p><ol>{practice}</ol></section>
-              <section class="card listen"><p class="section-label">Listen</p><h2>{listening_artist}</h2><p class="copy">{listening_note}</p></section>
-              <section class="card"><p class="section-label">Archive</p><div class="archive-grid">{''.join(archive_cards)}</div></section>
-              <footer>After Hours · Morning Changes · Build 2026.05.20-I</footer>
+              <section class="card"><p class="section-label">Why this matters</p><p class="copy" id="lessonWhy"></p></section>
+              <section><p class="section-label">Harmonic Map</p><div class="changes" id="changes"></div></section>
+              <section class="card"><p class="section-label">Chord Grip</p><div class="diagram-head"><h2 id="chordSymbol"></h2><code id="chordGrip"></code></div><div class="strings" id="stringLabels"></div><div class="frets" id="frets"></div><p class="copy" id="chordNote"></p></section>
+              <section class="card"><p class="section-label">Practice Path</p><ol id="practice"></ol></section>
+              <section class="card listen"><p class="section-label">Listen</p><h2 id="listeningArtist"></h2><p class="copy" id="listeningNote"></p></section>
+              <section class="card"><p class="section-label">Archive</p><div class="archive-grid" id="archive"></div></section>
+              <footer>After Hours · Morning Changes · Build 2026.05.20-J</footer>
             </main>
+            <script>
+              const lessons = {lessons_json};
+              let lessonIndex = 0;
+              let chordIndex = 0;
+              const esc = (value) => String(value ?? '').replace(/[&<>'"]/g, char => ({{'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}}[char]));
+
+              function renderLesson(index = 0) {{
+                lessonIndex = index;
+                chordIndex = 0;
+                const lesson = lessons[lessonIndex];
+                document.getElementById('lessonMeta').textContent = `Today's Study · ${{lesson.duration || ''}}`;
+                document.getElementById('lessonTitle').textContent = lesson.title || '';
+                document.getElementById('lessonSubtitle').textContent = `${{lesson.standard || ''}}: ${{lesson.subtitle || ''}}`;
+                document.getElementById('lessonPromise').textContent = lesson.promise || '';
+                document.getElementById('lessonWhy').textContent = lesson.why || '';
+                document.getElementById('practice').innerHTML = (lesson.practice || []).map(item => `<li>${{esc(item)}}</li>`).join('');
+                document.getElementById('listeningArtist').textContent = lesson.listening?.artist || '';
+                document.getElementById('listeningNote').textContent = lesson.listening?.note || '';
+                renderChanges();
+                renderArchive();
+                renderChord(0);
+              }}
+
+              function renderChanges() {{
+                const lesson = lessons[lessonIndex];
+                document.getElementById('changes').innerHTML = (lesson.voicings || []).map((v, index) => `
+                  <button class="change ${{index === chordIndex ? 'active' : ''}}" data-chord="${{index}}">
+                    <strong>${{esc(v.symbol)}}</strong><span>${{esc(v.role)}}</span>
+                  </button>
+                `).join('');
+                document.querySelectorAll('[data-chord]').forEach(button => button.addEventListener('click', () => renderChord(Number(button.dataset.chord))));
+              }}
+
+              function renderChord(index) {{
+                chordIndex = index;
+                const chord = lessons[lessonIndex].voicings?.[chordIndex] || {{ strings: [], tones: [] }};
+                document.getElementById('chordSymbol').textContent = chord.symbol || '';
+                document.getElementById('chordGrip').textContent = chord.grip || '';
+                document.getElementById('stringLabels').innerHTML = ['E','A','D','G','B','e'].map(s => `<span>${{s}}</span>`).join('');
+                document.getElementById('frets').innerHTML = (chord.strings || []).map((fret, i) => `
+                  <div class="fret ${{fret === 'x' ? 'muted' : 'on'}}"><strong>${{esc(fret)}}</strong><small>${{(chord.tones?.[i] === 'mute') ? '' : esc(chord.tones?.[i] || '')}}</small></div>
+                `).join('');
+                document.getElementById('chordNote').textContent = chord.note || '';
+                renderChanges();
+              }}
+
+              function renderArchive() {{
+                document.getElementById('archive').innerHTML = lessons.map((lesson, index) => `
+                  <button class="archive-card ${{index === lessonIndex ? 'active' : ''}}" data-lesson="${{index}}">
+                    <span>Day ${{lesson.day || index + 1}}</span><strong>${{esc(lesson.title)}}</strong><em>${{esc(lesson.standard)}}</em>
+                  </button>
+                `).join('');
+                document.querySelectorAll('[data-lesson]').forEach(button => button.addEventListener('click', () => renderLesson(Number(button.dataset.lesson))));
+              }}
+
+              renderLesson(0);
+            </script>
           </body>
           </html>'''
           (page_dir / 'index.html').write_text(html)
@@ -144,7 +193,7 @@ jobs:
               if end != -1:
                   html = html[:start] + html[end + len('</script>'):]
           link = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./morning-changes/" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Morning Changes</span><strong style="display:block;font-family:Georgia,serif;font-size:28px;margin-top:8px;">Open Today’s Lesson →</strong></a></section>'
-          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-I</footer>'
+          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-J</footer>'
           html = html.replace('</body>', link + marker + '\n</body>')
           path.write_text(html)
           PY
