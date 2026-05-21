@@ -29,6 +29,75 @@ jobs:
           mkdir -p dist
           unzip -o "Autumn Leaves Jazz Guide.zip" -d dist
 
+      - name: Generate Morning Changes archive
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          dist = Path('dist')
+          archive_dir = dist / 'morning-changes'
+          archive_dir.mkdir(parents=True, exist_ok=True)
+
+          archive_path = Path('morning-changes/archive/lesson-archive.json')
+          archive = json.loads(archive_path.read_text())
+          lessons = archive.get('lessons', [])
+
+          cards = []
+          for lesson in lessons:
+              source = Path('morning-changes/lessons/data') / f"{lesson['id']}.json"
+              data = json.loads(source.read_text()) if source.exists() else lesson
+              practice = ''.join(f"<li>{item}</li>" for item in data.get('practice', []))
+              progression = ' · '.join(data.get('progression', []))
+              cards.append(f'''
+                <article class="lesson-card">
+                  <p class="eyebrow">Day {lesson.get('day')} · {data.get('duration','')}</p>
+                  <h2>{data.get('title')}</h2>
+                  <p class="sub">{data.get('standard')} · {data.get('subtitle','')}</p>
+                  <p>{data.get('promise','')}</p>
+                  <div class="progression">{progression}</div>
+                  <ol>{practice}</ol>
+                </article>
+              ''')
+
+          html = f'''<!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Morning Changes Archive</title>
+            <style>
+              body{{margin:0;background:#080706;color:#f4eee5;font-family:-apple-system,BlinkMacSystemFont,"Inter",Arial,sans-serif;}}
+              main{{max-width:760px;margin:0 auto;padding:32px 18px 80px;}}
+              a{{color:#d7a05b;text-decoration:none;}}
+              .top{{border-bottom:1px solid #2f261f;padding-bottom:22px;margin-bottom:34px;}}
+              .brand{{font-family:Georgia,serif;font-size:34px;margin:0;}}
+              .eyebrow{{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:#d7a05b;}}
+              h1{{font-family:Georgia,serif;font-size:52px;line-height:.95;margin:18px 0;}}
+              .intro{{font-size:18px;line-height:1.7;color:#ded4c9;}}
+              .lesson-card{{border:1px solid #3d3026;background:#15110e;border-radius:28px;padding:26px;margin:22px 0;}}
+              .lesson-card h2{{font-family:Georgia,serif;font-size:34px;margin:8px 0;}}
+              .sub{{color:#b8aa9b;font-family:Georgia,serif;font-size:21px;font-style:italic;}}
+              .lesson-card p{{line-height:1.65;}}
+              .progression{{margin:18px 0;padding:14px;border:1px solid #3d3026;border-radius:18px;color:#d7a05b;background:#120f0c;}}
+              ol{{padding-left:22px;line-height:1.8;color:#ded4c9;}}
+              footer{{text-align:center;padding:34px 0;color:#756a60;font-size:11px;letter-spacing:.35em;text-transform:uppercase;}}
+            </style>
+          </head>
+          <body>
+            <main>
+              <div class="top"><a href="../">← After Hours</a></div>
+              <p class="eyebrow">Daily Lesson Archive</p>
+              <h1>Morning Changes</h1>
+              <p class="intro">Every focused daily lesson stays here permanently, so today’s study never disappears into the fog. The fog has enough hobbies.</p>
+              {''.join(cards)}
+              <footer>After Hours · Morning Changes Archive · Build 2026.05.20-F</footer>
+            </main>
+          </body>
+          </html>'''
+          (archive_dir / 'index.html').write_text(html)
+          PY
+
       - name: Clean exported HTML and add build marker
         run: |
           python3 - <<'PY'
@@ -40,8 +109,9 @@ jobs:
               end = html.find('</script>', start)
               if end != -1:
                   html = html[:start] + html[end + len('</script>'):]
-          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-E</footer>'
-          html = html.replace('</body>', marker + '\n</body>')
+          link = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./morning-changes/" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Morning Changes</span><strong style="display:block;font-family:Georgia,serif;font-size:28px;margin-top:8px;">Open Daily Lesson Archive →</strong></a></section>'
+          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-F</footer>'
+          html = html.replace('</body>', link + marker + '\n</body>')
           path.write_text(html)
           PY
 
