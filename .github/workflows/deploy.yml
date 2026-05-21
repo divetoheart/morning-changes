@@ -143,7 +143,7 @@ jobs:
 
               <section class="card"><p class="section-label">Archive</p><div class="archive-grid">{''.join(archive_cards)}</div></section>
 
-              <footer>After Hours · Morning Changes · Build 2026.05.20-G</footer>
+              <footer>After Hours · Morning Changes · Build 2026.05.20-H</footer>
             </main>
           </body>
           </html>'''
@@ -162,7 +162,7 @@ jobs:
               if end != -1:
                   html = html[:start] + html[end + len('</script>'):]
           link = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./morning-changes/" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Morning Changes</span><strong style="display:block;font-family:Georgia,serif;font-size:28px;margin-top:8px;">Open Today’s Lesson →</strong></a></section>'
-          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-G</footer>'
+          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-H</footer>'
           html = html.replace('</body>', link + marker + '\n</body>')
           path.write_text(html)
           PY
