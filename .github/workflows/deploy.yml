@@ -29,34 +29,39 @@ jobs:
           mkdir -p dist
           unzip -o "Autumn Leaves Jazz Guide.zip" -d dist
 
-      - name: Generate Morning Changes archive
+      - name: Generate Morning Changes lesson experience
         run: |
           python3 - <<'PY'
           import json
           from pathlib import Path
 
           dist = Path('dist')
-          archive_dir = dist / 'morning-changes'
-          archive_dir.mkdir(parents=True, exist_ok=True)
+          page_dir = dist / 'morning-changes'
+          page_dir.mkdir(parents=True, exist_ok=True)
 
-          archive_path = Path('morning-changes/archive/lesson-archive.json')
-          archive = json.loads(archive_path.read_text())
+          archive = json.loads(Path('morning-changes/archive/lesson-archive.json').read_text())
           lessons = archive.get('lessons', [])
+          today_meta = lessons[0]
+          today = json.loads((Path('morning-changes/lessons/data') / f"{today_meta['id']}.json").read_text())
 
-          cards = []
-          for lesson in lessons:
-              source = Path('morning-changes/lessons/data') / f"{lesson['id']}.json"
-              data = json.loads(source.read_text()) if source.exists() else lesson
-              practice = ''.join(f"<li>{item}</li>" for item in data.get('practice', []))
-              progression = ' · '.join(data.get('progression', []))
-              cards.append(f'''
-                <article class="lesson-card">
-                  <p class="eyebrow">Day {lesson.get('day')} · {data.get('duration','')}</p>
-                  <h2>{data.get('title')}</h2>
-                  <p class="sub">{data.get('standard')} · {data.get('subtitle','')}</p>
-                  <p>{data.get('promise','')}</p>
-                  <div class="progression">{progression}</div>
-                  <ol>{practice}</ol>
+          def esc(value):
+              return str(value).replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
+
+          progression = ''.join(f'<button class="change"><strong>{esc(v.get("symbol"))}</strong><span>{esc(v.get("role"))}</span></button>' for v in today.get('voicings', []))
+          first = today.get('voicings', [{}])[0]
+          string_labels = ''.join(f'<span>{s}</span>' for s in ['E','A','D','G','B','e'])
+          frets = ''.join(f'<div class="fret {"muted" if fret == "x" else "on"}"><strong>{esc(fret)}</strong><small>{"" if tone == "mute" else esc(tone)}</small></div>' for fret, tone in zip(first.get('strings', []), first.get('tones', [])))
+          practice = ''.join(f'<li>{esc(item)}</li>' for item in today.get('practice', []))
+
+          archive_cards = []
+          for item in lessons:
+              source = Path('morning-changes/lessons/data') / f"{item['id']}.json"
+              data = json.loads(source.read_text()) if source.exists() else item
+              archive_cards.append(f'''
+                <article class="archive-card">
+                  <span>Day {esc(item.get('day'))}</span>
+                  <strong>{esc(data.get('title'))}</strong>
+                  <em>{esc(data.get('standard'))}</em>
                 </article>
               ''')
 
@@ -65,37 +70,84 @@ jobs:
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>Morning Changes Archive</title>
+            <title>Morning Changes · After Hours</title>
             <style>
-              body{{margin:0;background:#080706;color:#f4eee5;font-family:-apple-system,BlinkMacSystemFont,"Inter",Arial,sans-serif;}}
-              main{{max-width:760px;margin:0 auto;padding:32px 18px 80px;}}
-              a{{color:#d7a05b;text-decoration:none;}}
-              .top{{border-bottom:1px solid #2f261f;padding-bottom:22px;margin-bottom:34px;}}
-              .brand{{font-family:Georgia,serif;font-size:34px;margin:0;}}
-              .eyebrow{{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:#d7a05b;}}
-              h1{{font-family:Georgia,serif;font-size:52px;line-height:.95;margin:18px 0;}}
-              .intro{{font-size:18px;line-height:1.7;color:#ded4c9;}}
-              .lesson-card{{border:1px solid #3d3026;background:#15110e;border-radius:28px;padding:26px;margin:22px 0;}}
-              .lesson-card h2{{font-family:Georgia,serif;font-size:34px;margin:8px 0;}}
-              .sub{{color:#b8aa9b;font-family:Georgia,serif;font-size:21px;font-style:italic;}}
-              .lesson-card p{{line-height:1.65;}}
-              .progression{{margin:18px 0;padding:14px;border:1px solid #3d3026;border-radius:18px;color:#d7a05b;background:#120f0c;}}
-              ol{{padding-left:22px;line-height:1.8;color:#ded4c9;}}
-              footer{{text-align:center;padding:34px 0;color:#756a60;font-size:11px;letter-spacing:.35em;text-transform:uppercase;}}
+              :root{{--bg:#080706;--panel:#15110e;--panel2:#120f0c;--ink:#f4eee5;--muted:#b8aa9b;--dim:#756a60;--line:#3d3026;--gold:#d7a05b;}}
+              *{{box-sizing:border-box}}
+              body{{margin:0;background:radial-gradient(circle at 90% 0%,rgba(120,72,24,.28),transparent 28%),var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Inter",Arial,sans-serif;}}
+              main{{max-width:430px;margin:0 auto;padding:0 18px 72px;}}
+              a{{color:inherit;text-decoration:none}}
+              .top{{position:sticky;top:0;z-index:10;margin:0 -18px 30px;padding:22px 18px;border-bottom:1px solid #2f261f;background:rgba(8,7,6,.92);backdrop-filter:blur(18px);display:flex;align-items:center;gap:14px;}}
+              .moon{{font-size:30px;color:var(--gold)}}
+              .brand strong{{display:block;font-family:Georgia,serif;font-size:24px;}}
+              .brand span,.eyebrow,.section-label{{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--gold);}}
+              .hero{{margin-bottom:30px;}}
+              h1{{font-family:Georgia,serif;font-size:56px;line-height:.92;letter-spacing:-.04em;margin:18px 0 10px;}}
+              .subtitle{{font-family:Georgia,serif;font-size:25px;font-style:italic;color:var(--muted);margin:0 0 24px;}}
+              .copy{{font-size:18px;line-height:1.65;color:#ded4c9;}}
+              .card{{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),#100d0b);border-radius:30px;padding:24px;margin:22px 0;}}
+              .standard-link strong{{display:block;font-family:Georgia,serif;font-size:28px;margin-top:8px;}}
+              .changes{{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--panel2);}}
+              .change{{min-height:92px;border:1px solid var(--line);background:transparent;color:var(--ink);text-align:left;padding:16px;}}
+              .change:first-child{{background:var(--gold);color:#120d08;}}
+              .change strong{{display:block;font-family:Georgia,serif;font-size:26px;}}
+              .change span{{display:block;margin-top:8px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.75;}}
+              .diagram-head{{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:18px;}}
+              .diagram-head h2{{font-family:Georgia,serif;font-size:34px;margin:0;}}
+              code{{border:1px solid var(--line);border-radius:999px;color:var(--gold);padding:7px 10px;font-size:12px;}}
+              .strings,.frets{{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;}}
+              .strings{{color:var(--muted);font-size:12px;margin-bottom:8px;}}
+              .fret{{height:66px;border:1px solid var(--line);border-radius:18px;display:grid;place-items:center;}}
+              .fret.on{{background:var(--gold);color:#120d08;border-color:var(--gold);}}
+              .fret.muted{{color:#6f655b;}}
+              .fret strong{{font-size:18px;}}
+              .fret small{{display:block;font-size:10px;font-weight:800;text-transform:uppercase;}}
+              ol{{padding-left:22px;color:#ded4c9;font-size:17px;line-height:1.8;}}
+              .listen h2{{font-family:Georgia,serif;font-size:32px;margin:10px 0;}}
+              .archive-grid{{display:grid;gap:12px;}}
+              .archive-card{{border:1px solid var(--line);background:var(--panel2);border-radius:20px;padding:17px;display:grid;gap:5px;}}
+              .archive-card span{{color:var(--gold);font-size:11px;letter-spacing:.3em;text-transform:uppercase;}}
+              .archive-card strong{{font-family:Georgia,serif;font-size:22px;}}
+              .archive-card em{{color:var(--muted);}}
+              footer{{text-align:center;padding:40px 0 0;color:var(--dim);font-size:10px;letter-spacing:.4em;text-transform:uppercase;}}
             </style>
           </head>
           <body>
             <main>
-              <div class="top"><a href="../">← After Hours</a></div>
-              <p class="eyebrow">Daily Lesson Archive</p>
-              <h1>Morning Changes</h1>
-              <p class="intro">Every focused daily lesson stays here permanently, so today’s study never disappears into the fog. The fog has enough hobbies.</p>
-              {''.join(cards)}
-              <footer>After Hours · Morning Changes Archive · Build 2026.05.20-F</footer>
+              <header class="top"><div class="moon">◒</div><div class="brand"><strong>After Hours</strong><span>Morning Changes</span></div></header>
+
+              <section class="hero">
+                <p class="eyebrow">Today's Study · {esc(today.get('duration'))}</p>
+                <h1>{esc(today.get('title'))}</h1>
+                <p class="subtitle">{esc(today.get('standard'))}: {esc(today.get('subtitle'))}</p>
+                <p class="copy">{esc(today.get('promise'))}</p>
+              </section>
+
+              <a class="card standard-link" href="../"><p class="section-label">Full Standard</p><strong>Open Autumn Leaves Guide →</strong></a>
+
+              <section class="card"><p class="section-label">Why this matters</p><p class="copy">{esc(today.get('why'))}</p></section>
+
+              <section><p class="section-label">Harmonic Map</p><div class="changes">{progression}</div></section>
+
+              <section class="card">
+                <p class="section-label">Chord Grip</p>
+                <div class="diagram-head"><h2>{esc(first.get('symbol'))}</h2><code>{esc(first.get('grip'))}</code></div>
+                <div class="strings">{string_labels}</div>
+                <div class="frets">{frets}</div>
+                <p class="copy">{esc(first.get('note'))}</p>
+              </section>
+
+              <section class="card"><p class="section-label">Practice Path</p><ol>{practice}</ol></section>
+
+              <section class="card listen"><p class="section-label">Listen</p><h2>{esc(today.get('listening',{{}}).get('artist',''))}</h2><p class="copy">{esc(today.get('listening',{{}}).get('note',''))}</p></section>
+
+              <section class="card"><p class="section-label">Archive</p><div class="archive-grid">{''.join(archive_cards)}</div></section>
+
+              <footer>After Hours · Morning Changes · Build 2026.05.20-G</footer>
             </main>
           </body>
           </html>'''
-          (archive_dir / 'index.html').write_text(html)
+          (page_dir / 'index.html').write_text(html)
           PY
 
       - name: Clean exported HTML and add build marker
@@ -109,8 +161,8 @@ jobs:
               end = html.find('</script>', start)
               if end != -1:
                   html = html[:start] + html[end + len('</script>'):]
-          link = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./morning-changes/" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Morning Changes</span><strong style="display:block;font-family:Georgia,serif;font-size:28px;margin-top:8px;">Open Daily Lesson Archive →</strong></a></section>'
-          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-F</footer>'
+          link = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./morning-changes/" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Morning Changes</span><strong style="display:block;font-family:Georgia,serif;font-size:28px;margin-top:8px;">Open Today’s Lesson →</strong></a></section>'
+          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-G</footer>'
           html = html.replace('</body>', link + marker + '\n</body>')
           path.write_text(html)
           PY
