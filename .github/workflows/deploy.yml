@@ -40,7 +40,7 @@ jobs:
               end = html.find('</script>', start)
               if end != -1:
                   html = html[:start] + html[end + len('</script>'):]
-          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-C</footer>'
+          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-D</footer>'
           html = html.replace('</body>', marker + '\n</body>')
           path.write_text(html)
           PY
