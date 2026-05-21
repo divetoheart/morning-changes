@@ -1,0 +1,26 @@
+{
+  "title": "Morning Changes Lesson Archive",
+  "description": "Permanent index of every Morning Changes lesson so no daily lesson is lost.",
+  "lessons": [
+    {
+      "id": "001-shell-voicings",
+      "day": 1,
+      "title": "Shell Voicings",
+      "standard": "Autumn Leaves",
+      "subtitle": "A-section survival map",
+      "duration": "12 min",
+      "path": "../lessons/data/001-shell-voicings.json",
+      "tags": ["shells", "autumn-leaves", "voice-leading", "chords"]
+    },
+    {
+      "id": "002-guide-tones",
+      "day": 2,
+      "title": "Guide Tones",
+      "standard": "Autumn Leaves",
+      "subtitle": "3rds and 7ths through the A section",
+      "duration": "12 min",
+      "path": "../lessons/data/002-guide-tones.json",
+      "tags": ["guide-tones", "autumn-leaves", "voice-leading", "chords"]
+    }
+  ]
+}
