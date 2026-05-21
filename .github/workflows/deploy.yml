@@ -47,23 +47,25 @@ jobs:
           def esc(value):
               return str(value).replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
 
-          progression = ''.join(f'<button class="change"><strong>{esc(v.get("symbol"))}</strong><span>{esc(v.get("role"))}</span></button>' for v in today.get('voicings', []))
-          first = today.get('voicings', [{}])[0]
+          voicings = today.get('voicings', [])
+          first = voicings[0] if voicings else {}
+          listening = today.get('listening', {}) or {}
+          listening_artist = esc(listening.get('artist', ''))
+          listening_note = esc(listening.get('note', ''))
+
+          progression = ''.join(f'<button class="change"><strong>{esc(v.get("symbol", ""))}</strong><span>{esc(v.get("role", ""))}</span></button>' for v in voicings)
           string_labels = ''.join(f'<span>{s}</span>' for s in ['E','A','D','G','B','e'])
-          frets = ''.join(f'<div class="fret {"muted" if fret == "x" else "on"}"><strong>{esc(fret)}</strong><small>{"" if tone == "mute" else esc(tone)}</small></div>' for fret, tone in zip(first.get('strings', []), first.get('tones', [])))
+          frets = ''.join(
+              f'<div class="fret {"muted" if fret == "x" else "on"}"><strong>{esc(fret)}</strong><small>{"" if tone == "mute" else esc(tone)}</small></div>'
+              for fret, tone in zip(first.get('strings', []), first.get('tones', []))
+          )
           practice = ''.join(f'<li>{esc(item)}</li>' for item in today.get('practice', []))
 
           archive_cards = []
           for item in lessons:
               source = Path('morning-changes/lessons/data') / f"{item['id']}.json"
               data = json.loads(source.read_text()) if source.exists() else item
-              archive_cards.append(f'''
-                <article class="archive-card">
-                  <span>Day {esc(item.get('day'))}</span>
-                  <strong>{esc(data.get('title'))}</strong>
-                  <em>{esc(data.get('standard'))}</em>
-                </article>
-              ''')
+              archive_cards.append(f'<article class="archive-card"><span>Day {esc(item.get("day", ""))}</span><strong>{esc(data.get("title", ""))}</strong><em>{esc(data.get("standard", ""))}</em></article>')
 
           html = f'''<!doctype html>
           <html lang="en">
@@ -115,35 +117,15 @@ jobs:
           <body>
             <main>
               <header class="top"><div class="moon">◒</div><div class="brand"><strong>After Hours</strong><span>Morning Changes</span></div></header>
-
-              <section class="hero">
-                <p class="eyebrow">Today's Study · {esc(today.get('duration'))}</p>
-                <h1>{esc(today.get('title'))}</h1>
-                <p class="subtitle">{esc(today.get('standard'))}: {esc(today.get('subtitle'))}</p>
-                <p class="copy">{esc(today.get('promise'))}</p>
-              </section>
-
+              <section class="hero"><p class="eyebrow">Today's Study · {esc(today.get('duration',''))}</p><h1>{esc(today.get('title',''))}</h1><p class="subtitle">{esc(today.get('standard',''))}: {esc(today.get('subtitle',''))}</p><p class="copy">{esc(today.get('promise',''))}</p></section>
               <a class="card standard-link" href="../"><p class="section-label">Full Standard</p><strong>Open Autumn Leaves Guide →</strong></a>
-
-              <section class="card"><p class="section-label">Why this matters</p><p class="copy">{esc(today.get('why'))}</p></section>
-
+              <section class="card"><p class="section-label">Why this matters</p><p class="copy">{esc(today.get('why',''))}</p></section>
               <section><p class="section-label">Harmonic Map</p><div class="changes">{progression}</div></section>
-
-              <section class="card">
-                <p class="section-label">Chord Grip</p>
-                <div class="diagram-head"><h2>{esc(first.get('symbol'))}</h2><code>{esc(first.get('grip'))}</code></div>
-                <div class="strings">{string_labels}</div>
-                <div class="frets">{frets}</div>
-                <p class="copy">{esc(first.get('note'))}</p>
-              </section>
-
+              <section class="card"><p class="section-label">Chord Grip</p><div class="diagram-head"><h2>{esc(first.get('symbol',''))}</h2><code>{esc(first.get('grip',''))}</code></div><div class="strings">{string_labels}</div><div class="frets">{frets}</div><p class="copy">{esc(first.get('note',''))}</p></section>
               <section class="card"><p class="section-label">Practice Path</p><ol>{practice}</ol></section>
-
-              <section class="card listen"><p class="section-label">Listen</p><h2>{esc(today.get('listening',{{}}).get('artist',''))}</h2><p class="copy">{esc(today.get('listening',{{}}).get('note',''))}</p></section>
-
+              <section class="card listen"><p class="section-label">Listen</p><h2>{listening_artist}</h2><p class="copy">{listening_note}</p></section>
               <section class="card"><p class="section-label">Archive</p><div class="archive-grid">{''.join(archive_cards)}</div></section>
-
-              <footer>After Hours · Morning Changes · Build 2026.05.20-H</footer>
+              <footer>After Hours · Morning Changes · Build 2026.05.20-I</footer>
             </main>
           </body>
           </html>'''
@@ -162,7 +144,7 @@ jobs:
               if end != -1:
                   html = html[:start] + html[end + len('</script>'):]
           link = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./morning-changes/" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Morning Changes</span><strong style="display:block;font-family:Georgia,serif;font-size:28px;margin-top:8px;">Open Today’s Lesson →</strong></a></section>'
-          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-H</footer>'
+          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-I</footer>'
           html = html.replace('</body>', link + marker + '\n</body>')
           path.write_text(html)
           PY
