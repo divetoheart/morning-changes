@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Morning Changes Lesson",
+  "type": "object",
+  "required": ["id", "title", "standard", "subtitle", "duration", "promise", "why", "progression", "voicings", "practice", "listening"],
+  "properties": {
+    "id": { "type": "string" },
+    "title": { "type": "string" },
+    "standard": { "type": "string" },
+    "subtitle": { "type": "string" },
+    "duration": { "type": "string" },
+    "standardPath": { "type": "string" },
+    "promise": { "type": "string" },
+    "why": { "type": "string" },
+    "progression": { "type": "array", "items": { "type": "string" } },
+    "voicings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["symbol", "role", "grip", "strings", "tones", "function", "note"],
+        "properties": {
+          "symbol": { "type": "string" },
+          "role": { "type": "string" },
+          "grip": { "type": "string" },
+          "strings": { "type": "array", "items": { "type": "string" } },
+          "tones": { "type": "array", "items": { "type": "string" } },
+          "function": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "practice": { "type": "array", "items": { "type": "string" } },
+    "listening": {
+      "type": "object",
+      "required": ["artist", "note"],
+      "properties": {
+        "artist": { "type": "string" },
+        "note": { "type": "string" },
+        "url": { "type": "string" }
+      }
+    }
+  }
+}
