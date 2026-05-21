@@ -1,0 +1,19 @@
+{
+  "id": "001-shell-voicings",
+  "title": "Shell Voicings",
+  "standard": "Autumn Leaves",
+  "subtitle": "A-section survival map",
+  "duration": "12 min",
+  "standardPath": "/standards/autumn-leaves",
+  "promise": "Play the first four changes with compact shells before adding color.",
+  "why": "Shell voicings teach the real voice-leading inside jazz harmony. In Autumn Leaves, the 3rds and 7ths show how the tune moves from minor tension into dominant pull, then resolves into major color.",
+  "progression": ["cm7", "F7", "Bbmaj7", "Ebmaj7"],
+  "voicings": [
+    { "symbol": "cm7", "role": "ii in Bb", "grip": "x-3-5-3-x-x", "strings": ["x", "3", "5", "3", "x", "x"], "tones": ["mute", "C", "Eb", "Bb", "mute", "mute"], "function": "R - b3 - b7", "note": "Start with the sound of minor color. Keep it small and clean." },
+    { "symbol": "F7", "role": "V7 in Bb", "grip": "x-8-7-8-x-x", "strings": ["x", "8", "7", "8", "x", "x"], "tones": ["mute", "F", "A", "Eb", "mute", "mute"], "function": "R - 3 - b7", "note": "The 3rd and b7 create the dominant pull. Do not bury them." },
+    { "symbol": "Bbmaj7", "role": "I in Bb", "grip": "6-x-7-7-x-x", "strings": ["6", "x", "7", "7", "x", "x"], "tones": ["Bb", "mute", "A", "D", "mute", "mute"], "function": "R - 7 - 3", "note": "This is the resolution. Land here like you meant it." },
+    { "symbol": "Ebmaj7", "role": "IV in Bb", "grip": "x-6-5-7-x-x", "strings": ["x", "6", "5", "7", "x", "x"], "tones": ["mute", "Eb", "G", "D", "mute", "mute"], "function": "R - 3 - 7", "note": "The section opens here. Let the chord breathe." }
+  ],
+  "practice": ["Play each shell once with no tempo.", "Move through cm7 -> F7 -> Bbmaj7 -> Ebmaj7.", "Repeat at 60 BPM, one chord per bar.", "Say the harmonic function while playing.", "Finish by listening to one Autumn Leaves recording."],
+  "listening": { "artist": "Cannonball Adderley", "note": "Listen for how the band lets the harmony breathe. Your job today is not to play more notes. It is to hear the important ones." }
+}
