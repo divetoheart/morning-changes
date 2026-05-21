@@ -25,9 +25,11 @@ jobs:
 
       - name: Prepare uploaded guide
         run: |
-          rm -rf dist
-          mkdir -p dist
-          unzip -o "Autumn Leaves Jazz Guide.zip" -d dist
+          rm -rf dist _guide
+          mkdir -p dist _guide
+          unzip -o "Autumn Leaves Jazz Guide.zip" -d _guide
+          mkdir -p dist/standards/autumn-leaves
+          cp -R _guide/. dist/standards/autumn-leaves/
 
       - name: Generate Morning Changes lesson experience
         run: |
@@ -49,8 +51,6 @@ jobs:
                   data = json.loads(source.read_text())
                   data['day'] = item.get('day')
                   lessons.append(data)
-
-          today = lessons[0]
 
           def esc(value):
               return str(value).replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
@@ -108,26 +108,24 @@ jobs:
           </head>
           <body>
             <main>
-              <header class="top"><div class="moon">◒</div><div class="brand"><strong>After Hours</strong><span>Morning Changes</span></div></header>
+              <header class="top"><a class="moon" href="../">◒</a><div class="brand"><strong>After Hours</strong><span>Morning Changes</span></div></header>
               <section class="hero"><p class="eyebrow" id="lessonMeta"></p><h1 id="lessonTitle"></h1><p class="subtitle" id="lessonSubtitle"></p><p class="copy" id="lessonPromise"></p></section>
-              <a class="card standard-link" href="../"><p class="section-label">Full Standard</p><strong>Open Autumn Leaves Guide →</strong></a>
+              <a class="card standard-link" href="../standards/autumn-leaves/"><p class="section-label">Full Standard</p><strong>Open Autumn Leaves Guide →</strong></a>
               <section class="card"><p class="section-label">Why this matters</p><p class="copy" id="lessonWhy"></p></section>
               <section><p class="section-label">Harmonic Map</p><div class="changes" id="changes"></div></section>
               <section class="card"><p class="section-label">Chord Grip</p><div class="diagram-head"><h2 id="chordSymbol"></h2><code id="chordGrip"></code></div><div class="strings" id="stringLabels"></div><div class="frets" id="frets"></div><p class="copy" id="chordNote"></p></section>
               <section class="card"><p class="section-label">Practice Path</p><ol id="practice"></ol></section>
               <section class="card listen"><p class="section-label">Listen</p><h2 id="listeningArtist"></h2><p class="copy" id="listeningNote"></p></section>
               <section class="card"><p class="section-label">Archive</p><div class="archive-grid" id="archive"></div></section>
-              <footer>After Hours · Morning Changes · Build 2026.05.20-J</footer>
+              <footer>After Hours · Morning Changes · Build 2026.05.21-K</footer>
             </main>
             <script>
               const lessons = {lessons_json};
               let lessonIndex = 0;
               let chordIndex = 0;
               const esc = (value) => String(value ?? '').replace(/[&<>'"]/g, char => ({{'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}}[char]));
-
               function renderLesson(index = 0) {{
-                lessonIndex = index;
-                chordIndex = 0;
+                lessonIndex = index; chordIndex = 0;
                 const lesson = lessons[lessonIndex];
                 document.getElementById('lessonMeta').textContent = `Today's Study · ${{lesson.duration || ''}}`;
                 document.getElementById('lessonTitle').textContent = lesson.title || '';
@@ -137,43 +135,27 @@ jobs:
                 document.getElementById('practice').innerHTML = (lesson.practice || []).map(item => `<li>${{esc(item)}}</li>`).join('');
                 document.getElementById('listeningArtist').textContent = lesson.listening?.artist || '';
                 document.getElementById('listeningNote').textContent = lesson.listening?.note || '';
-                renderChanges();
-                renderArchive();
-                renderChord(0);
+                renderChanges(); renderArchive(); renderChord(0);
               }}
-
               function renderChanges() {{
                 const lesson = lessons[lessonIndex];
-                document.getElementById('changes').innerHTML = (lesson.voicings || []).map((v, index) => `
-                  <button class="change ${{index === chordIndex ? 'active' : ''}}" data-chord="${{index}}">
-                    <strong>${{esc(v.symbol)}}</strong><span>${{esc(v.role)}}</span>
-                  </button>
-                `).join('');
+                document.getElementById('changes').innerHTML = (lesson.voicings || []).map((v, index) => `<button class="change ${{index === chordIndex ? 'active' : ''}}" data-chord="${{index}}"><strong>${{esc(v.symbol)}}</strong><span>${{esc(v.role)}}</span></button>`).join('');
                 document.querySelectorAll('[data-chord]').forEach(button => button.addEventListener('click', () => renderChord(Number(button.dataset.chord))));
               }}
-
               function renderChord(index) {{
                 chordIndex = index;
                 const chord = lessons[lessonIndex].voicings?.[chordIndex] || {{ strings: [], tones: [] }};
                 document.getElementById('chordSymbol').textContent = chord.symbol || '';
                 document.getElementById('chordGrip').textContent = chord.grip || '';
                 document.getElementById('stringLabels').innerHTML = ['E','A','D','G','B','e'].map(s => `<span>${{s}}</span>`).join('');
-                document.getElementById('frets').innerHTML = (chord.strings || []).map((fret, i) => `
-                  <div class="fret ${{fret === 'x' ? 'muted' : 'on'}}"><strong>${{esc(fret)}}</strong><small>${{(chord.tones?.[i] === 'mute') ? '' : esc(chord.tones?.[i] || '')}}</small></div>
-                `).join('');
+                document.getElementById('frets').innerHTML = (chord.strings || []).map((fret, i) => `<div class="fret ${{fret === 'x' ? 'muted' : 'on'}}"><strong>${{esc(fret)}}</strong><small>${{(chord.tones?.[i] === 'mute') ? '' : esc(chord.tones?.[i] || '')}}</small></div>`).join('');
                 document.getElementById('chordNote').textContent = chord.note || '';
                 renderChanges();
               }}
-
               function renderArchive() {{
-                document.getElementById('archive').innerHTML = lessons.map((lesson, index) => `
-                  <button class="archive-card ${{index === lessonIndex ? 'active' : ''}}" data-lesson="${{index}}">
-                    <span>Day ${{lesson.day || index + 1}}</span><strong>${{esc(lesson.title)}}</strong><em>${{esc(lesson.standard)}}</em>
-                  </button>
-                `).join('');
+                document.getElementById('archive').innerHTML = lessons.map((lesson, index) => `<button class="archive-card ${{index === lessonIndex ? 'active' : ''}}" data-lesson="${{index}}"><span>Day ${{lesson.day || index + 1}}</span><strong>${{esc(lesson.title)}}</strong><em>${{esc(lesson.standard)}}</em></button>`).join('');
                 document.querySelectorAll('[data-lesson]').forEach(button => button.addEventListener('click', () => renderLesson(Number(button.dataset.lesson))));
               }}
-
               renderLesson(0);
             </script>
           </body>
@@ -181,20 +163,52 @@ jobs:
           (page_dir / 'index.html').write_text(html)
           PY
 
-      - name: Clean exported HTML and add build marker
+      - name: Generate clean homepage
+        run: |
+          cat > dist/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>After Hours</title>
+            <style>
+              :root{--bg:#080706;--panel:#15110e;--panel2:#120f0c;--ink:#f4eee5;--muted:#b8aa9b;--dim:#756a60;--line:#3d3026;--gold:#d7a05b}
+              *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 90% 0%,rgba(120,72,24,.30),transparent 28%),var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Inter",Arial,sans-serif}main{max-width:760px;margin:0 auto;padding:34px 18px 80px}.brand{display:flex;align-items:center;gap:14px;margin-bottom:48px}.moon{font-size:34px;color:var(--gold)}.brand strong{font-family:Georgia,serif;font-size:28px}.brand span,.eyebrow{display:block;color:var(--gold);font-size:11px;letter-spacing:.42em;text-transform:uppercase}h1{font-family:Georgia,serif;font-size:64px;line-height:.92;letter-spacing:-.05em;margin:18px 0}.intro{font-size:20px;line-height:1.6;color:#ded4c9;max-width:620px}.grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:34px}.card{display:block;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),#100d0b);border-radius:30px;padding:26px;color:var(--ink);text-decoration:none}.card small{color:var(--gold);font-size:11px;letter-spacing:.35em;text-transform:uppercase}.card strong{display:block;font-family:Georgia,serif;font-size:34px;margin:10px 0}.card p{color:var(--muted);font-size:17px;line-height:1.55;margin:0}.disabled{opacity:.45}footer{text-align:center;padding-top:48px;color:var(--dim);font-size:10px;letter-spacing:.4em;text-transform:uppercase}@media(min-width:720px){.grid{grid-template-columns:1fr 1fr}.hero-card{grid-column:span 2}}
+            </style>
+          </head>
+          <body>
+            <main>
+              <div class="brand"><div class="moon">◒</div><div><strong>After Hours</strong><span>Jazz guitar study system</span></div></div>
+              <p class="eyebrow">Home</p>
+              <h1>Study the tune. Keep the thread.</h1>
+              <p class="intro">A focused jazz guitar workspace for daily lessons, full standards, visual harmony, fretboard systems, and practice paths.</p>
+              <section class="grid">
+                <a class="card hero-card" href="./morning-changes/"><small>Morning Changes</small><strong>Today’s Lesson →</strong><p>Open the daily 8–15 minute focused study and browse the archive.</p></a>
+                <a class="card" href="./standards/autumn-leaves/"><small>Standards Library</small><strong>Autumn Leaves →</strong><p>The full standard guide, visuals, listening references, and harmonic map.</p></a>
+                <a class="card disabled" href="#"><small>Study Library</small><strong>Coming Soon</strong><p>Shells, guide tones, CAGED, pentatonic boxes, and arpeggio systems.</p></a>
+                <a class="card disabled" href="#"><small>Practice</small><strong>Coming Soon</strong><p>Review paths, routines, and progress tracking.</p></a>
+              </section>
+              <footer>After Hours · Home · Build 2026.05.21-K</footer>
+            </main>
+          </body>
+          </html>
+          HTML
+
+      - name: Clean standard guide HTML
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('dist/index.html')
+          path = Path('dist/standards/autumn-leaves/index.html')
           html = path.read_text()
           start = html.find('<script data-pplx-inline-edit>')
           if start != -1:
               end = html.find('</script>', start)
               if end != -1:
                   html = html[:start] + html[end + len('</script>'):]
-          link = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./morning-changes/" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Morning Changes</span><strong style="display:block;font-family:Georgia,serif;font-size:28px;margin-top:8px;">Open Today’s Lesson →</strong></a></section>'
-          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · v0.2.0 · Build 2026.05.20-J</footer>'
-          html = html.replace('</body>', link + marker + '\n</body>')
+          nav = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="../../" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:22px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">After Hours</span><strong style="display:block;font-family:Georgia,serif;font-size:24px;margin-top:8px;">← Home</strong></a></section>'
+          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · Autumn Leaves · Build 2026.05.21-K</footer>'
+          html = html.replace('</body>', nav + marker + '\n</body>')
           path.write_text(html)
           PY
 
