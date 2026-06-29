@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Autumn Leaves · Arpeggio Play-Along · After Hours</title>
+  <style>
+    :root{--bg:#090806;--panel:#15110e;--panel2:#100d0b;--ink:#f6efe7;--muted:#baafa2;--line:#3d3026;--gold:#dfa85f;--root:#e36c5a;--chord:#dca55d;--scale:#527da2;--good:#8ca36f}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 82% 0%,rgba(129,79,26,.30),transparent 30%),var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Inter",Arial,sans-serif}
+    main{max-width:1020px;margin:0 auto;padding:28px 18px 74px}.top{display:flex;justify-content:space-between;align-items:center;padding-bottom:24px;border-bottom:1px solid var(--line);gap:16px}.brand{display:flex;align-items:center;gap:12px;text-decoration:none}.moon{font-size:29px;color:var(--gold)}.brand strong{display:block;font-family:Georgia,serif;font-size:25px}.brand span,.eyebrow,.section-label{display:block;color:var(--gold);font-size:11px;letter-spacing:.38em;text-transform:uppercase}.back{color:var(--muted);font-size:14px;text-decoration:none}
+    .hero{padding:40px 0 28px}.hero h1{font-family:Georgia,serif;font-size:clamp(42px,8vw,70px);line-height:.91;letter-spacing:-.05em;margin:16px 0}.hero p{max-width:690px;font-size:19px;line-height:1.6;color:#e2d9cf}.card{border:1px solid var(--line);background:linear-gradient(180deg,#17120f,#100d0b);border-radius:28px;padding:22px;margin:18px 0}.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.control-label{font-size:12px;color:var(--muted);margin-right:4px}.pill,button{font:inherit}.pill,.position button,.toggle button,.navbutton{border:1px solid var(--line);background:#120f0c;color:var(--ink);border-radius:16px;padding:11px 14px}.position button.active,.toggle button.active{background:var(--gold);color:#17100a;border-color:var(--gold)}
+    .timeline{display:grid;grid-template-columns:repeat(8,minmax(108px,1fr));overflow:auto;border:1px solid var(--line);border-radius:18px;background:var(--panel2);margin-top:16px}.bar{min-height:92px;border:0;border-right:1px solid var(--line);background:transparent;color:var(--ink);padding:15px;text-align:left}.bar:last-child{border-right:0}.bar.active{background:var(--gold);color:#170f09}.bar .number{font-size:11px;letter-spacing:.2em;opacity:.72}.bar strong{display:block;margin-top:8px;font-family:Georgia,serif;font-size:25px}.bar span{display:block;margin-top:5px;font-size:12px;opacity:.78}
+    .now{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end;margin:26px 0 16px}.now h2{font-family:Georgia,serif;font-size:40px;margin:7px 0}.now p{margin:0;color:var(--muted)}.nav{display:flex;gap:8px}.navbutton{min-height:46px}.navbutton.primary{background:var(--gold);color:#1a1109;border-color:var(--gold)}
+    .fretboard-wrap{overflow:auto;border:1px solid var(--line);border-radius:24px;padding:18px;background:#0d0b09}.fret-meta{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:14px;color:var(--muted);font-size:13px}.fretboard{min-width:650px}.fret-row{display:grid;grid-template-columns:42px repeat(6,1fr);height:57px;align-items:center}.string-name{text-align:center;color:var(--muted);font-size:13px}.cell{height:57px;border-left:1px solid #7a6855;border-top:1px solid #75624f;position:relative}.cell:last-child{border-right:1px solid #7a6855}.fret-row:first-child .cell{border-top:2px solid #c6b098}.fret-row:last-child .cell{border-bottom:2px solid #c6b098}.marker{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:35px;height:35px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;border:1px solid rgba(255,255,255,.28);box-shadow:0 3px 12px rgba(0,0,0,.3)}.marker.root{background:var(--root);color:white}.marker.chord{background:var(--chord);color:#241709}.marker.scale{background:var(--scale);color:#fff;width:25px;height:25px;font-size:9px}.fret-numbers{display:grid;grid-template-columns:42px repeat(6,1fr);color:var(--muted);font-size:12px;text-align:center;margin-top:10px}
+    .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.legend span{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:13px}.dot{width:12px;height:12px;border-radius:50%;display:inline-block}.dot.root{background:var(--root)}.dot.chord{background:var(--chord)}.dot.scale{background:var(--scale)}
+    .route{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.route-card{border:1px solid var(--line);background:#120f0c;border-radius:18px;padding:16px}.route-card strong{display:block;font-family:Georgia,serif;font-size:20px}.route-card p{margin:7px 0 0;color:var(--muted);line-height:1.45;font-size:14px}.move{color:var(--gold);font-weight:700}
+    .practice{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.practice ol{margin:12px 0 0;padding-left:22px;line-height:1.8;color:#ded4c9}.note{border:1px solid rgba(223,168,95,.55);background:rgba(223,168,95,.07);border-radius:20px;padding:18px;color:#eadac7;line-height:1.55}.valid{color:var(--good);font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:800}
+    footer{text-align:center;color:#776d63;font-size:10px;letter-spacing:.34em;text-transform:uppercase;padding:46px 0 0}@media(max-width:680px){.top{align-items:flex-start}.back{padding-top:5px}.now{grid-template-columns:1fr}.nav{width:100%}.navbutton{flex:1}.route,.practice{grid-template-columns:1fr}.hero{padding-top:30px}}
+  </style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <a class="brand" href="../../"><div class="moon">◒</div><div><strong>After Hours</strong><span>Jazz guitar study</span></div></a>
+    <a class="back" href="../">← Autumn Leaves guide</a>
+  </header>
+
+  <section class="hero">
+    <span class="eyebrow">Autumn Leaves · A Section</span>
+    <h1>Arpeggio Play‑Along</h1>
+    <p>Follow the actual bar order. Choose one neck position, walk the chord tones through every change, then add the scale tones only after each landing point is clear.</p>
+  </section>
+
+  <section class="card">
+    <span class="section-label">Position and display</span>
+    <div class="controls" style="margin-top:14px">
+      <span class="control-label">Fretboard window</span>
+      <div class="position" id="positions"></div>
+      <span class="control-label">Show</span>
+      <div class="toggle" id="toggles"></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="section-label">Play in order · 1 chord per bar</span>
+    <div class="timeline" id="timeline"></div>
+  </section>
+
+  <section class="now">
+    <div><span class="section-label">Current bar</span><h2 id="currentTitle"></h2><p id="currentMeta"></p></div>
+    <div class="nav"><button class="navbutton" id="previous">← Previous</button><button class="navbutton primary" id="next">Next →</button></div>
+  </section>
+
+  <section class="fretboard-wrap">
+    <div class="fret-meta"><span id="windowLabel"></span><span id="formulaLabel"></span></div>
+    <div class="fretboard" id="fretboard"></div>
+    <div class="fret-numbers" id="fretNumbers"></div>
+    <div class="legend"><span><i class="dot root"></i>Root</span><span><i class="dot chord"></i>Chord tone</span><span><i class="dot scale"></i>Scale tone</span></div>
+  </section>
+
+  <section class="route" id="route"></section>
+
+  <section class="practice card">
+    <div><span class="section-label">How to use this</span><ol><li>Play only the larger root and chord-tone markers for the current bar.</li><li>Use <strong>Next</strong> exactly when the bar changes.</li><li>Find the nearest 3rd or 7th in the next chord before adding any scale tone.</li><li>Run the eight bars at 60 BPM, then 75, then 90.</li></ol></div>
+    <aside class="note"><span class="valid">Verified note engine</span><p id="validationText"></p><p>Every marker is calculated from standard tuning plus the listed chord formula. This page does not use hand-placed dots.</p></aside>
+  </section>
+
+  <footer>After Hours · Autumn Leaves Arpeggio Play‑Along · Build 0.3.0</footer>
+</main>
+<script>
+(() => {
+  const TUNING = [4, 11, 7, 2, 9, 4]; // high e, B, G, D, A, low E pitch classes
+  const STRINGS = ['e','B','G','D','A','E'];
+  const POSITIONS = [3,5,7,8,10,12];
+  const CHROMATIC = ['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+  const pc = name => CHROMATIC.indexOf(name);
+  const asSet = names => new Set(names.map(pc));
+  const sortNums = list => [...list].sort((a,b)=>a-b).join(',');
+
+  // A section in the G minor / Bb major concert-key version used by this guide.
+  // Each chord spelling and scale collection is explicit, then all dots are generated from them.
+  const BFLAT_MAJOR = ['Bb','C','D','Eb','F','G','A'];
+  const G_HARMONIC_MINOR = ['G','A','Bb','C','D','Eb','F#'];
+  const PROGRESSION = [
+    {bar:1,symbol:'cm7',function:'ii in Bb',tones:['C','Eb','G','Bb'],formula:'1 · b3 · 5 · b7',scale:BFLAT_MAJOR,scaleName:'Bb major'},
+    {bar:2,symbol:'F7',function:'V7 in Bb',tones:['F','A','C','Eb'],formula:'1 · 3 · 5 · b7',scale:BFLAT_MAJOR,scaleName:'Bb major'},
+    {bar:3,symbol:'Bbmaj7',function:'I in Bb',tones:['Bb','D','F','A'],formula:'1 · 3 · 5 · 7',scale:BFLAT_MAJOR,scaleName:'Bb major'},
+    {bar:4,symbol:'Ebmaj7',function:'IV in Bb',tones:['Eb','G','Bb','D'],formula:'1 · 3 · 5 · 7',scale:BFLAT_MAJOR,scaleName:'Bb major'},
+    {bar:5,symbol:'am7b5',function:'iiø in gm',tones:['A','C','Eb','G'],formula:'1 · b3 · b5 · b7',scale:G_HARMONIC_MINOR,scaleName:'G harmonic minor'},
+    {bar:6,symbol:'D7',function:'V7 in gm',tones:['D','F#','A','C'],formula:'1 · 3 · 5 · b7',scale:G_HARMONIC_MINOR,scaleName:'G harmonic minor'},
+    {bar:7,symbol:'gm7',function:'i in gm',tones:['G','Bb','D','F'],formula:'1 · b3 · 5 · b7',scale:['G','A','Bb','C','D','Eb','F'],scaleName:'G natural minor'},
+    {bar:8,symbol:'gm7',function:'i in gm',tones:['G','Bb','D','F'],formula:'1 · b3 · 5 · b7',scale:['G','A','Bb','C','D','Eb','F'],scaleName:'G natural minor'}
+  ];
+
+  const state = {bar:0,position:8,chord:true,scale:true};
+  const $ = id => document.getElementById(id);
+  function nameForPitch(pitch, chord){
+    const inChord = chord.tones.find(n => pc(n) === pitch);
+    if(inChord) return inChord;
+    const inScale = chord.scale.find(n => pc(n) === pitch);
+    return inScale || CHROMATIC[pitch];
+  }
+  function isRoot(pitch,chord){ return pitch === pc(chord.tones[0]); }
+  function validate(){
+    const expected = {
+      cm7:['C','Eb','G','Bb'],F7:['F','A','C','Eb'],Bbmaj7:['Bb','D','F','A'],Ebmaj7:['Eb','G','Bb','D'],am7b5:['A','C','Eb','G'],D7:['D','F#','A','C'],gm7:['G','Bb','D','F']
+    };
+    const valid = PROGRESSION.every(chord => sortNums(chord.tones.map(pc)) === sortNums(expected[chord.symbol].map(pc)));
+    $('validationText').textContent = valid ? 'All 8 bars pass chord-tone checks: cm7, F7, Bbmaj7, Ebmaj7, am7b5, D7, gm7.' : 'Validation failed — do not use this map.';
+    return valid;
+  }
+  function renderPositions(){
+    $('positions').innerHTML = POSITIONS.map(pos => `<button class="${state.position===pos?'active':''}" data-position="${pos}">${pos}th</button>`).join('');
+    $('positions').querySelectorAll('button').forEach(button => button.onclick=()=>{state.position=Number(button.dataset.position);render();});
+  }
+  function renderToggles(){
+    $('toggles').innerHTML = `<button class="${state.chord?'active':''}" data-toggle="chord">Chord tones</button><button class="${state.scale?'active':''}" data-toggle="scale">Scale tones</button>`;
+    $('toggles').querySelectorAll('button').forEach(button => button.onclick=()=>{state[button.dataset.toggle]=!state[button.dataset.toggle];render();});
+  }
+  function renderTimeline(){
+    $('timeline').innerHTML=PROGRESSION.map((chord,index)=>`<button class="bar ${index===state.bar?'active':''}" data-bar="${index}"><span class="number">Bar ${chord.bar}</span><strong>${chord.symbol}</strong><span>${chord.function}</span></button>`).join('');
+    $('timeline').querySelectorAll('button').forEach(button=>button.onclick=()=>{state.bar=Number(button.dataset.bar);render();});
+  }
+  function renderFretboard(){
+    const chord=PROGRESSION[state.bar];
+    const start=state.position, frets=[start,start+1,start+2,start+3,start+4,start+5];
+    const chordSet=asSet(chord.tones), scaleSet=asSet(chord.scale);
+    $('windowLabel').textContent=`Position ${start} · frets ${start}–${start+5}`;
+    $('formulaLabel').textContent=`${chord.symbol}: ${chord.formula} · ${chord.scaleName}`;
+    $('fretNumbers').innerHTML=`<span></span>${frets.map(f=>`<span>${f}</span>`).join('')}`;
+    $('fretboard').innerHTML=TUNING.map((openPitch,stringIndex)=>{
+      const cells=frets.map(fret=>{
+        const pitch=(openPitch+fret)%12;
+        const chordTone=chordSet.has(pitch), scaleTone=scaleSet.has(pitch);
+        let marker='';
+        if(state.chord && chordTone){ const kind=isRoot(pitch,chord)?'root':'chord'; marker=`<span class="marker ${kind}">${nameForPitch(pitch,chord)}</span>`; }
+        else if(state.scale && scaleTone){ marker=`<span class="marker scale">${nameForPitch(pitch,chord)}</span>`; }
+        return `<div class="cell">${marker}</div>`;
+      }).join('');
+      return `<div class="fret-row"><span class="string-name">${STRINGS[stringIndex]}</span>${cells}</div>`;
+    }).join('');
+  }
+  function renderRoute(){
+    const here=PROGRESSION[state.bar], next=PROGRESSION[(state.bar+1)%PROGRESSION.length];
+    const common=here.tones.filter(n=>next.tones.some(m=>pc(m)===pc(n)));
+    const voiceHints = {
+      'cm7>F7':'Eb stays; Bb falls to A.', 'F7>Bbmaj7':'Eb falls to D; A stays.', 'Bbmaj7>Ebmaj7':'D and A move together into Ebmaj7 color.', 'Ebmaj7>am7b5':'Keep G; move D down to C.', 'am7b5>D7':'C stays; G moves down to F#.', 'D7>gm7':'F# resolves up to G; C resolves down to Bb.', 'gm7>gm7':'Hold the color and phrase into the repeat.'
+    };
+    const key=`${here.symbol}>${next.symbol}`;
+    $('route').innerHTML=`<article class="route-card"><span class="section-label">Now</span><strong>${here.symbol} · ${here.tones.join(' – ')}</strong><p>Land on the <span class="move">${here.tones[0]}</span> root or target the 3rd/7th before using nearby blue scale tones.</p></article><article class="route-card"><span class="section-label">Next bar</span><strong>${next.symbol} · ${next.tones.join(' – ')}</strong><p>${voiceHints[key] || (common.length ? `Shared tone: ${common.join(', ')}.` : 'Find the nearest 3rd or 7th.')}</p></article>`;
+  }
+  function render(){
+    const chord=PROGRESSION[state.bar];
+    $('currentTitle').textContent=`Bar ${chord.bar}: ${chord.symbol}`;
+    $('currentMeta').textContent=`${chord.function} · chord tones ${chord.tones.join(' – ')}`;
+    renderPositions();renderToggles();renderTimeline();renderFretboard();renderRoute();
+  }
+  $('previous').onclick=()=>{state.bar=(state.bar+PROGRESSION.length-1)%PROGRESSION.length;render();};
+  $('next').onclick=()=>{state.bar=(state.bar+1)%PROGRESSION.length;render();};
+  validate();render();
+})();
+</script>
+</body>
+</html>
