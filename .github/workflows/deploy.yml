@@ -34,7 +34,6 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
 
-          # Route pages share a single app bundle, but keep direct URLs for navigation and bookmarks.
           route_template = '''<!doctype html>
           <html lang="en">
           <head>
@@ -55,27 +54,21 @@ jobs:
               target.mkdir(parents=True, exist_ok=True)
               (target / 'index.html').write_text(route_template.replace('__ROUTE__', route))
 
-          # Preserve the former Morning Changes address as a graceful redirect to the real app home.
           redirect = '''<!doctype html><html><head><meta http-equiv="refresh" content="0; url=../"><script>location.replace('../')</script></head><body></body></html>'''
           legacy = Path('dist/morning-changes')
           legacy.mkdir(parents=True, exist_ok=True)
           (legacy / 'index.html').write_text(redirect)
 
-          # The repository is itself named after-hours, so route detection must use the page's declared route.
+          # The repository itself is named after-hours, so declared page route—not a generic path match—sets the app base path.
           app_js = Path('dist/assets/app.js')
           js = app_js.read_text()
-          old = """const route = document.body.dataset.route || 'home';
-  const knownRoutes = ['learn','paths','after-hours','tools','progress','daily'];
-  const parts = location.pathname.split('/').filter(Boolean);
-  const routeIndex = parts.findIndex(part => knownRoutes.includes(part));
-  const basePath = routeIndex > -1 ? `/${parts.slice(0, routeIndex).join('/')}/` : (location.pathname.endsWith('/') ? location.pathname : `${location.pathname}/`);"""
-          new = """const route = document.body.dataset.route || 'home';
-  const parts = location.pathname.split('/').filter(Boolean);
-  const routeIndex = route === 'home' ? -1 : parts.lastIndexOf(route);
-  const basePath = routeIndex > -1 ? `/${parts.slice(0, routeIndex).join('/')}/` : (location.pathname.endsWith('/') ? location.pathname : `${location.pathname}/`);"""
-          if old not in js:
-              raise RuntimeError('Morning Changes route patch did not find its expected source block')
-          app_js.write_text(js.replace(old, new))
+          old_routes = "  const knownRoutes = ['learn','paths','after-hours','tools','progress','daily'];\n"
+          old_index = "  const routeIndex = parts.findIndex(part => knownRoutes.includes(part));"
+          new_index = "  const routeIndex = route === 'home' ? -1 : parts.lastIndexOf(route);"
+          if old_routes not in js or old_index not in js:
+              raise RuntimeError('Morning Changes route patch did not find its expected source lines')
+          js = js.replace(old_routes, '').replace(old_index, new_index)
+          app_js.write_text(js)
           PY
 
       - name: Preserve and catalog After Hours standards
@@ -84,7 +77,6 @@ jobs:
           set -euo pipefail
           unzip -o "Autumn Leaves Jazz Guide.zip" -d _guide
 
-          # Main catalog route plus a backwards-compatible standards alias.
           for target in dist/after-hours/autumn-leaves dist/standards/autumn-leaves; do
             mkdir -p "$target/arpeggios"
             cp -R _guide/. "$target/"
