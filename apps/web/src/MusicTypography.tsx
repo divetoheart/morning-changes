@@ -22,9 +22,7 @@ function shouldLeaveAsPlainNumber(text: string, end: number) {
 
 type Match = { index: number; length: number; node: Node };
 
-function makeText(value: string) {
-  return document.createTextNode(value);
-}
+function makeText(value: string) { return document.createTextNode(value); }
 
 function makeChord(root: string, accidental: string, quality: string) {
   const chord = document.createElement('span');
@@ -94,16 +92,11 @@ function replaceTextNode(textNode: Text) {
       matches.push({ index, length: match[0].length, node: builder(match) });
     }
   };
-
   collect(CHORD, match => makeChord(match[1], match[2] ?? '', match[3] ?? ''));
   collect(NOTE, match => makeChord(match[1], match[2] ?? '', ''));
   collect(FUNCTION, match => makeFunction(match[1], match[2] ?? ''));
   collect(INTERVAL, match => makeInterval(match[1] ?? '', match[2], match[3] ?? ''), (_match, end) => shouldLeaveAsPlainNumber(source, end));
-
-  const nonOverlapping = matches
-    .sort((a, b) => a.index - b.index || b.length - a.length)
-    .filter((match, index, all) => !all.slice(0, index).some(previous => previous.index < match.index + match.length && match.index < previous.index + previous.length));
-
+  const nonOverlapping = matches.sort((a, b) => a.index - b.index || b.length - a.length).filter((match, index, all) => !all.slice(0, index).some(previous => previous.index < match.index + match.length && match.index < previous.index + previous.length));
   if (!nonOverlapping.length) return;
   const fragment = document.createDocumentFragment();
   let cursor = 0;
@@ -116,7 +109,17 @@ function replaceTextNode(textNode: Text) {
   textNode.replaceWith(fragment);
 }
 
+function normalizeStructuredNotation(root: HTMLElement) {
+  root.querySelectorAll<HTMLElement>('.chord-symbol').forEach(symbol => {
+    const rootText = Array.from(symbol.children).find(child => child.tagName !== 'SUP');
+    if (rootText) rootText.textContent = prettyAccidental(rootText.textContent ?? '');
+    symbol.querySelectorAll('sup').forEach(suffix => { suffix.textContent = prettyQuality(suffix.textContent ?? ''); });
+  });
+  root.querySelectorAll<HTMLElement>('.function-symbol sup').forEach(suffix => { suffix.textContent = prettyQuality(suffix.textContent ?? ''); });
+}
+
 function applyNotation(root: HTMLElement) {
+  normalizeStructuredNotation(root);
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const nodes: Text[] = [];
   while (walker.nextNode()) {
