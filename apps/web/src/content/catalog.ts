@@ -1,293 +1,111 @@
 import { lessonSchema, pathSchema, standardSchema, type Lesson, type LearningPath, type Standard } from '../domain/content';
 
+const autumnBridge = {
+  afterHoursHref: '../after-hours/autumn-leaves/',
+  afterHoursCta: 'Apply this inside Autumn Leaves'
+};
+
 const lessonData = [
   {
-    id: 'rhythm-first',
-    title: 'Rhythm First: Quarter Notes That Feel Good',
-    level: 'Beginner',
-    category: 'Rhythm',
-    access: 'free',
-    durationMinutes: 15,
-    outcome: 'Lock one chord to a pulse before adding complexity.',
-    dailyEligible: true,
-    pathIds: ['beginner-foundations', 'blues-lab'],
-    metronome: { bpm: 70, meter: '4/4' },
-    routine: [
-      { minutes: 3, instruction: 'Tap quarter notes with the metronome at 70 BPM.' },
-      { minutes: 5, instruction: 'Strum one chord only on beats 2 and 4.' },
-      { minutes: 5, instruction: 'Add one anticipatory change before beat 1.' },
-      { minutes: 2, instruction: 'Play one uninterrupted minute and let the pulse carry you.' }
-    ],
-    reviewPrompt: 'Can you keep the pulse while changing one chord?'
-  },
-  {
-    id: 'open-chord-flow',
-    title: 'Open Chord Changes Without the Panic',
-    level: 'Beginner',
-    category: 'Chords',
-    access: 'free',
-    durationMinutes: 15,
-    outcome: 'Build a clean two-chord loop and stay in time.',
-    dailyEligible: true,
-    pathIds: ['beginner-foundations'],
+    id: 'find-the-root', title: 'Find the Root Before the Shape', level: 'Beginner', category: 'Fretboard', access: 'free', durationMinutes: 12,
+    outcome: 'Find the 1 anywhere in the selected key so every scale, chord, and arpeggio has an anchor.', dailyEligible: true, pathIds: ['autumn-leaves-prep', 'beginner-foundations', 'theory-101'], keyMode: 'major', defaultKeyStrategy: 'random',
+    concept: { summary: 'The root is interval 1. The app can name it for any key, but the musical job is always the same: anchor the sound.', intervals: ['1'], examples: [] },
     metronome: { bpm: 60, meter: '4/4' },
-    routine: [
-      { minutes: 3, instruction: 'Choose two familiar open chords and form each shape silently.' },
-      { minutes: 5, instruction: 'Change once per bar at 60 BPM without strumming.' },
-      { minutes: 5, instruction: 'Add one downstroke on beat 1 of every bar.' },
-      { minutes: 2, instruction: 'Play four bars without correcting in the middle.' }
-    ],
-    reviewPrompt: 'Which finger can stay closest to its next note?'
+    routine: [{ minutes: 3, instruction: 'Choose the random key and locate 1 on the sixth string.' }, { minutes: 4, instruction: 'Find the same 1 on the fifth and fourth strings.' }, { minutes: 3, instruction: 'Move the key selector and repeat without changing the rule.' }, { minutes: 2, instruction: 'Say: interval first, note name second.' }],
+    reviewPrompt: 'Can you find 1 before reaching for a memorized box?'
   },
   {
-    id: 'root-map',
-    title: 'Find Every Root in One Position',
-    level: 'Beginner',
-    category: 'Fretboard',
-    access: 'free',
-    durationMinutes: 15,
-    outcome: 'Locate roots without hunting for them.',
-    dailyEligible: true,
-    pathIds: ['beginner-foundations', 'theory-101'],
+    id: 'major-scale-intervals', title: 'Major Scale as Intervals', level: 'Beginner', category: 'Theory', access: 'free', durationMinutes: 15,
+    outcome: 'Understand the major scale as 1 2 3 4 5 6 7 in any key.', dailyEligible: true, pathIds: ['autumn-leaves-prep', 'beginner-foundations', 'theory-101'], keyMode: 'major', defaultKeyStrategy: 'random',
+    concept: { summary: 'The major scale is stored as intervals. Notes appear only after a key is chosen.', intervals: ['1', '2', '3', '4', '5', '6', '7'], examples: [] },
+    metronome: { bpm: 64, meter: '4/4' },
+    routine: [{ minutes: 3, instruction: 'Read the interval row out loud: 1 2 3 4 5 6 7.' }, { minutes: 4, instruction: 'Play 1 2 3 4 5 slowly in the chosen key.' }, { minutes: 5, instruction: 'Target only 3 and 7; those become important in guide tones.' }, { minutes: 3, instruction: 'Change keys and notice the intervals stay fixed.' }],
+    reviewPrompt: 'Could you explain the scale without saying a note name first?'
+  },
+  {
+    id: 'triads-from-intervals', title: 'Build Triads from 1 3 5', level: 'Beginner', category: 'Harmony', access: 'free', durationMinutes: 15,
+    outcome: 'Build major and minor triads by changing the 3rd, not by memorizing unrelated shapes.', dailyEligible: true, pathIds: ['autumn-leaves-prep', 'beginner-foundations', 'theory-101'], keyMode: 'major', defaultKeyStrategy: 'random',
+    concept: { summary: 'A triad is a three-note structure. Major is 1 3 5. Minor is 1 b3 5.', intervals: ['1', '3', '5'], examples: [{ label: 'Major triad', function: 'I', quality: 'maj', rootDegree: '1', intervals: ['1', '3', '5'] }, { label: 'Minor triad', function: 'i', quality: 'm', rootDegree: '1', intervals: ['1', 'b3', '5'] }] },
+    metronome: { bpm: 60, meter: '4/4' },
+    routine: [{ minutes: 4, instruction: 'Build 1 3 5 in the selected key.' }, { minutes: 4, instruction: 'Lower only 3 to b3 and hear the minor sound.' }, { minutes: 4, instruction: 'Alternate major and minor without changing the root.' }, { minutes: 3, instruction: 'Move to a new key and rebuild by intervals.' }],
+    reviewPrompt: 'Did the chord quality change because of the 3rd?'
+  },
+  {
+    id: 'seventh-chord-formulas', title: 'Seventh Chords: The Four Sounds You Need', level: 'Beginner', category: 'Harmony', access: 'free', durationMinutes: 18,
+    outcome: 'Recognize maj7, m7, 7, and m7b5 as interval formulas that work in every key.', dailyEligible: true, pathIds: ['autumn-leaves-prep', 'intermediate-core', 'theory-101'], keyMode: 'major', defaultKeyStrategy: 'random',
+    concept: { summary: 'Autumn Leaves is built from seventh chords. Learn the formulas once, then render them in any key.', intervals: ['1', '3', '5', '7'], examples: [{ label: 'maj7', function: 'Imaj7', quality: 'maj7', rootDegree: '1', intervals: ['1', '3', '5', '7'] }, { label: 'm7', function: 'iim7', quality: 'm7', rootDegree: '2', intervals: ['1', 'b3', '5', 'b7'] }, { label: '7', function: 'V7', quality: '7', rootDegree: '5', intervals: ['1', '3', '5', 'b7'] }, { label: 'm7b5', function: 'iim7b5', quality: 'm7b5', rootDegree: '2', intervals: ['1', 'b3', 'b5', 'b7'] }] },
+    metronome: { bpm: 58, meter: '4/4' },
+    routine: [{ minutes: 4, instruction: 'Build each formula slowly from interval labels.' }, { minutes: 5, instruction: 'Name the difference between maj7 and 7.' }, { minutes: 5, instruction: 'Name the difference between m7 and m7b5.' }, { minutes: 4, instruction: 'Change keys and rebuild the same four sounds.' }],
+    reviewPrompt: 'Can you see each chord as a formula rather than a grip?'
+  },
+  {
+    id: 'major-key-seventh-chords', title: 'Diatonic Seventh Chords in a Major Key', level: 'Intermediate', category: 'Harmony', access: 'free', durationMinutes: 18,
+    outcome: 'Turn a major key into Imaj7 iim7 iiim7 IVmaj7 V7 vim7 viim7b5.', dailyEligible: true, pathIds: ['autumn-leaves-prep', 'intermediate-core', 'theory-101'], keyMode: 'major', defaultKeyStrategy: 'random',
+    concept: { summary: 'Autumn Leaves starts with a major-key chain: iim7 to V7 to Imaj7 to IVmaj7.', intervals: ['1', '2', '3', '4', '5', '6', '7'], examples: [{ label: 'iim7', function: 'ii', quality: 'm7', rootDegree: '2', intervals: ['1', 'b3', '5', 'b7'] }, { label: 'V7', function: 'V', quality: '7', rootDegree: '5', intervals: ['1', '3', '5', 'b7'] }, { label: 'Imaj7', function: 'I', quality: 'maj7', rootDegree: '1', intervals: ['1', '3', '5', '7'] }, { label: 'IVmaj7', function: 'IV', quality: 'maj7', rootDegree: '4', intervals: ['1', '3', '5', '7'] }], ...autumnBridge },
+    metronome: { bpm: 60, meter: '4/4' },
+    routine: [{ minutes: 4, instruction: 'Render iim7 V7 Imaj7 IVmaj7 in the selected key.' }, { minutes: 5, instruction: 'Play one chord per bar, saying the function first.' }, { minutes: 5, instruction: 'Change keys and repeat the function chain.' }, { minutes: 4, instruction: 'Open Autumn Leaves and find the same motion.' }],
+    reviewPrompt: 'Can you identify the first four bars by function?'
+  },
+  {
+    id: 'guide-tones-major-ii-v-i', title: 'Guide Tones Through ii–V–I', level: 'Intermediate', category: 'Voice leading', access: 'free', durationMinutes: 15,
+    outcome: 'Use only 3rds and 7ths to make the harmony clear.', dailyEligible: true, pathIds: ['autumn-leaves-prep', 'intermediate-core', 'changes-arpeggios'], keyMode: 'major', defaultKeyStrategy: 'random',
+    concept: { summary: 'Guide tones are chord-defining intervals. The roots may move a lot, but 3rds and 7ths often move by small steps.', intervals: ['3', '7'], examples: [{ label: 'iim7 guide tones', function: 'ii', quality: 'm7', rootDegree: '2', intervals: ['b3', 'b7'] }, { label: 'V7 guide tones', function: 'V', quality: '7', rootDegree: '5', intervals: ['3', 'b7'] }, { label: 'Imaj7 guide tones', function: 'I', quality: 'maj7', rootDegree: '1', intervals: ['3', '7'] }], ...autumnBridge },
+    metronome: { bpm: 58, meter: '4/4' },
+    routine: [{ minutes: 3, instruction: 'Render iim7 V7 Imaj7 guide tones in the random key.' }, { minutes: 5, instruction: 'Play only the two guide tones per chord.' }, { minutes: 5, instruction: 'Find the closest motion from chord to chord.' }, { minutes: 2, instruction: 'Apply it to bars 1–3 of Autumn Leaves.' }],
+    reviewPrompt: 'Could the progression still sound clear without roots?'
+  },
+  {
+    id: 'minor-ii-v-i-cadence', title: 'Minor ii–V–i Cadence', level: 'Intermediate', category: 'Jazz harmony', access: 'free', durationMinutes: 15,
+    outcome: 'Understand iim7b5 V7 im7 as the minor-key cadence used near the end of Autumn Leaves A section.', dailyEligible: true, pathIds: ['autumn-leaves-prep', 'intermediate-core', 'changes-arpeggios'], keyMode: 'natural-minor', defaultKeyStrategy: 'random',
+    concept: { summary: 'Minor ii–V–i uses a half-diminished ii chord, a dominant V chord, and a minor tonic.', intervals: ['1', '2', 'b3', '4', '5', 'b6', 'b7'], examples: [{ label: 'iim7b5', function: 'iiø', quality: 'm7b5', rootDegree: '2', intervals: ['1', 'b3', 'b5', 'b7'] }, { label: 'V7', function: 'V', quality: '7', rootDegree: '5', intervals: ['1', '3', '5', 'b7'] }, { label: 'im7', function: 'i', quality: 'm7', rootDegree: '1', intervals: ['1', 'b3', '5', 'b7'] }], ...autumnBridge },
+    metronome: { bpm: 58, meter: '4/4' },
+    routine: [{ minutes: 4, instruction: 'Render iim7b5 V7 im7 in the selected minor key.' }, { minutes: 4, instruction: 'Play the roots only and hear the cadence.' }, { minutes: 5, instruction: 'Add guide tones and resolve V7 into i.' }, { minutes: 2, instruction: 'Find this cadence in Autumn Leaves.' }],
+    reviewPrompt: 'Can you hear V7 wanting to resolve into i?'
+  },
+  {
+    id: 'arpeggios-as-chord-tones', title: 'Arpeggios Are Chord Tones in Motion', level: 'Intermediate', category: 'Soloing', access: 'free', durationMinutes: 18,
+    outcome: 'Turn chord formulas into single-note lines you can use for improvising.', dailyEligible: true, pathIds: ['autumn-leaves-prep', 'changes-arpeggios'], keyMode: 'major', defaultKeyStrategy: 'random',
+    concept: { summary: 'An arpeggio is not a new thing to memorize. It is the same chord formula played as a line.', intervals: ['1', '3', '5', '7'], examples: [{ label: 'm7 arpeggio', function: 'ii', quality: 'm7', rootDegree: '2', intervals: ['1', 'b3', '5', 'b7'] }, { label: '7 arpeggio', function: 'V', quality: '7', rootDegree: '5', intervals: ['1', '3', '5', 'b7'] }, { label: 'maj7 arpeggio', function: 'I', quality: 'maj7', rootDegree: '1', intervals: ['1', '3', '5', '7'] }], ...autumnBridge },
     metronome: { bpm: 62, meter: '4/4' },
-    routine: [
-      { minutes: 3, instruction: 'Pick one root on the sixth string and say its note name.' },
-      { minutes: 5, instruction: 'Find its octave on the fourth and second strings.' },
-      { minutes: 5, instruction: 'Move the root shape up one fret at a time with the metronome.' },
-      { minutes: 2, instruction: 'Name three roots without looking at a chart.' }
-    ],
-    reviewPrompt: 'Could you find the root before you needed the shape?'
+    routine: [{ minutes: 4, instruction: 'Render the arpeggios for ii V I in the selected key.' }, { minutes: 5, instruction: 'Play each arpeggio up and down slowly.' }, { minutes: 5, instruction: 'Start each chord on a different interval.' }, { minutes: 4, instruction: 'Open the Autumn Leaves arpeggio play-along.' }],
+    reviewPrompt: 'Could you explain every arpeggio note as a chord tone?'
   },
   {
-    id: 'pentatonic-home',
-    title: 'Make Pentatonic Phrases Sound Like Music',
-    level: 'Beginner',
-    category: 'Soloing',
-    access: 'free',
-    durationMinutes: 15,
-    outcome: 'Use space, repetition, and a target note to make one familiar shape sound musical.',
-    dailyEligible: true,
-    pathIds: ['beginner-foundations', 'blues-lab'],
-    metronome: { bpm: 72, meter: '4/4' },
-    routine: [
-      { minutes: 3, instruction: 'Play one note, then leave a full beat of space.' },
-      { minutes: 5, instruction: 'Make a two-bar call and answer it with a variation.' },
-      { minutes: 5, instruction: 'End each phrase on A or C in A minor.' },
-      { minutes: 2, instruction: 'Keep only the phrase you would sing back.' }
-    ],
-    reviewPrompt: 'Did your rests sound as intentional as your notes?'
-  },
-  {
-    id: 'shell-voicings',
-    title: 'Shell Voicings: Start Here',
-    level: 'Intermediate',
-    category: 'Jazz harmony',
-    access: 'free',
-    durationMinutes: 12,
-    outcome: 'Play roots, 3rds, and 7ths that imply full harmony.',
-    dailyEligible: true,
-    pathIds: ['intermediate-core', 'changes-arpeggios', 'theory-101'],
-    metronome: { bpm: 58, meter: '4/4' },
-    routine: [
-      { minutes: 3, instruction: 'Build root–3rd–7th shells for cm7 and F7.' },
-      { minutes: 4, instruction: 'Play one chord per bar at 58 BPM.' },
-      { minutes: 3, instruction: 'Move the same shells to Bbmaj7 and Ebmaj7.' },
-      { minutes: 2, instruction: 'Listen for the 3rd and 7th more than the root.' }
-    ],
-    reviewPrompt: 'Could a listener hear the harmony without a full six-note chord?'
-  },
-  {
-    id: 'guide-tones',
-    title: 'Guide Tone Resolution Through ii–V–I',
-    level: 'Intermediate',
-    category: 'Voice leading',
-    access: 'free',
-    durationMinutes: 15,
-    outcome: 'Hear and play the smallest movement between chords in a ii–V–I.',
-    dailyEligible: true,
-    pathIds: ['intermediate-core', 'changes-arpeggios', 'theory-101'],
+    id: 'connect-arpeggios-through-changes', title: 'Connect Arpeggios Through Changes', level: 'Intermediate', category: 'Soloing', access: 'premium', durationMinutes: 20,
+    outcome: 'Move to the nearest useful chord tone instead of restarting each arpeggio.', dailyEligible: false, pathIds: ['autumn-leaves-prep', 'changes-arpeggios'], keyMode: 'major', defaultKeyStrategy: 'random',
+    concept: { summary: 'The secret is connection. When the chord changes, choose the nearest 3rd, 5th, or 7th in the next chord.', intervals: ['1', '3', '5', '7'], examples: [{ label: 'iim7 to V7', function: 'ii to V', quality: 'm7', rootDegree: '2', intervals: ['1', 'b3', '5', 'b7'] }, { label: 'V7 to Imaj7', function: 'V to I', quality: '7', rootDegree: '5', intervals: ['1', '3', '5', 'b7'] }], ...autumnBridge },
     metronome: { bpm: 60, meter: '4/4' },
-    routine: [
-      { minutes: 3, instruction: 'Find the 3rd and 7th of cm7 and F7.' },
-      { minutes: 5, instruction: 'Resolve the closest notes at 60 BPM.' },
-      { minutes: 5, instruction: 'Apply the motion to the first four bars of Autumn Leaves.' },
-      { minutes: 2, instruction: 'Record one clean pass or name what still catches you.' }
-    ],
-    reviewPrompt: 'Can you hear the line that moves by a half step?'
+    routine: [{ minutes: 5, instruction: 'Stay inside one fretboard position.' }, { minutes: 5, instruction: 'Connect ii to V using the closest next chord tone.' }, { minutes: 5, instruction: 'Connect V to I the same way.' }, { minutes: 5, instruction: 'Apply the rule to Autumn Leaves bars 1–4.' }],
+    reviewPrompt: 'Did the line connect, or did each chord feel like a restart?'
   },
   {
-    id: 'minor-ii-v',
-    title: 'Minor ii–V: am7b5 to D7 to gm7',
-    level: 'Intermediate',
-    category: 'Jazz harmony',
-    access: 'free',
-    durationMinutes: 13,
-    outcome: 'Land a minor cadence with clean harmonic gravity.',
-    dailyEligible: true,
-    pathIds: ['intermediate-core', 'changes-arpeggios', 'theory-101'],
-    metronome: { bpm: 60, meter: '4/4' },
-    routine: [
-      { minutes: 3, instruction: 'Say the chord tones out loud before playing.' },
-      { minutes: 4, instruction: 'Play am7b5–D7–gm7 at 60 BPM.' },
-      { minutes: 4, instruction: 'Resolve F# to G and C to Bb on purpose.' },
-      { minutes: 2, instruction: 'Make a three-note ending on gm7.' }
-    ],
-    reviewPrompt: 'Can you name the two tension notes that need to resolve?'
-  },
-  {
-    id: 'arpeggio-positions',
-    title: 'Arpeggios in One Neck Position',
-    level: 'Intermediate',
-    category: 'Soloing',
-    access: 'premium',
-    durationMinutes: 20,
-    outcome: 'Follow changes without abandoning one fretboard area.',
-    dailyEligible: false,
-    pathIds: ['intermediate-core', 'changes-arpeggios'],
-    metronome: { bpm: 65, meter: '4/4' },
-    routine: [
-      { minutes: 4, instruction: 'Choose one six-fret window and find cm7.' },
-      { minutes: 6, instruction: 'Connect cm7 to F7 using the nearest chord tone.' },
-      { minutes: 6, instruction: 'Continue through Bbmaj7 and Ebmaj7.' },
-      { minutes: 4, instruction: 'Play the whole loop without leaving your position.' }
-    ],
-    reviewPrompt: 'Did every new chord feel nearby rather than like a restart?'
-  },
-  {
-    id: 'blues-targets',
-    title: '12-Bar Blues: Target the Chord Change',
-    level: 'Intermediate',
-    category: 'Blues',
-    access: 'premium',
-    durationMinutes: 20,
-    outcome: 'Make a blues solo outline the form instead of floating over it.',
-    dailyEligible: false,
-    pathIds: ['intermediate-core', 'blues-lab'],
-    metronome: { bpm: 78, meter: '4/4' },
-    routine: [
-      { minutes: 4, instruction: 'Find the 3rd of each I, IV, and V chord.' },
-      { minutes: 6, instruction: 'Land on each 3rd when the chord changes.' },
-      { minutes: 6, instruction: 'Add a pentatonic phrase between targets.' },
-      { minutes: 4, instruction: 'Play the form once with space after every answer.' }
-    ],
-    reviewPrompt: 'Could someone hear the form even with no backing track?'
-  },
-  {
-    id: 'drop-two',
-    title: 'Drop 2 Voicings That Connect',
-    level: 'Advanced',
-    category: 'Comping',
-    access: 'premium',
-    durationMinutes: 25,
-    outcome: 'Move chord color across the neck with voice leading.',
-    dailyEligible: false,
-    pathIds: ['advanced-language'],
-    metronome: { bpm: 58, meter: '4/4' },
-    routine: [
-      { minutes: 5, instruction: 'Build one drop 2 major-seventh shape on the top four strings.' },
-      { minutes: 8, instruction: 'Find the nearest inversion for the next chord.' },
-      { minutes: 8, instruction: 'Connect four chords with only the smallest possible motion.' },
-      { minutes: 4, instruction: 'Listen for the upper voice as a melody.' }
-    ],
-    reviewPrompt: 'Which voice moved the least?'
+    id: 'autumn-leaves-a-section-functions', title: 'Autumn Leaves A Section by Function', level: 'Intermediate', category: 'Standard study', access: 'free', durationMinutes: 20,
+    outcome: 'Read the A section as functions first, chords second, and notes last.', dailyEligible: true, pathIds: ['autumn-leaves-prep', 'changes-arpeggios'], keyMode: 'major', defaultKeyStrategy: 'random',
+    concept: { summary: 'The A section combines a major ii–V–I–IV chain with a minor ii–V–i cadence.', intervals: ['1', '2', '4', '5'], examples: [{ label: 'Major chain', function: 'ii V I IV', quality: 'm7', rootDegree: '2', intervals: ['1', 'b3', '5', 'b7'] }, { label: 'Minor cadence', function: 'iiø V i', quality: 'm7b5', rootDegree: '7', intervals: ['1', 'b3', 'b5', 'b7'] }], ...autumnBridge },
+    metronome: { bpm: 56, meter: '4/4' },
+    routine: [{ minutes: 4, instruction: 'Say the function chain before playing.' }, { minutes: 5, instruction: 'Render the chords in the selected key.' }, { minutes: 5, instruction: 'Play only guide tones through the chain.' }, { minutes: 6, instruction: 'Open After Hours and play through the tune-focused hub.' }],
+    reviewPrompt: 'Can you explain Autumn Leaves without naming the original key?'
   }
 ] as const;
 
 const pathData = [
-  {
-    id: 'beginner-foundations',
-    title: 'Beginner Foundations',
-    eyebrow: 'Foundation · Beginner',
-    access: 'free',
-    description: 'Build pulse, clean changes, fretboard orientation, and first musical phrases.',
-    lessonIds: ['rhythm-first', 'open-chord-flow', 'root-map', 'pentatonic-home'],
-    estimatedMinutes: 60
-  },
-  {
-    id: 'intermediate-core',
-    title: 'Intermediate Guitar',
-    eyebrow: 'Foundation · Intermediate',
-    access: 'premium',
-    description: 'Connect harmony, comping, fretboard awareness, and real improvisation.',
-    lessonIds: ['shell-voicings', 'guide-tones', 'minor-ii-v', 'arpeggio-positions', 'blues-targets'],
-    estimatedMinutes: 80
-  },
-  {
-    id: 'advanced-language',
-    title: 'Advanced Language',
-    eyebrow: 'Foundation · Advanced',
-    access: 'premium',
-    description: 'Develop voice leading, color, rhythmic control, and arranging choices.',
-    lessonIds: ['drop-two'],
-    estimatedMinutes: 25
-  },
-  {
-    id: 'changes-arpeggios',
-    title: 'Play Through the Changes with Arpeggios',
-    eyebrow: 'Specialization',
-    access: 'premium',
-    description: 'Build the skill that turns a scale into a real solo through harmony.',
-    lessonIds: ['shell-voicings', 'guide-tones', 'arpeggio-positions', 'minor-ii-v'],
-    estimatedMinutes: 60
-  },
-  {
-    id: 'blues-lab',
-    title: 'Solo Over a 12-Bar Blues',
-    eyebrow: 'Specialization',
-    access: 'premium',
-    description: 'Move from a familiar pentatonic shape to intentional chord targeting.',
-    lessonIds: ['rhythm-first', 'pentatonic-home', 'blues-targets'],
-    estimatedMinutes: 50
-  },
-  {
-    id: 'theory-101',
-    title: 'Theory 101 for Guitar',
-    eyebrow: 'Specialization',
-    access: 'premium',
-    description: 'Learn intervals, scales, chords, keys, and harmonic function on the fretboard.',
-    lessonIds: ['root-map', 'shell-voicings', 'guide-tones', 'minor-ii-v'],
-    estimatedMinutes: 55
-  }
+  { id: 'autumn-leaves-prep', title: 'Autumn Leaves Prep', eyebrow: 'Core path', access: 'free', description: 'A practical path from roots and intervals to improvising over the Autumn Leaves A section.', lessonIds: ['find-the-root', 'major-scale-intervals', 'triads-from-intervals', 'seventh-chord-formulas', 'major-key-seventh-chords', 'guide-tones-major-ii-v-i', 'minor-ii-v-i-cadence', 'arpeggios-as-chord-tones', 'connect-arpeggios-through-changes', 'autumn-leaves-a-section-functions'], estimatedMinutes: 166 },
+  { id: 'beginner-foundations', title: 'Beginner Foundations', eyebrow: 'Foundation · Beginner', access: 'free', description: 'Build pulse, roots, scale awareness, triads, and early phrasing.', lessonIds: ['find-the-root', 'major-scale-intervals', 'triads-from-intervals'], estimatedMinutes: 42 },
+  { id: 'intermediate-core', title: 'Intermediate Guitar', eyebrow: 'Foundation · Intermediate', access: 'premium', description: 'Connect harmony, chord tones, guide tones, and real improvisation.', lessonIds: ['seventh-chord-formulas', 'major-key-seventh-chords', 'guide-tones-major-ii-v-i', 'minor-ii-v-i-cadence'], estimatedMinutes: 66 },
+  { id: 'changes-arpeggios', title: 'Play Through the Changes with Arpeggios', eyebrow: 'Specialization', access: 'premium', description: 'Build the skill that turns a scale into a real solo through harmony.', lessonIds: ['guide-tones-major-ii-v-i', 'minor-ii-v-i-cadence', 'arpeggios-as-chord-tones', 'connect-arpeggios-through-changes', 'autumn-leaves-a-section-functions'], estimatedMinutes: 88 },
+  { id: 'blues-lab', title: 'Solo Over a 12-Bar Blues', eyebrow: 'Specialization', access: 'premium', description: 'Move from a familiar pentatonic shape to intentional chord targeting.', lessonIds: ['find-the-root', 'triads-from-intervals'], estimatedMinutes: 32 },
+  { id: 'theory-101', title: 'Theory 101 for Guitar', eyebrow: 'Specialization', access: 'premium', description: 'Learn intervals, scales, chords, keys, and harmonic function on the fretboard.', lessonIds: ['find-the-root', 'major-scale-intervals', 'triads-from-intervals', 'seventh-chord-formulas', 'major-key-seventh-chords'], estimatedMinutes: 78 }
 ] as const;
 
 const standardData = [
-  {
-    id: 'autumn-leaves',
-    title: 'Autumn Leaves',
-    subtitle: 'Harmony map, shell voicings, and an arpeggio play-along.',
-    status: 'available',
-    access: 'free',
-    href: '../after-hours/autumn-leaves/',
-    focus: 'ii–V–I voice leading and minor cadences'
-  },
-  {
-    id: 'blue-bossa',
-    title: 'Blue Bossa',
-    subtitle: 'Minor-key phrasing, cadence awareness, and a compact form.',
-    status: 'coming-soon',
-    access: 'premium',
-    href: '#',
-    focus: 'Minor ii–V movement'
-  },
-  {
-    id: 'blues-lab-standard',
-    title: '12-Bar Blues Lab',
-    subtitle: 'Chord targets, turnarounds, and language inside a familiar form.',
-    status: 'coming-soon',
-    access: 'premium',
-    href: '#',
-    focus: 'Dominant-chord targeting'
-  }
+  { id: 'autumn-leaves', title: 'Autumn Leaves', subtitle: 'Harmony map, shell voicings, and an arpeggio play-along.', status: 'available', access: 'free', href: '../after-hours/autumn-leaves/', focus: 'ii–V–I voice leading and minor cadences' },
+  { id: 'blue-bossa', title: 'Blue Bossa', subtitle: 'Minor-key phrasing, cadence awareness, and a compact form.', status: 'coming-soon', access: 'premium', href: '#', focus: 'Minor ii–V movement' },
+  { id: 'blues-lab-standard', title: '12-Bar Blues Lab', subtitle: 'Chord targets, turnarounds, and language inside a familiar form.', status: 'coming-soon', access: 'premium', href: '#', focus: 'Dominant-chord targeting' }
 ] as const;
 
 export const lessons: Lesson[] = lessonData.map(item => lessonSchema.parse(item));
 export const paths: LearningPath[] = pathData.map(item => pathSchema.parse(item));
 export const standards: Standard[] = standardData.map(item => standardSchema.parse(item));
 
-export function lessonById(id: string) {
-  return lessons.find(lesson => lesson.id === id);
-}
-
-export function pathById(id: string) {
-  return paths.find(path => path.id === id);
-}
+export function lessonById(id: string) { return lessons.find(lesson => lesson.id === id); }
+export function pathById(id: string) { return paths.find(path => path.id === id); }
