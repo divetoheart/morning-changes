@@ -24,7 +24,6 @@
     ['Stable curriculum infrastructure; lesson body comes next.', 'A focused practice plan is on the way.'],
     ['This card can already hold the learning outcome, duration, prerequisite state, practice routine, metronome target, assets, source record, and review state without changing the app.', 'Save your place now, then return when the complete guided session is ready.'],
     ['Premium is a product shell today—no billing, no fake checkout. The purpose of this screen is to keep the free loop generous while identifying what deeper value will be worth paying for.', 'Morning Changes stays useful every day. Premium opens the full depth of the library when you are ready for more.'],
-    ['Premium · planned', 'Premium'],
     ['Browser microphone tuning is the next tool to ship. It will process audio locally in the browser and ask before using the microphone.', 'A focused tuner for quick check-ins before you play.'],
     ['The session stays small on purpose.', 'Keep it focused. Leave with one thing that feels better.'],
     ['The free loop has to be good enough to build an actual habit: daily practice, core tools, starter lessons, local progress, and a rotating standard.', 'Come back for a short practice session, a useful idea, and a clear next step.']
@@ -64,8 +63,17 @@
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
     nodes.forEach(node => {
-      const next = copy.get(node.nodeValue.trim());
-      if (next) node.nodeValue = node.nodeValue.replace(node.nodeValue.trim(), next);
+      const trimmed = node.nodeValue.trim();
+      const mapped = copy.get(trimmed);
+      if (mapped) {
+        node.nodeValue = node.nodeValue.replace(trimmed, mapped);
+        return;
+      }
+      const polished = node.nodeValue
+        .replace(/\b(\d+) lesson shells\b/g, '$1 lessons')
+        .replace(/Curriculum shell/g, 'Coming soon')
+        .replace(/Premium · planned/g, 'Premium');
+      if (polished !== node.nodeValue) node.nodeValue = polished;
     });
   }
   function polish(){
