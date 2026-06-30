@@ -4,6 +4,7 @@ import { findDailyExtra } from './lib/daily';
 import { lessonById } from './content/catalog';
 import { KEYS, modeNotes, randomKey, renderIntervals, type KeyName } from './lib/theory';
 import { useMetronome } from './lib/useMetronome';
+import { MusicText } from './MusicText';
 
 const NOTE_INDEX: Record<string, number> = { C: 0, Db: 1, D: 2, Eb: 3, E: 4, F: 5, Gb: 6, G: 7, Ab: 8, A: 9, Bb: 10, B: 11 };
 const NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -37,7 +38,7 @@ export function PracticeExtraPage({ metronome, onOpenLesson }: Props) {
       <div>
         <span className="eyebrow">Daily {extra.kind} · {extra.durationMinutes} min</span>
         <h1>{extra.title}</h1>
-        <p>{extra.detail}</p>
+        <p><MusicText>{extra.detail}</MusicText></p>
       </div>
       <div className="lesson-actions">
         <label className="key-selector"><span>Key</span><select value={key} onChange={event => setKey(event.target.value as KeyName)}>{KEYS.map(option => <option key={option} value={option}>{option}</option>)}</select></label>
@@ -47,7 +48,7 @@ export function PracticeExtraPage({ metronome, onOpenLesson }: Props) {
 
     <section className="interval-panel extra-pattern-panel">
       <span className="eyebrow">Pattern</span>
-      <div className="symbol-pattern">{extra.pattern}</div>
+      <div className="symbol-pattern"><MusicText>{extra.pattern}</MusicText></div>
       <div className="interval-grid">{notes.map(item => <span key={`${item.interval}-${item.note}`}><strong>{item.interval}</strong><small>{item.note}</small></span>)}</div>
       <div className="mode-notes">{modeNotes(key, extra.keyMode).map(item => <span key={`${item.interval}-${item.note}`}>{item.interval}: {item.note}</span>)}</div>
     </section>
@@ -56,7 +57,7 @@ export function PracticeExtraPage({ metronome, onOpenLesson }: Props) {
 
     <section className="practice-plan">
       <div><span className="eyebrow">Practice plan</span><h2>Make one thing feel easy.</h2></div>
-      <ol className="routine-list">{extra.steps.map(step => <li key={step.instruction}><span>{step.minutes} min</span>{step.instruction}</li>)}</ol>
+      <ol className="routine-list">{extra.steps.map(step => <li key={step.instruction}><span>{step.minutes} min</span><MusicText>{step.instruction}</MusicText></li>)}</ol>
       <div className="sheet-actions">
         {relatedLesson && <button className="secondary-button" type="button" onClick={() => onOpenLesson(relatedLesson.id)}>Open lesson: {relatedLesson.title}</button>}
         {extra.afterHoursHref && <a className="after-hours-bridge" href={extra.afterHoursHref}>{extra.afterHoursCta ?? 'Apply it in After Hours'} →</a>}
