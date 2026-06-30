@@ -83,25 +83,23 @@ jobs:
           <script>
           (() => {
             const normalize = value => (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
-            const removeDayAndAge = () => {
-              const targets = [...document.querySelectorAll('a, button, [role="button"], li')]
-                .filter(node => normalize(node.textContent).includes('day and age'));
-              targets.forEach(node => {
-                const card = node.closest('a, button, li, article') || node;
-                card.remove();
-              });
+            const removeExtraSongNavigation = () => {
+              [...document.querySelectorAll('a, button, [role="button"], li, article')]
+                .filter(node => normalize(node.textContent).includes('day and age'))
+                .forEach(node => {
+                  const card = node.closest('a, button, li, article') || node;
+                  card.remove();
+                });
 
-              const groups = [...document.querySelectorAll('nav, ul, ol, section, div')]
+              [...document.querySelectorAll('nav, ul, ol, [role="tablist"]')]
                 .filter(node => {
                   const text = normalize(node.textContent);
-                  const directChildren = node.children.length;
-                  return directChildren > 1 && directChildren <= 12 && text.includes('autumn leaves') && text.includes('day and age');
+                  return text.includes('autumn leaves') && text.includes('day and age');
                 })
-                .sort((a, b) => a.children.length - b.children.length);
-              if (groups[0]) groups[0].remove();
+                .forEach(node => node.remove());
             };
-            removeDayAndAge();
-            new MutationObserver(removeDayAndAge).observe(document.documentElement, { childList:true, subtree:true });
+            removeExtraSongNavigation();
+            new MutationObserver(removeExtraSongNavigation).observe(document.documentElement, { childList:true, subtree:true });
           })();
           </script>
           '''
