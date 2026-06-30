@@ -63,11 +63,28 @@ jobs:
           (legacy / 'index.html').write_text(redirect)
           PY
 
-      - name: Preserve and clean After Hours standards
+      - name: Preserve focused After Hours standard pages
         shell: bash
         run: |
           set -euo pipefail
           unzip -o "Autumn Leaves Jazz Guide.zip" -d _guide
+
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          bundle = Path('_guide/assets/index-D0-FcZsw.js')
+          source = bundle.read_text()
+          cleaned, count = re.subn(
+              r'\$x=\{id:"aint-misbehavin".*?co=\[Fx,\$x,Vx\]',
+              'co=[Fx]',
+              source,
+              flags=re.S,
+          )
+          if count != 1:
+              raise RuntimeError(f'Expected one extra-standard bundle block, found {count}')
+          bundle.write_text(cleaned)
+          PY
 
           for target in dist/after-hours/autumn-leaves dist/standards/autumn-leaves; do
             mkdir -p "$target/arpeggios"
@@ -78,32 +95,6 @@ jobs:
 
           python3 - <<'PY'
           from pathlib import Path
-
-          cleanup = '''
-          <script>
-          (() => {
-            const normalize = value => (value || '').replace(/\s+/g, ' ').trim().toLowerCase();
-            const removeExtraSongNavigation = () => {
-              [...document.querySelectorAll('a, button, [role="button"], li, article')]
-                .filter(node => normalize(node.textContent).includes('day and age'))
-                .forEach(node => {
-                  const card = node.closest('a, button, li, article') || node;
-                  card.remove();
-                });
-
-              [...document.querySelectorAll('nav, ul, ol, [role="tablist"]')]
-                .filter(node => {
-                  const text = normalize(node.textContent);
-                  return text.includes('autumn leaves') && text.includes('day and age');
-                })
-                .forEach(node => node.remove());
-            };
-            removeExtraSongNavigation();
-            new MutationObserver(removeExtraSongNavigation).observe(document.documentElement, { childList:true, subtree:true });
-          })();
-          </script>
-          '''
-
           for path in [
               Path('dist/after-hours/autumn-leaves/index.html'),
               Path('dist/standards/autumn-leaves/index.html'),
@@ -117,7 +108,7 @@ jobs:
               launch = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./arpeggios/" style="display:block;border:1px solid #6e512b;background:#17110b;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Play Along</span><strong style="display:block;font-family:Georgia,serif;font-size:29px;margin-top:8px;">Autumn Leaves Arpeggios →</strong><span style="display:block;margin-top:8px;color:#c4b7a8;line-height:1.5;">Verified chord tones, movable fretboard windows, and the A section in chronological bar order.</span></a></section>'
               nav = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="../../" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:22px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Morning Changes</span><strong style="display:block;font-family:Georgia,serif;font-size:24px;margin-top:8px;">← Daily launchpad</strong></a></section>'
               marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · Standards Catalog · Build 2026.06.30-O</footer>'
-              html = html.replace('</body>', cleanup + launch + nav + marker + '\n</body>')
+              html = html.replace('</body>', launch + nav + marker + '\n</body>')
               path.write_text(html)
           PY
 
