@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Morning Changes lesson",
+  "type": "object",
+  "required": ["id", "title", "level", "category", "duration_minutes", "access", "outcome", "prerequisites", "routine", "source_records", "qa"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "title": {"type": "string", "minLength": 4},
+    "level": {"enum": ["Beginner", "Intermediate", "Advanced"]},
+    "category": {"type": "string"},
+    "duration_minutes": {"type": "integer", "minimum": 3, "maximum": 60},
+    "access": {"enum": ["free", "premium"]},
+    "outcome": {"type": "string", "minLength": 12},
+    "prerequisites": {"type": "array", "items": {"type": "string"}},
+    "routine": {"type": "array", "minItems": 2, "items": {"type": "object", "required": ["minutes", "instruction"], "properties": {"minutes": {"type": "integer", "minimum": 1}, "instruction": {"type": "string"}}}},
+    "metronome": {"type": "object", "properties": {"bpm_start": {"type": "integer", "minimum": 30}, "bpm_goal": {"type": "integer", "minimum": 30}, "meter": {"type": "string"}}},
+    "source_records": {"type": "array", "items": {"type": "object", "required": ["source_id", "use"], "properties": {"source_id": {"type": "string"}, "use": {"enum": ["publishable", "reference_only", "owned", "licensed"]}}}},
+    "qa": {"type": "object", "required": ["theory_checked", "visuals_checked"], "properties": {"theory_checked": {"type": "boolean"}, "visuals_checked": {"type": "boolean"}, "notes": {"type": "string"}}}
+  },
+  "additionalProperties": true
+}
