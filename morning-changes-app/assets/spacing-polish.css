@@ -1,0 +1,66 @@
+/* Extra room for touch targets, reading, and Safari safe areas. */
+@media (max-width:900px){
+  .app{padding-left:20px!important;padding-right:20px!important;padding-bottom:30px!important}
+  .quiet-page{padding-top:30px!important;padding-bottom:20px}
+  .screen-header{padding:10px 0 27px!important}
+  .screen-header h1{margin-top:10px!important;margin-bottom:13px!important}
+  .screen-header p{line-height:1.58!important}
+
+  .focus-session{padding:22px!important;gap:21px!important;border-radius:24px!important}
+  .focus-session h2{margin-top:10px!important;margin-bottom:12px!important}
+  .focus-session p{line-height:1.58!important}
+  .focus-meta{padding-top:2px}
+  .focus-action{min-height:54px!important}
+
+  .quiet-list{margin-top:30px!important}
+  .list-heading{padding:22px 0 10px!important}
+  .compact-row{gap:13px!important;padding:17px 0!important}
+  .row-icon{width:32px!important;height:32px!important;border-radius:12px!important}
+  .row-main{gap:5px!important}
+  .row-main strong{line-height:1.12!important}
+  .row-main small{line-height:1.35!important}
+  .row-arrow{padding:10px 0 10px 10px!important}
+
+  .continue-strip{margin-bottom:29px!important}
+  .continue-strip .compact-row{padding:17px!important}
+  .rail-section{margin:38px 0!important}
+  .rail-heading{margin-bottom:14px!important}
+  .rail-heading p{line-height:1.45!important}
+  .learn-rail{gap:14px!important;padding-bottom:16px!important}
+  .rail-card{padding:20px!important;border-radius:22px!important;min-height:232px!important}
+  .rail-card h3{margin:11px 0!important;line-height:1.06!important}
+  .rail-card p{line-height:1.52!important}
+  .rail-card-footer{padding-top:8px}
+
+  .path-focus{padding:22px!important;border-radius:24px!important;margin-bottom:27px!important}
+  .path-focus p{line-height:1.58!important}
+  .path-focus .button{margin-top:21px!important;min-height:50px}
+  .standard-shelf{margin-top:4px}
+  .standard-shelf-item{padding:22px 0!important;align-items:flex-end!important}
+  .standard-shelf-item p{line-height:1.5!important;margin-bottom:10px!important}
+
+  .metro-panel{padding:28px 0 32px!important}
+  .metro-panel .tempo-slider{margin:26px 0 18px!important}
+  .metro-panel .metro-controls{gap:11px!important}
+  .metro-panel .button{min-height:46px}
+  .progress-summary{margin:8px 0 27px!important}
+  .progress-summary div{padding:20px 10px!important}
+  .history-section{margin-top:32px!important}
+  .history>div{padding:16px 0!important}
+
+  .modal{padding:25px 20px calc(28px + env(safe-area-inset-bottom))!important}
+  .modal-head{align-items:flex-start!important;margin-bottom:8px}
+  .modal h2{line-height:1.05!important;margin-top:10px!important}
+  .modal p{line-height:1.62!important}
+  .modal-routine{padding-left:23px!important;line-height:1.8!important;margin:20px 0!important}
+  .modal-actions{gap:11px!important;margin-top:24px!important}
+  .modal-actions .button{min-height:48px}
+  .course-list{margin-top:21px!important}
+  .course-list-row{padding:15px 0!important}
+}
+
+@media (max-width:390px){
+  .app{padding-left:17px!important;padding-right:17px!important}
+  .focus-session{padding:19px!important}
+  .rail-card{padding:18px!important}
+}
