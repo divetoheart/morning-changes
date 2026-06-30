@@ -1,5 +1,5 @@
 import { lessons, lessonById } from '../content/catalog';
-import type { Lesson } from '../domain/content';
+import type { KeyMode, Lesson, MusicInterval } from '../domain/content';
 
 export type DailyExtra = {
   id: string;
@@ -8,6 +8,18 @@ export type DailyExtra = {
   durationMinutes: number;
   detail: string;
   tempo: number;
+  keyMode: KeyMode;
+  intervals: MusicInterval[];
+  pattern: string;
+  steps: Array<{ minutes: number; instruction: string }>;
+  relatedLessonId?: string;
+  afterHoursHref?: string;
+  afterHoursCta?: string;
+};
+
+const autumnLeavesBridge = {
+  afterHoursHref: 'after-hours/autumn-leaves/',
+  afterHoursCta: 'Apply it in Autumn Leaves'
 };
 
 const dailyLicks: DailyExtra[] = [
@@ -16,24 +28,56 @@ const dailyLicks: DailyExtra[] = [
     kind: 'Lick',
     title: 'Guide Tone Slide',
     durationMinutes: 5,
-    detail: 'Slide Eb down to D as F7 becomes Bbmaj7.',
-    tempo: 60
+    detail: 'A two-note voice-leading lick that resolves the 7th of V7 down into the 3rd of Imaj7.',
+    tempo: 60,
+    keyMode: 'major',
+    intervals: ['b7', '3'],
+    pattern: 'V7: b7 → Imaj7: 3',
+    steps: [
+      { minutes: 1, instruction: 'Find the b7 of V7 and the 3 of Imaj7 in one fretboard area.' },
+      { minutes: 2, instruction: 'Slide or move down by the smallest distance into the Imaj7 3rd.' },
+      { minutes: 1, instruction: 'Add a rest after the landing note.' },
+      { minutes: 1, instruction: 'Repeat in a new key without changing the interval idea.' }
+    ],
+    relatedLessonId: 'guide-tones-major-ii-v-i',
+    ...autumnLeavesBridge
   },
   {
     id: 'minor-cadence-landing',
     kind: 'Lick',
     title: 'Minor Cadence Landing',
-    durationMinutes: 4,
-    detail: 'Let F# rise into G, then leave room around the resolution.',
-    tempo: 62
+    durationMinutes: 5,
+    detail: 'A compact iiø–V–i ending: let the dominant 3rd resolve up to the minor root, then leave space.',
+    tempo: 62,
+    keyMode: 'natural-minor',
+    intervals: ['3', '1', 'b3'],
+    pattern: 'V7: 3 → i: 1 → b3',
+    steps: [
+      { minutes: 1, instruction: 'Find the V7 3rd and the i root in the selected minor key.' },
+      { minutes: 2, instruction: 'Resolve the V7 3rd up by a half step into the tonic.' },
+      { minutes: 1, instruction: 'Add the minor 3rd after the root.' },
+      { minutes: 1, instruction: 'Play it once, then leave two beats of silence.' }
+    ],
+    relatedLessonId: 'minor-ii-v-i-cadence',
+    ...autumnLeavesBridge
   },
   {
     id: 'pentatonic-breath',
     kind: 'Lick',
     title: 'Pentatonic Breath',
     durationMinutes: 5,
-    detail: 'Make one phrase, leave space, then answer with a variation.',
-    tempo: 72
+    detail: 'A call-and-response phrase that makes the minor pentatonic feel like a sentence instead of a run.',
+    tempo: 72,
+    keyMode: 'natural-minor',
+    intervals: ['1', 'b3', '4', '5', 'b7'],
+    pattern: 'Call: 1 b3 4 · rest · Answer: 5 b3 1',
+    steps: [
+      { minutes: 1, instruction: 'Play the three-note call: 1, b3, 4.' },
+      { minutes: 2, instruction: 'Leave one full bar of space before the answer.' },
+      { minutes: 1, instruction: 'Answer with 5, b3, 1.' },
+      { minutes: 1, instruction: 'Change one note in the answer while keeping the same rhythm.' }
+    ],
+    relatedLessonId: 'triads-from-intervals'
   }
 ];
 
@@ -43,24 +87,54 @@ const dailyExercises: DailyExtra[] = [
     kind: 'Exercise',
     title: 'Tempo Ladder: Clean Eighth Notes',
     durationMinutes: 6,
-    detail: 'Three clean repetitions before moving from 60 to 84 BPM.',
-    tempo: 60
+    detail: 'Build clean coordination in small steps: three accurate passes before you raise the tempo.',
+    tempo: 60,
+    keyMode: 'major',
+    intervals: ['1', '2', '3', '4', '5'],
+    pattern: '1 2 3 4 5 · 5 4 3 2 1',
+    steps: [
+      { minutes: 2, instruction: 'Play the pattern at 60 BPM with strict alternate picking.' },
+      { minutes: 2, instruction: 'Move to 68 BPM only after three clean passes.' },
+      { minutes: 1, instruction: 'Move to 76 BPM and keep the motion small.' },
+      { minutes: 1, instruction: 'Return to 60 BPM and make it feel easy.' }
+    ],
+    relatedLessonId: 'major-scale-intervals'
   },
   {
     id: 'chromatic-crossing',
     kind: 'Exercise',
     title: 'Chromatic String Crossing',
     durationMinutes: 6,
-    detail: 'Keep every picked note even while crossing strings.',
-    tempo: 56
+    detail: 'A picking-control drill that keeps the hand relaxed while moving between strings.',
+    tempo: 56,
+    keyMode: 'major',
+    intervals: ['1', 'b2', '2', 'b3'],
+    pattern: '1 b2 2 b3 across adjacent strings',
+    steps: [
+      { minutes: 2, instruction: 'Play four consecutive frets on one string with alternate picking.' },
+      { minutes: 2, instruction: 'Move the same shape to the next string without speeding up.' },
+      { minutes: 1, instruction: 'Cross two strings, then return.' },
+      { minutes: 1, instruction: 'Relax the picking hand before every repeat.' }
+    ],
+    relatedLessonId: 'find-the-root'
   },
   {
     id: 'triad-change',
     kind: 'Exercise',
     title: 'Triad Change Drill',
     durationMinutes: 7,
-    detail: 'Move only when the last shape feels easy and quiet.',
-    tempo: 60
+    detail: 'Train the ear and hand to hear a major triad become minor by changing only the 3rd.',
+    tempo: 60,
+    keyMode: 'major',
+    intervals: ['1', 'b3', '3', '5'],
+    pattern: '1 3 5 → 1 b3 5',
+    steps: [
+      { minutes: 2, instruction: 'Play 1 3 5 as a major triad.' },
+      { minutes: 2, instruction: 'Lower only 3 to b3.' },
+      { minutes: 2, instruction: 'Alternate major and minor every bar.' },
+      { minutes: 1, instruction: 'Change keys and repeat the same interval move.' }
+    ],
+    relatedLessonId: 'triads-from-intervals'
   }
 ];
 
@@ -82,4 +156,9 @@ export function getDailyLick(date = new Date()) {
 
 export function getDailyExercise(date = new Date()) {
   return dailyExercises[dailyIndex(dailyExercises.length, date)];
+}
+
+export function findDailyExtra(kind: string | undefined, id: string | undefined) {
+  const source = kind?.toLowerCase() === 'lick' ? dailyLicks : kind?.toLowerCase() === 'exercise' ? dailyExercises : [];
+  return source.find(extra => extra.id === id);
 }
