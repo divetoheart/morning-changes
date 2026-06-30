@@ -1,4 +1,4 @@
-name: Deploy After Hours
+name: Deploy Morning Changes
 
 on:
   push:
@@ -22,82 +22,76 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build static After Hours site
+      - name: Build Morning Changes application
         shell: bash
         run: |
           set -euo pipefail
           rm -rf dist _guide
-          mkdir -p dist _guide dist/standards/autumn-leaves/arpeggios
-          unzip -o "Autumn Leaves Jazz Guide.zip" -d _guide
-          cp -R _guide/. dist/standards/autumn-leaves/
-          cp standards/autumn-leaves/arpeggio-playalong.html dist/standards/autumn-leaves/arpeggios/index.html
-          sed -i 's|href="../../"|href="../../../"|' dist/standards/autumn-leaves/arpeggios/index.html
+          mkdir -p dist _guide
+          cp -R morning-changes-app/. dist/
+          rm -f dist/README.md
 
-      - name: Generate Morning Changes app
-        run: |
           python3 - <<'PY'
-          import json
           from pathlib import Path
 
-          lessons = []
-          for source in sorted(Path('morning-changes/lessons/data').glob('*.json')):
-              data = json.loads(source.read_text())
-              data['day'] = int(data['id'].split('-')[0])
-              lessons.append(data)
-          payload = json.dumps(lessons).replace('</', '<\\/')
+          route_template = '''<!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <meta name="theme-color" content="#0b0a08" />
+            <title>Morning Changes · Guitar Practice</title>
+            <link rel="stylesheet" href="../assets/app.css" />
+          </head>
+          <body data-route="__ROUTE__">
+            <div id="app"></div>
+            <script src="../assets/content.js"></script>
+            <script src="../assets/app.js"></script>
+          </body>
+          </html>'''
 
-          html = '''<!doctype html>
-          <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Morning Changes · After Hours</title>
-          <style>
-          :root{--bg:#080706;--panel:#15110e;--ink:#f4eee5;--muted:#b8aa9b;--line:#3d3026;--gold:#d7a05b;--root:#df715e;--chord:#d7a05b;--scale:#527da2}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 90% 0%,rgba(120,72,24,.28),transparent 28%),var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif}main{max-width:430px;margin:0 auto;padding:0 18px 72px}a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer}.top{position:sticky;top:0;z-index:5;margin:0 -18px 28px;padding:20px 18px;border-bottom:1px solid var(--line);background:rgba(8,7,6,.93);backdrop-filter:blur(16px);display:flex;gap:13px;align-items:center}.moon{font-size:29px;color:var(--gold)}.brand strong{display:block;font-family:Georgia,serif;font-size:24px}.brand span,.eyebrow,.label{display:block;font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--gold)}h1{font-family:Georgia,serif;font-size:54px;line-height:.92;letter-spacing:-.045em;margin:18px 0 9px}.subtitle{font-family:Georgia,serif;font-size:23px;font-style:italic;color:var(--muted);margin:0 0 22px}.copy{font-size:18px;line-height:1.6;color:#dfd5ca}.card{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),#100d0b);border-radius:28px;padding:23px;margin:20px 0}.standard strong{display:block;font-family:Georgia,serif;font-size:27px;margin-top:8px}.changes{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:18px;overflow:hidden}.change{background:#120f0c;color:var(--ink);border:1px solid var(--line);padding:15px;text-align:left;min-height:88px}.change.active{background:var(--gold);color:#1a1109}.change strong{display:block;font-family:Georgia,serif;font-size:25px}.change span{display:block;margin-top:7px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.75}.diagram{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}.diagram .cell{height:58px;border:1px solid var(--line);border-radius:16px;display:grid;place-items:center}.diagram .on{background:var(--gold);color:#1a1109;border-color:var(--gold)}.diagram small{display:block;font-size:9px;font-weight:800}.archive{display:grid;gap:10px}.archive button{border:1px solid var(--line);background:#120f0c;color:var(--ink);border-radius:18px;padding:15px;text-align:left}.archive button.active{border-color:var(--gold)}.archive span{display:block;color:var(--gold);font-size:10px;letter-spacing:.3em;text-transform:uppercase}.archive strong{display:block;font-family:Georgia,serif;font-size:21px;margin:5px 0}.archive em{color:var(--muted)}ol{padding-left:22px;line-height:1.75;color:#dfd5ca}footer{text-align:center;padding:38px 0 0;color:#776d63;font-size:10px;letter-spacing:.35em;text-transform:uppercase}
-          </style></head><body><main>
-          <header class="top"><a class="moon" href="../">◒</a><div class="brand"><strong>After Hours</strong><span>Morning Changes</span></div></header>
-          <section><span class="eyebrow" id="meta"></span><h1 id="title"></h1><p class="subtitle" id="subtitle"></p><p class="copy" id="promise"></p></section>
-          <a class="card standard" href="../standards/autumn-leaves/"><span class="label">Full Standard</span><strong>Open Autumn Leaves Guide →</strong></a>
-          <section class="card"><span class="label">Why this matters</span><p class="copy" id="why"></p></section>
-          <section><span class="label">Harmonic Map</span><div class="changes" id="changes"></div></section>
-          <section class="card"><span class="label">Chord Grip</span><h2 id="symbol" style="font-family:Georgia,serif;font-size:34px;margin:10px 0 4px"></h2><code id="grip" style="color:var(--gold)"></code><div class="diagram" id="diagram"></div><p class="copy" id="note"></p></section>
-          <section class="card"><span class="label">Practice Path</span><ol id="practice"></ol></section>
-          <section class="card"><span class="label">Listen</span><h2 id="artist" style="font-family:Georgia,serif;font-size:31px;margin:9px 0"></h2><p class="copy" id="listen"></p></section>
-          <section class="card"><span class="label">Archive</span><div class="archive" id="archive" style="margin-top:14px"></div></section><footer>After Hours · Morning Changes · Build 2026.06.29-L</footer>
-          </main><script>
-          const lessons = __LESSONS__;
-          let lessonIndex=0,chordIndex=0;
-          const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-          function chord(i){chordIndex=i;const c=lessons[lessonIndex].voicings?.[i]||{};document.getElementById('symbol').textContent=c.symbol||'';document.getElementById('grip').textContent=c.grip||'';document.getElementById('note').textContent=c.note||'';document.getElementById('diagram').innerHTML=(c.strings||[]).map((f,n)=>`<div class="cell ${f==='x'?'':'on'}"><b>${safe(f)}</b><small>${c.tones?.[n]==='mute'?'':safe(c.tones?.[n]||'')}</small></div>`).join('');renderChanges()}
-          function renderChanges(){const l=lessons[lessonIndex];document.getElementById('changes').innerHTML=(l.voicings||[]).map((v,i)=>`<button class="change ${i===chordIndex?'active':''}" onclick="chord(${i})"><strong>${safe(v.symbol)}</strong><span>${safe(v.role)}</span></button>`).join('')}
-          function lesson(i){lessonIndex=i;chordIndex=0;const l=lessons[i];document.getElementById('meta').textContent=`Today's Study · ${l.duration||''}`;document.getElementById('title').textContent=l.title||'';document.getElementById('subtitle').textContent=`${l.standard||''}: ${l.subtitle||''}`;document.getElementById('promise').textContent=l.promise||'';document.getElementById('why').textContent=l.why||'';document.getElementById('practice').innerHTML=(l.practice||[]).map(x=>`<li>${safe(x)}</li>`).join('');document.getElementById('artist').textContent=l.listening?.artist||'';document.getElementById('listen').textContent=l.listening?.note||'';document.getElementById('archive').innerHTML=lessons.map((x,n)=>`<button class="${n===i?'active':''}" onclick="lesson(${n})"><span>Day ${x.day}</span><strong>${safe(x.title)}</strong><em>${safe(x.standard)}</em></button>`).join('');chord(0)}
-          lesson(0);
-          </script></body></html>'''.replace('__LESSONS__', payload)
-          target = Path('dist/morning-changes')
-          target.mkdir(parents=True, exist_ok=True)
-          (target / 'index.html').write_text(html)
+          for route in ['learn', 'paths', 'after-hours', 'tools', 'progress', 'daily']:
+              target = Path('dist') / route
+              target.mkdir(parents=True, exist_ok=True)
+              (target / 'index.html').write_text(route_template.replace('__ROUTE__', route))
+
+          redirect = '''<!doctype html><html><head><meta http-equiv="refresh" content="0; url=../"><script>location.replace('../')</script></head><body></body></html>'''
+          legacy = Path('dist/morning-changes')
+          legacy.mkdir(parents=True, exist_ok=True)
+          (legacy / 'index.html').write_text(redirect)
           PY
 
-      - name: Generate After Hours homepage
+      - name: Preserve and catalog After Hours standards
+        shell: bash
         run: |
-          cat > dist/index.html <<'HTML'
-          <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>After Hours</title><style>
-          :root{--bg:#080706;--panel:#15110e;--ink:#f4eee5;--muted:#b8aa9b;--line:#3d3026;--gold:#d7a05b}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 90% 0%,rgba(120,72,24,.30),transparent 28%),var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif}main{max-width:760px;margin:0 auto;padding:34px 18px 80px}.brand{display:flex;align-items:center;gap:13px;margin-bottom:46px}.moon{font-size:35px;color:var(--gold)}.brand strong{font-family:Georgia,serif;font-size:29px}.brand span,.eyebrow{display:block;color:var(--gold);font-size:11px;letter-spacing:.42em;text-transform:uppercase}h1{font-family:Georgia,serif;font-size:64px;line-height:.92;letter-spacing:-.05em;margin:18px 0}.intro{font-size:20px;line-height:1.6;color:#ded4c9}.grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:34px}.card{display:block;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),#100d0b);border-radius:30px;padding:26px;color:var(--ink);text-decoration:none}.card small{color:var(--gold);font-size:11px;letter-spacing:.35em;text-transform:uppercase}.card strong{display:block;font-family:Georgia,serif;font-size:34px;margin:10px 0}.card p{color:var(--muted);font-size:17px;line-height:1.55;margin:0}.disabled{opacity:.45;pointer-events:none}footer{text-align:center;padding-top:48px;color:#776d63;font-size:10px;letter-spacing:.4em;text-transform:uppercase}@media(min-width:720px){.grid{grid-template-columns:1fr 1fr}.hero-card{grid-column:span 2}}
-          </style></head><body><main><div class="brand"><div class="moon">◒</div><div><strong>After Hours</strong><span>Jazz guitar study system</span></div></div><p class="eyebrow">Home</p><h1>Study the tune. Keep the thread.</h1><p class="intro">A focused jazz guitar workspace for daily lessons, full standards, visual harmony, fretboard systems, and practice paths.</p><section class="grid"><a class="card hero-card" href="./morning-changes/"><small>Morning Changes</small><strong>Today’s Lesson →</strong><p>Open the daily focused study and browse the archive.</p></a><a class="card" href="./standards/autumn-leaves/"><small>Standards Library</small><strong>Autumn Leaves →</strong><p>The full guide, visual harmony, and play-along systems.</p></a><a class="card" href="./standards/autumn-leaves/arpeggios/"><small>Play Along</small><strong>Arpeggios →</strong><p>Walk bar by bar through the A section with verified chord and scale tones.</p></a><a class="card disabled" href="#"><small>Study Library</small><strong>Coming Soon</strong><p>Shells, guide tones, CAGED, pentatonic boxes, and arpeggio systems.</p></a></section><footer>After Hours · Home · Build 2026.06.29-L</footer></main></body></html>
-          HTML
+          set -euo pipefail
+          unzip -o "Autumn Leaves Jazz Guide.zip" -d _guide
 
-      - name: Add arpeggio launch card to Autumn Leaves guide
-        run: |
+          for target in dist/after-hours/autumn-leaves dist/standards/autumn-leaves; do
+            mkdir -p "$target/arpeggios"
+            cp -R _guide/. "$target/"
+            cp standards/autumn-leaves/arpeggio-playalong.html "$target/arpeggios/index.html"
+            sed -i 's|href="../../"|href="../../../"|' "$target/arpeggios/index.html"
+          done
+
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('dist/standards/autumn-leaves/index.html')
-          html = path.read_text()
-          start = html.find('<script data-pplx-inline-edit>')
-          if start != -1:
-              end = html.find('</script>', start)
-              if end != -1:
-                  html = html[:start] + html[end + len('</script>'):]
-          launch = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./arpeggios/" style="display:block;border:1px solid #6e512b;background:#17110b;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">New · Play Along</span><strong style="display:block;font-family:Georgia,serif;font-size:29px;margin-top:8px;">Autumn Leaves Arpeggios →</strong><span style="display:block;margin-top:8px;color:#c4b7a8;line-height:1.5;">Verified chord tones, scale-tone overlay, movable fretboard windows, and the A section in chronological bar order.</span></a></section>'
-          nav = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="../../" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:22px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">After Hours</span><strong style="display:block;font-family:Georgia,serif;font-size:24px;margin-top:8px;">← Home</strong></a></section>'
-          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · Autumn Leaves · Build 2026.06.29-L</footer>'
-          html = html.replace('</body>', launch + nav + marker + '\n</body>')
-          path.write_text(html)
+
+          for path in [
+              Path('dist/after-hours/autumn-leaves/index.html'),
+              Path('dist/standards/autumn-leaves/index.html'),
+          ]:
+              html = path.read_text()
+              start = html.find('<script data-pplx-inline-edit>')
+              if start != -1:
+                  end = html.find('</script>', start)
+                  if end != -1:
+                      html = html[:start] + html[end + len('</script>'):]
+              launch = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./arpeggios/" style="display:block;border:1px solid #6e512b;background:#17110b;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Play Along</span><strong style="display:block;font-family:Georgia,serif;font-size:29px;margin-top:8px;">Autumn Leaves Arpeggios →</strong><span style="display:block;margin-top:8px;color:#c4b7a8;line-height:1.5;">Verified chord tones, movable fretboard windows, and the A section in chronological bar order.</span></a></section>'
+              nav = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="../../" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:22px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Morning Changes</span><strong style="display:block;font-family:Georgia,serif;font-size:24px;margin-top:8px;">← Daily launchpad</strong></a></section>'
+              marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · Standards Catalog · Build 2026.06.30-M</footer>'
+              html = html.replace('</body>', launch + nav + marker + '\n</body>')
+              path.write_text(html)
           PY
 
       - uses: actions/configure-pages@v5
