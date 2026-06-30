@@ -41,14 +41,14 @@ jobs:
             <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
             <meta name="theme-color" content="#0b0a08" />
             <title>Morning Changes · Guitar Practice</title>
-            <link rel="stylesheet" href="../assets/app.css" />
-            <link rel="stylesheet" href="../assets/mobile-polish.css" />
+            <link rel="stylesheet" href="../assets/app.css?v=20260630N" />
+            <link rel="stylesheet" href="../assets/mobile-polish.css?v=20260630N" />
           </head>
           <body data-route="__ROUTE__">
             <div id="app"></div>
-            <script src="../assets/content.js"></script>
-            <script src="../assets/app.js"></script>
-            <script src="../assets/ui-polish.js"></script>
+            <script src="../assets/content.js?v=20260630N"></script>
+            <script src="../assets/app.js?v=20260630N"></script>
+            <script src="../assets/ui-polish.js?v=20260630N"></script>
           </body>
           </html>'''
           for route in ['learn', 'paths', 'after-hours', 'tools', 'progress', 'daily']:
@@ -61,7 +61,6 @@ jobs:
           legacy.mkdir(parents=True, exist_ok=True)
           (legacy / 'index.html').write_text(redirect)
 
-          # The repository itself is named after-hours, so declared page route—not a generic path match—sets the app base path.
           app_js = Path('dist/assets/app.js')
           js = app_js.read_text()
           old_routes = "  const knownRoutes = ['learn','paths','after-hours','tools','progress','daily'];\n"
