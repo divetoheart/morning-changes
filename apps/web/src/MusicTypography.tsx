@@ -1,62 +1,131 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 
-const TOKEN = /\b([A-G])([b#]?)(maj7|m7b5|m7|7|maj|m|dim)\b|\b([ivIV]+)(m7b5|maj7|m7|7|maj|m|ø)?\b/g;
-const TARGETS = 'p, li, .symbol-pattern, .row-content small, .row-content strong';
+const CHORD = /\b([A-G])([b#♭♯]?)(maj7|m7b5|m7♭5|m7|7|maj|m|dim)\b/g;
+const NOTE = /\b([A-G])([b#♭♯])\b/g;
+const FUNCTION = /\b([ivIV]+)(m7b5|m7♭5|maj7|m7|7|maj|m|ø)?\b/g;
+const INTERVAL = /(?<![A-Za-z0-9])((?:bb|b|##|#|♭|♯)?)([1-7])((?:st|nd|rd|th)s?)?(?![A-Za-z0-9])/g;
 
-function prettyQuality(value: string) {
-  return value === 'm7b5' ? 'm7♭5' : value;
+function prettyAccidental(value: string) {
+  return value.replaceAll('bb', '♭♭').replaceAll('##', '♯♯').replaceAll('b', '♭').replaceAll('#', '♯');
 }
 
-function notationFragment(text: string) {
+function prettyQuality(value: string) {
+  return value.replace('m7b5', 'm7♭5');
+}
+
+function shouldLeaveAsPlainNumber(text: string, end: number) {
+  const after = text.slice(end);
+  return /^\s*(?:min(?:ute)?s?|bpm|day(?:s)?|lesson(?:s)?|session(?:s)?|bar(?:s)?|fret(?:s)?|string(?:s)?|times?)\b/i.test(after)
+    || /^[\/:]/.test(after)
+    || /[\/:]$/.test(text.slice(0, end));
+}
+
+type Match = { index: number; length: number; node: Node };
+
+function makeText(value: string) {
+  return document.createTextNode(value);
+}
+
+function makeChord(root: string, accidental: string, quality: string) {
+  const chord = document.createElement('span');
+  chord.className = 'chord-symbol';
+  const note = document.createElement('span');
+  note.className = 'chord-root';
+  note.textContent = root;
+  chord.append(note);
+  if (accidental) {
+    const acc = document.createElement('sup');
+    acc.className = 'music-accidental';
+    acc.textContent = prettyAccidental(accidental);
+    chord.append(acc);
+  }
+  if (quality) {
+    const suffix = document.createElement('sup');
+    suffix.className = 'chord-quality';
+    suffix.textContent = prettyQuality(quality);
+    chord.append(suffix);
+  }
+  return chord;
+}
+
+function makeFunction(numeral: string, quality: string) {
+  const symbol = document.createElement('span');
+  symbol.className = 'function-symbol';
+  const main = document.createElement('em');
+  main.textContent = numeral;
+  symbol.append(main);
+  if (quality) {
+    const suffix = document.createElement('sup');
+    suffix.textContent = quality === 'ø' ? 'ø' : prettyQuality(quality);
+    symbol.append(suffix);
+  }
+  return symbol;
+}
+
+function makeInterval(accidental: string, degree: string, ordinal: string) {
+  const symbol = document.createElement('span');
+  symbol.className = 'interval-symbol';
+  if (accidental) {
+    const acc = document.createElement('sup');
+    acc.className = 'music-accidental';
+    acc.textContent = prettyAccidental(accidental);
+    symbol.append(acc);
+  }
+  const number = document.createElement('b');
+  number.textContent = degree;
+  symbol.append(number);
+  if (ordinal) {
+    const suffix = document.createElement('small');
+    suffix.textContent = ordinal;
+    symbol.append(suffix);
+  }
+  return symbol;
+}
+
+function replaceTextNode(textNode: Text) {
+  const source = textNode.nodeValue ?? '';
+  const matches: Match[] = [];
+  const collect = (regex: RegExp, builder: (match: RegExpMatchArray) => Node, guard?: (match: RegExpMatchArray, end: number) => boolean) => {
+    regex.lastIndex = 0;
+    for (const match of source.matchAll(regex)) {
+      const index = match.index ?? 0;
+      const end = index + match[0].length;
+      if (guard?.(match, end)) continue;
+      matches.push({ index, length: match[0].length, node: builder(match) });
+    }
+  };
+
+  collect(CHORD, match => makeChord(match[1], match[2] ?? '', match[3] ?? ''));
+  collect(NOTE, match => makeChord(match[1], match[2] ?? '', ''));
+  collect(FUNCTION, match => makeFunction(match[1], match[2] ?? ''));
+  collect(INTERVAL, match => makeInterval(match[1] ?? '', match[2], match[3] ?? ''), (_match, end) => shouldLeaveAsPlainNumber(source, end));
+
+  const nonOverlapping = matches
+    .sort((a, b) => a.index - b.index || b.length - a.length)
+    .filter((match, index, all) => !all.slice(0, index).some(previous => previous.index < match.index + match.length && match.index < previous.index + previous.length));
+
+  if (!nonOverlapping.length) return;
   const fragment = document.createDocumentFragment();
   let cursor = 0;
-  for (const match of text.matchAll(TOKEN)) {
-    const index = match.index ?? 0;
-    if (index > cursor) fragment.append(text.slice(cursor, index));
-    if (match[1]) {
-      const chord = document.createElement('span');
-      chord.className = 'chord-symbol';
-      const root = document.createElement('span');
-      root.textContent = `${match[1]}${match[2] ?? ''}`;
-      chord.append(root);
-      if (match[3]) {
-        const quality = document.createElement('sup');
-        quality.textContent = prettyQuality(match[3]);
-        chord.append(quality);
-      }
-      fragment.append(chord);
-    } else {
-      const functionSymbol = document.createElement('span');
-      functionSymbol.className = 'function-symbol';
-      const numeral = document.createElement('em');
-      numeral.textContent = match[4];
-      functionSymbol.append(numeral);
-      if (match[5]) {
-        const quality = document.createElement('sup');
-        quality.textContent = prettyQuality(match[5]);
-        functionSymbol.append(quality);
-      }
-      fragment.append(functionSymbol);
-    }
-    cursor = index + match[0].length;
+  for (const match of nonOverlapping) {
+    if (match.index > cursor) fragment.append(makeText(source.slice(cursor, match.index)));
+    fragment.append(match.node);
+    cursor = match.index + match.length;
   }
-  if (cursor < text.length) fragment.append(text.slice(cursor));
-  return fragment;
+  if (cursor < source.length) fragment.append(makeText(source.slice(cursor)));
+  textNode.replaceWith(fragment);
 }
 
 function applyNotation(root: HTMLElement) {
-  root.querySelectorAll<HTMLElement>(TARGETS).forEach(element => {
-    if (element.closest('select, option, button, .chord-symbol, .function-symbol') || element.querySelector('.chord-symbol, .function-symbol')) return;
-    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-    const nodes: Text[] = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode as Text);
-    for (const node of nodes) {
-      const value = node.nodeValue ?? '';
-      TOKEN.lastIndex = 0;
-      if (!TOKEN.test(value)) continue;
-      node.replaceWith(notationFragment(value));
-    }
-  });
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes: Text[] = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Text;
+    const parent = node.parentElement;
+    if (!parent || parent.closest('script, style, select, option, button, input, textarea, .chord-symbol, .function-symbol, .interval-symbol')) continue;
+    nodes.push(node);
+  }
+  nodes.forEach(replaceTextNode);
 }
 
 export function MusicTypography({ children }: { children: ReactNode }) {
@@ -79,5 +148,5 @@ export function MusicTypography({ children }: { children: ReactNode }) {
     observer.observe(element, { childList: true, subtree: true, characterData: true });
     return () => observer.disconnect();
   }, []);
-  return <div ref={root} style={{ display: 'contents' }}>{children}</div>;
+  return <div ref={root} className="music-typography-root">{children}</div>;
 }
