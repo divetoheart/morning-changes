@@ -21,6 +21,31 @@ const QUALITY_SUFFIX: Record<ChordQuality, string> = {
   sus4: 'sus4'
 };
 
+const QUALITY_FROM_SUFFIX: ReadonlyArray<readonly [string, ChordQuality]> = [
+  ['m7♭5', 'halfDiminished7'], ['m7b5', 'halfDiminished7'], ['ø7', 'halfDiminished7'], ['ø', 'halfDiminished7'],
+  ['dim7', 'diminished7'], ['°7', 'diminished7'], ['dim', 'diminished'], ['°', 'diminished'],
+  ['aug', 'augmented'], ['+', 'augmented'], ['sus4', 'sus4'], ['sus2', 'sus2'],
+  ['maj7', 'major7'], ['M7', 'major7'], ['m7', 'minor7'], ['7', 'dominant7'], ['maj', 'major'], ['m', 'minor'], ['', 'major']
+];
+
+export function chordQualitySuffix(quality: ChordQuality): string {
+  return QUALITY_SUFFIX[quality];
+}
+
+export function chordQualityFromSuffix(value: string): ChordQuality {
+  const normalized = value.trim().replace('m7b5', 'm7♭5');
+  const match = QUALITY_FROM_SUFFIX.find(([suffix]) => suffix === normalized);
+  if (!match) throw new Error(`Unsupported chord quality suffix: ${value}`);
+  return match[1];
+}
+
+/** Legacy ingestion adapter. UI should prefer structured Chord data after migration. */
+export function parseChordSymbol(value: string): Chord {
+  const match = value.trim().match(/^([A-G](?:♭|♯|bb|##|b|#)?)(.*)$/);
+  if (!match) throw new Error(`Unsupported chord symbol: ${value}`);
+  return buildChord(parseNote(match[1]), chordQualityFromSuffix(match[2] ?? ''));
+}
+
 export function createKey(tonic: string | SpelledNote, mode: ScaleMode): KeyContext {
   return { tonic: typeof tonic === 'string' ? parseNote(tonic) : tonic, mode };
 }
@@ -47,7 +72,7 @@ export function buildChord(root: string | SpelledNote, quality: ChordQuality): C
 }
 
 export function chordSymbol(chord: Chord): string {
-  return `${noteToString(chord.root)}${QUALITY_SUFFIX[chord.quality]}`;
+  return `${noteToString(chord.root)}${chordQualitySuffix(chord.quality)}`;
 }
 
 export function buildFunctionalChord(key: KeyContext, functional: FunctionalChord): Chord {
@@ -55,18 +80,7 @@ export function buildFunctionalChord(key: KeyContext, functional: FunctionalChor
 }
 
 export function functionSymbol(functional: FunctionalChord): string {
-  const quality = functional.quality;
-  const suffix = quality === 'halfDiminished7' ? 'ø7'
-    : quality === 'diminished' ? '°'
-    : quality === 'diminished7' ? '°7'
-    : quality === 'augmented' ? '+'
-    : quality === 'dominant7' ? '7'
-    : quality === 'major7' ? 'maj7'
-    : quality === 'minor7' ? 'm7'
-    : quality === 'major' ? ''
-    : quality === 'minor' ? 'm'
-    : quality;
-  return `${functional.degree}${suffix}`;
+  return `${functional.degree}${chordQualitySuffix(functional.quality)}`;
 }
 
 export function relativeMajorKey(minorKey: KeyContext): KeyContext {
