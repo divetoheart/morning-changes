@@ -72,13 +72,13 @@ function applySymbolClasses(symbol: HTMLElement, quality: string) {
   symbol.classList.toggle('is-augmented', kind === 'augmented');
 }
 function normalizeStructuredNotation(root: HTMLElement) {
-  root.querySelectorAll<HTMLElement>('.chord-symbol').forEach(symbol => {
+  root.querySelectorAll<HTMLElement>('.chord-symbol:not([data-music-token])').forEach(symbol => {
     const rootText = Array.from(symbol.children).find(child => child.tagName !== 'SUP');
     if (rootText) { const next = prettyAccidental(rootText.textContent ?? ''); if (rootText.textContent !== next) rootText.textContent = next; }
     const suffix = symbol.querySelector('sup');
     if (suffix) { const next = prettyQuality(suffix.textContent ?? ''); if (suffix.textContent !== next) suffix.textContent = next; applySymbolClasses(symbol, next); applySymbolClasses(suffix as HTMLElement, next); }
   });
-  root.querySelectorAll<HTMLElement>('.function-symbol sup').forEach(suffix => {
+  root.querySelectorAll<HTMLElement>('.function-symbol:not([data-music-token]) sup').forEach(suffix => {
     const next = prettyQuality(suffix.textContent ?? ''); if (suffix.textContent !== next) suffix.textContent = next;
     applySymbolClasses(suffix.closest('.function-symbol') as HTMLElement, next);
     applySymbolClasses(suffix, next);
@@ -91,7 +91,7 @@ function applyNotation(root: HTMLElement) {
   while (walker.nextNode()) {
     const node = walker.currentNode as Text;
     const parent = node.parentElement;
-    if (!parent || parent.closest('script, style, select, option, input, textarea, .chord-symbol, .function-symbol, .interval-symbol, .key-name, .ah-layer-dot')) continue;
+    if (!parent || parent.closest('script, style, select, option, input, textarea, [data-music-token], .chord-symbol, .function-symbol, .interval-symbol, .key-name, .ah-layer-dot')) continue;
     const insideButton = Boolean(parent.closest('button'));
     const buttonAllowsNotation = Boolean(parent.closest('.compact-row, .lesson-card, .change-step-rail, .change-step-actions, .sheet-course-list'));
     if (insideButton && !buttonAllowsNotation) continue;
