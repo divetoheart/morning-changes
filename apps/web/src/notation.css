@@ -1,0 +1,28 @@
+/* Global music typography: prose stays quiet; music syntax carries structure. */
+.chord-symbol > span:first-child,
+.chord-symbol .chord-root {
+  color: var(--gold-bright);
+}
+
+.chord-symbol .music-accidental {
+  color: #e2ad64;
+}
+
+.chord-symbol .chord-quality {
+  color: #c9b095;
+}
+
+.function-symbol em {
+  color: var(--gold);
+}
+
+.interval-symbol {
+  box-shadow: inset 0 -1px 0 rgba(242, 194, 126, .22);
+}
+
+/* Titles need musical function symbols to stay elegant rather than look like UI badges. */
+h1 .interval-symbol,
+h2 .interval-symbol,
+h3 .interval-symbol {
+  font-size: .7em;
+}
