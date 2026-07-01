@@ -7,6 +7,7 @@ type Voicing = { chord: string; root: string; quality: ArpType; rootString: Root
 
 const STRINGS = ['E', 'A', 'D', 'G', 'B', 'e'];
 const PCS: Record<string, number> = { C:0,'C♯':1,Db:1,'D♭':1,D:2,'D♯':3,Eb:3,'E♭':3,E:4,F:5,'F♯':6,Gb:6,'G♭':6,G:7,'G♯':8,Ab:8,'A♭':8,A:9,'A♯':10,Bb:10,'B♭':10,B:11 };
+const CHORD_TITLE = /^[A-G](?:♭|♯|b|#)?(?:maj7|m7♭5|m7|m|7)?$/;
 
 export function chordMarkup(value: string) {
   const match = value.match(/^([A-G])([♭♯b#]?)(.*)$/);
@@ -41,7 +42,7 @@ export function makeShellDiagram(voicing: Voicing): Diagram {
 
 export function DiagramCard({ diagram }: { diagram: Diagram }) {
   const values = diagram.notes.map(note => note.fret).filter(fret => fret >= 0); const start = Math.max(0, Math.min(...values)); const end = Math.max(...values); const frets = Array.from({ length: Math.max(5, end - start + 1) }, (_, index) => start + index);
-  return <article className="ah-port-diagram"><div className="ah-port-diagram-title"><strong>{chordMarkup(diagram.title)}</strong><small>{diagram.subtitle}</small></div><div className="ah-port-neck" aria-label={diagram.title}><div className="ah-port-frets"><span></span>{frets.map(fret => <span key={fret}>{fret}</span>)}</div>{STRINGS.map((string, index) => <div className="ah-port-string" key={string}><b>{string}</b>{frets.map(fret => { const tone = diagram.notes.find(note => note.string === index && note.fret === fret); return <span key={fret}>{tone && <i className={tone.root ? 'root' : ''}><small>{tone.label}</small></i>}</span>; })}</div>)}</div></article>;
+  return <article className="ah-port-diagram"><div className="ah-port-diagram-title"><strong>{CHORD_TITLE.test(diagram.title) ? chordMarkup(diagram.title) : diagram.title}</strong><small>{diagram.subtitle}</small></div><div className="ah-port-neck" aria-label={diagram.title}><div className="ah-port-frets"><span></span>{frets.map(fret => <span key={fret}>{fret}</span>)}</div>{STRINGS.map((string, index) => <div className="ah-port-string" key={string}><b>{string}</b>{frets.map(fret => { const tone = diagram.notes.find(note => note.string === index && note.fret === fret); return <span key={fret}>{tone && <i className={tone.root ? 'root' : ''}><small>{tone.label}</small></i>}</span>; })}</div>)}</div></article>;
 }
 
 export function FormMap({ form }: { form: FormSection[] }) {
