@@ -1,6 +1,9 @@
 /* Final contrast pass: every fretboard layer uses black ink on a light marker in every theme. */
 .ah-layer-dot,
 .ah-layer-dot small,
+.ah-layer-dot .interval-symbol,
+.ah-layer-dot .interval-symbol b,
+.ah-layer-dot .interval-symbol small,
 .ah-layer-dot.caged,
 .ah-layer-dot.caged small,
 .ah-layer-dot.pentatonic,
@@ -12,7 +15,10 @@
 .ah-layer-dot.root,
 .ah-layer-dot.root small {
   color: #0b0f16 !important;
+  border-bottom-color: transparent !important;
+  background: transparent;
 }
+.ah-layer-dot .interval-symbol { margin: 0 !important; padding: 0 !important; font-size: inherit !important; }
 .ah-full-neck-string { min-height: 66px !important; }
 .ah-full-neck-cell {
   grid-template-columns: repeat(2, 22px) !important;
@@ -27,6 +33,21 @@
 }
 .ah-layer-dot small { font-size: 10px !important; font-weight: 900 !important; }
 .ah-layer-dot.root { border-color: #111827 !important; background: #f5d46b !important; }
+
+/* Semantic key references are prose, not chord symbols. */
+.music-typography-root .key-name {
+  color: var(--ink) !important;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
+
+/* A dominant quality is the same harmonic signal as the V7 function. */
+.ah-port .chord-symbol .chord-quality { color: var(--gold) !important; }
+:root[data-theme='light'] .ah-port .chord-symbol .chord-quality { color: #124f7c !important; }
+:root[data-theme='student'] .ah-port .chord-symbol .chord-quality { color: #164f85 !important; }
+:root[data-theme='bluesy'] .ah-port .chord-symbol .chord-quality { color: #90e8f6 !important; }
+:root[data-theme='vintage'] .ah-port .chord-symbol .chord-quality { color: #f7c674 !important; }
 
 .ah-recording-actions {
   display: flex;
