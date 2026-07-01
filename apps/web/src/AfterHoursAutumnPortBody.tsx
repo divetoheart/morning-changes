@@ -8,8 +8,13 @@ import { KeyArrangementReference } from './AfterHoursStandardSections';
 const REFERENCES: Record<string, { title: string; copy: string; href: string }> = {
   'gm-bb': {
     title: 'Cannonball Adderley with Miles Davis · Somethin’ Else · recorded 1958',
-    copy: 'The canonical modern-jazz arrangement: a G minor / B♭ major setting with Miles Davis’s spacious theme statement and Cannonball Adderley’s alto defining the session vocabulary for the tune.',
+    copy: 'The canonical modern-jazz arrangement: a G minor / B-flat major setting with Miles Davis’s spacious theme statement and Cannonball Adderley’s alto defining the session vocabulary for the tune.',
     href: 'https://www.youtube.com/watch?v=u37RF5xKNq8'
+  },
+  'em-g': {
+    title: 'Bill Evans Trio · Portrait in Jazz · recorded 1959, released 1960',
+    copy: 'A guitarist-friendly E minor / G major study setting paired with Evans’s trio version. The open-position landscape makes the changes easy to inspect while Evans, LaFaro, and Motian demonstrate why the form should never sound mechanical.',
+    href: 'https://www.youtube.com/watch?v=r-Z8KuwI7Gc'
   },
   'bm-d': {
     title: 'Eric Clapton · Clapton · released 2010',
@@ -26,7 +31,6 @@ export function AfterHoursAutumnPortBody() {
 
   return <article className="ah-port ah-piece" data-music-context="true">
     <AutumnPortIntro />
-
     <section className="ah-port-keybar">
       <div>
         <span className="eyebrow">Choose a key</span>
@@ -36,12 +40,10 @@ export function AfterHoursAutumnPortBody() {
       </div>
       <div className="ah-port-segments" role="tablist" aria-label="Autumn Leaves key studies">{AUTUMN_STUDIES.map(item => <button type="button" key={item.id} aria-selected={item.id === study.id} className={item.id === study.id ? 'active' : ''} onClick={() => setKeyId(item.id)}>{item.short}</button>)}</div>
     </section>
-
     <section className="ah-piece-section ah-study-changes">
       <div className="ah-piece-section-head"><div><span className="eyebrow">Study changes</span><h2>Follow the whole form.</h2><p>Read the harmonic map before you touch the neck. The selected-key arrangement always keeps the same relative-major / relative-minor movement intact.</p></div></div>
       <FormMap form={study.form} />
     </section>
-
     <AfterHoursFretboardCustomizer
       keyLabel={study.short}
       majorRoot={study.majorKey.split(' ')[0]}
@@ -51,7 +53,6 @@ export function AfterHoursAutumnPortBody() {
       pentatonicLabel={`${study.minorKey} boxes`}
       description="Toggle the maps you need on the same full neck. CAGED tracks the relative-major world; pentatonic tracks the minor color; arpeggio and scale layers follow the active chord."
     />
-
-    <AutumnPortFooter study={study} />
+    <AutumnPortFooter study={study} onSwitchKey={setKeyId} />
   </article>;
 }
