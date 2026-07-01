@@ -15,10 +15,7 @@ function shouldLeaveAsPlainNumber(text: string, end: number) {
     || /^[\/:]/.test(after)
     || /[\/:]$/.test(before);
 }
-
-function playerLanguage(value: string) {
-  return value.replace(/\bRender\b/g, 'Build').replace(/\brender\b/g, 'build');
-}
+function playerLanguage(value: string) { return value.replace(/\bRender\b/g, 'Build').replace(/\brender\b/g, 'build'); }
 
 type Match = { index: number; length: number; node: Node };
 function makeText(value: string) { return document.createTextNode(value); }
@@ -26,14 +23,19 @@ function makeChord(root: string, accidental: string, quality: string) { const ch
 function makeFunction(numeral: string, quality: string) { const symbol = document.createElement('span'); symbol.className = 'function-symbol'; const main = document.createElement('em'); main.textContent = numeral; symbol.append(main); if (quality) { const suffix = document.createElement('sup'); suffix.textContent = quality === 'ø' ? 'ø' : prettyQuality(quality); symbol.append(suffix); } return symbol; }
 function makeInterval(accidental: string, degree: string, ordinal: string) { const symbol = document.createElement('span'); symbol.className = 'interval-symbol'; if (accidental) { const acc = document.createElement('sup'); acc.className = 'music-accidental'; acc.textContent = prettyAccidental(accidental); symbol.append(acc); } const number = document.createElement('b'); number.textContent = degree; symbol.append(number); if (ordinal) { const suffix = document.createElement('small'); suffix.textContent = ordinal; symbol.append(suffix); } return symbol; }
 
-function replaceTextNode(textNode: Text, allowIntervals: boolean) {
+function replaceTextNode(textNode: Text, allowIntervals: boolean, allowBareDegrees: boolean) {
   const source = playerLanguage(textNode.nodeValue ?? ''); const matches: Match[] = [];
   const collect = (regex: RegExp, builder: (match: RegExpMatchArray) => Node, guard?: (match: RegExpMatchArray, end: number) => boolean) => { regex.lastIndex = 0; for (const match of source.matchAll(regex)) { const index = match.index ?? 0; const end = index + match[0].length; if (!guard?.(match, end)) matches.push({ index, length: match[0].length, node: builder(match) }); } };
-  collect(CHORD, match => makeChord(match[1], match[2] ?? '', match[3] ?? '')); collect(NOTE, match => makeChord(match[1], match[2] ?? '', '')); collect(FUNCTION, match => makeFunction(match[1], match[2] ?? ''));
-  if (allowIntervals) collect(INTERVAL, match => makeInterval(match[1] ?? '', match[2], match[3] ?? ''), (_match, end) => shouldLeaveAsPlainNumber(source, end));
+  collect(CHORD, match => makeChord(match[1], match[2] ?? '', match[3] ?? ''));
+  collect(NOTE, match => makeChord(match[1], match[2] ?? '', ''));
+  collect(FUNCTION, match => makeFunction(match[1], match[2] ?? ''));
+  if (allowIntervals) collect(INTERVAL, match => makeInterval(match[1] ?? '', match[2], match[3] ?? ''), (match, end) => shouldLeaveAsPlainNumber(source, end) || (!allowBareDegrees && !match[1] && !match[3]));
   const nonOverlapping = matches.sort((a, b) => a.index - b.index || b.length - a.length).filter((match, index, all) => !all.slice(0, index).some(previous => previous.index < match.index + match.length && match.index < previous.index + previous.length));
   if (!nonOverlapping.length && source === textNode.nodeValue) return;
-  const fragment = document.createDocumentFragment(); let cursor = 0; for (const match of nonOverlapping) { if (match.index > cursor) fragment.append(makeText(source.slice(cursor, match.index))); fragment.append(match.node); cursor = match.index + match.length; } if (cursor < source.length) fragment.append(makeText(source.slice(cursor))); textNode.replaceWith(fragment);
+  const fragment = document.createDocumentFragment(); let cursor = 0;
+  for (const match of nonOverlapping) { if (match.index > cursor) fragment.append(makeText(source.slice(cursor, match.index))); fragment.append(match.node); cursor = match.index + match.length; }
+  if (cursor < source.length) fragment.append(makeText(source.slice(cursor)));
+  textNode.replaceWith(fragment);
 }
 
 function normalizeStructuredNotation(root: HTMLElement) {
@@ -47,7 +49,7 @@ function normalizeStructuredNotation(root: HTMLElement) {
 
 function applyNotation(root: HTMLElement) {
   normalizeStructuredNotation(root);
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const nodes: Array<{ node: Text; allowIntervals: boolean }> = [];
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const nodes: Array<{ node: Text; allowIntervals: boolean; allowBareDegrees: boolean }> = [];
   while (walker.nextNode()) {
     const node = walker.currentNode as Text;
     const parent = node.parentElement;
@@ -55,10 +57,12 @@ function applyNotation(root: HTMLElement) {
     const insideButton = Boolean(parent.closest('button'));
     const buttonAllowsNotation = Boolean(parent.closest('.compact-row, .lesson-card, .change-step-rail, .change-step-actions, .sheet-course-list'));
     if (insideButton && !buttonAllowsNotation) continue;
+    const inRoutine = Boolean(parent.closest('.routine-list'));
     const allowIntervals = Boolean(parent.closest('[data-music-context="true"], .interval-panel, .symbol-pattern, .compact-row, .routine-list, .lesson-card'));
-    nodes.push({ node, allowIntervals });
+    const allowBareDegrees = !inRoutine;
+    nodes.push({ node, allowIntervals, allowBareDegrees });
   }
-  nodes.forEach(({ node, allowIntervals }) => replaceTextNode(node, allowIntervals));
+  nodes.forEach(({ node, allowIntervals, allowBareDegrees }) => replaceTextNode(node, allowIntervals, allowBareDegrees));
 }
 
 export function MusicTypography({ children }: { children: ReactNode }) {
