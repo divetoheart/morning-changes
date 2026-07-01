@@ -1,4 +1,4 @@
-import { buildChord, buildScale, chordSymbol, createKey, displayStringOrder, noteToString, parseNote, positionsForIntervals, STANDARD_TUNING } from './index';
+import { buildChord, buildScale, chordSymbol, createKey, displayStringOrder, noteToString, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING } from './index';
 
 export type MusicEngineContractCase = {
   id: string;
@@ -18,7 +18,7 @@ function addCase(cases: MusicEngineContractCase[], id: string, expected: string,
 
 /**
  * Contract tests are deliberately dependency-free. They run in development when
- * the shared fretboard loads and provide a stable test surface for later Vitest/CI wiring.
+ * the shared fretboard loads and provide a stable test surface for later CI wiring.
  */
 export function evaluateMusicEngineContract(): MusicEngineContractResult {
   const cases: MusicEngineContractCase[] = [];
@@ -38,6 +38,21 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
   addCase(cases, 'G root exists at low E fret 3', 'true', String(gRoots.some(position => position.stringIndex === 0 && position.fret === 3)));
   addCase(cases, 'G root exists at high e fret 3', 'true', String(gRoots.some(position => position.stringIndex === 5 && position.fret === 3)));
   addCase(cases, 'Root positions use interval label one only', 'true', String(gRoots.every(position => position.interval === '1' && position.role === 'root')));
+
+  const collision = resolveLayerCells([
+    { stringIndex: 0, fret: 3, pitchClass: 7, note: parseNote('G'), interval: '1', role: 'root', layer: 'pentatonic' },
+    { stringIndex: 0, fret: 3, pitchClass: 7, note: parseNote('G'), interval: '5', role: 'chordTone', layer: 'arpeggio' }
+  ]);
+  addCase(cases, 'Layer collision collapses to one visible cell', '1', String(collision.length));
+  addCase(cases, 'Arpeggio focus wins collision label', '5', collision[0]?.primary.interval ?? '');
+  addCase(cases, 'Disagreeing layers are marked as conflict', 'conflict', collision[0]?.marker ?? '');
+  addCase(cases, 'Conflict retains both layers for detail treatment', 'arpeggio pentatonic', collision[0]?.segments.join(' ') ?? '');
+
+  const agreement = resolveLayerCells([
+    { stringIndex: 2, fret: 5, pitchClass: 0, note: parseNote('C'), interval: '1', role: 'root', layer: 'pentatonic' },
+    { stringIndex: 2, fret: 5, pitchClass: 0, note: parseNote('C'), interval: '1', role: 'root', layer: 'arpeggio' }
+  ]);
+  addCase(cases, 'Agreeing layers are marked as agreement', 'agreement', agreement[0]?.marker ?? '');
 
   const chromaticRoots = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
   for (const root of chromaticRoots) {
