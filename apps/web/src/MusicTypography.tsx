@@ -3,7 +3,7 @@ import { type ReactNode, useEffect, useRef } from 'react';
 const KEY_NAME = /\b([A-G])([b#♭♯]?)(\s+(?:major|minor))\b/g;
 const CHORD = /\b([A-G])([b#♭♯]?)(maj7|m7b5|m7♭5|m7|dim7?|aug|ø7?|°7?|\+|7|maj|m)(?=$|[^A-Za-z0-9])/g;
 const NOTE = /\b([A-G])([b#♭♯])\b/g;
-const FUNCTION = /\b([ivIV]+)(m7b5|m7♭5|maj7|m7|7|maj|m|ø|°|\+)?\b/g;
+const FUNCTION = /\b([ivIV]+)(m7b5|m7♭5|maj7|m7|7|maj|m|ø|°|\+)?(?=$|[^A-Za-z0-9])/g;
 const INTERVAL = /(?<![A-Za-z0-9])((?:bb|b|##|#|♭|♯)?)([1-7])((?:st|nd|rd|th)s?)?(?![A-Za-z0-9])/g;
 
 type SymbolKind = 'half-diminished' | 'diminished' | 'augmented' | null;
