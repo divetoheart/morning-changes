@@ -7,7 +7,14 @@ const INTERVAL = /(?<![A-Za-z0-9])((?:bb|b|##|#|♭|♯)?)([1-7])((?:st|nd|rd|th
 
 function prettyAccidental(value: string) { return value.replaceAll('bb', '♭♭').replaceAll('##', '♯♯').replaceAll('b', '♭').replaceAll('#', '♯'); }
 function prettyQuality(value: string) { return value.replace('m7b5', 'm7♭5'); }
-function shouldLeaveAsPlainNumber(text: string, end: number) { const after = text.slice(end); return /^\s*(?:min(?:ute)?s?|bpm|day(?:s)?|lesson(?:s)?|session(?:s)?|bar(?:s)?|fret(?:s)?|string(?:s)?|times?)\b/i.test(after) || /^[\/:]/.test(after) || /[\/:]$/.test(text.slice(0, end)); }
+function shouldLeaveAsPlainNumber(text: string, end: number) {
+  const after = text.slice(end);
+  const before = text.slice(0, end);
+  return /^\s*(?:min(?:ute)?s?|bpm|day(?:s)?|lesson(?:s)?|session(?:s)?|bar(?:s)?|fret(?:s)?|string(?:s)?|times?)\b/i.test(after)
+    || /(?:bar|lesson|position|fret|step|set|repeat|count)\s*$/i.test(before)
+    || /^[\/:]/.test(after)
+    || /[\/:]$/.test(before);
+}
 
 type Match = { index: number; length: number; node: Node };
 function makeText(value: string) { return document.createTextNode(value); }
