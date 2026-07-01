@@ -13,6 +13,7 @@ import './after-hours.css';
 import './p1-practice.css';
 import './qa-polish.css';
 import './after-hours-theme-audit.css';
+import './music-contrast.css';
 
 const mountNode = document.querySelector('#root');
 
