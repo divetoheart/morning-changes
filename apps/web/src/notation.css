@@ -1,28 +1,46 @@
 /* Global music typography: prose stays quiet; music syntax carries structure. */
 .chord-symbol > span:first-child,
-.chord-symbol .chord-root {
-  color: var(--gold-bright);
-}
-
-.chord-symbol .music-accidental {
-  color: #e2ad64;
-}
-
-.chord-symbol .chord-quality {
-  color: #c9b095;
-}
-
-.function-symbol em {
-  color: var(--gold);
-}
-
-.interval-symbol {
-  box-shadow: inset 0 -1px 0 rgba(242, 194, 126, .22);
-}
+.chord-symbol .chord-root { color: var(--gold-bright); }
+.chord-symbol .music-accidental { color: #e2ad64; }
+.chord-symbol .chord-quality { color: #c9b095; }
+.function-symbol em { color: var(--gold); }
+.interval-symbol { box-shadow: inset 0 -1px 0 rgba(242, 194, 126, .22); }
 
 /* Titles need musical function symbols to stay elegant rather than look like UI badges. */
 h1 .interval-symbol,
 h2 .interval-symbol,
-h3 .interval-symbol {
-  font-size: .7em;
+h3 .interval-symbol { font-size: .7em; }
+
+/* Wider, calmer desktop rails—the After Hours scale becomes the site scale. */
+@media (min-width: 900px) {
+  .app-shell { max-width: 1440px; padding-left: 44px; padding-right: 44px; }
+  .app-topbar { min-height: 82px; gap: 34px; }
+  .wordmark strong { font-size: 27px; }
+  .wordmark-mark { width: 42px; height: 42px; }
+  .desktop-nav { margin-left: auto; margin-right: auto; gap: 5px; }
+  .desktop-nav a { padding: 10px 14px; font-size: 14px; }
+  .screen { max-width: 1180px; padding-top: 46px; }
+  .screen-header { max-width: 760px; padding-bottom: 34px; }
+  .screen-header h1 { font-size: clamp(48px, 4.6vw, 72px); }
+  .focus-session { min-height: 254px; padding: 32px; }
+  .focus-session h2 { max-width: 760px; font-size: clamp(42px, 4vw, 58px); }
+  .focus-session p { max-width: 700px; }
+  .focus-action { min-width: 180px; }
+  .quiet-list { max-width: 880px; }
+  .catalog-section { margin-top: 48px; }
+  .lesson-rail { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; padding-bottom: 0; }
+  .lesson-card { min-width: 0; min-height: 266px; }
+  .path-focus { max-width: 980px; padding: 32px; }
+  .standard-shelf { max-width: 1040px; }
+  .standard-row { padding: 29px 0; }
+  .lesson-page { max-width: 1180px; }
+  .lesson-page .lesson-hero { grid-template-columns: minmax(0, 1fr) 250px; padding: 34px; }
+  .lesson-page .lesson-hero h1 { font-size: clamp(54px, 5vw, 76px); }
+  .fretboard-card, .interval-panel { padding: 26px; }
+}
+
+@media (min-width: 1240px) {
+  .screen { max-width: 1240px; }
+  .lesson-rail { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .lesson-card { min-height: 278px; }
 }
