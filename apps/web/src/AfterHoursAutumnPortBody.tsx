@@ -4,6 +4,8 @@ import { AutumnPortIntro, AutumnPortFooter } from './AutumnPortEditorial';
 import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
 import { FormMap } from './AfterHoursDiagrams';
 import { KeyArrangementReference } from './AfterHoursStandardSections';
+import { KeyNotation } from './MusicNotation';
+import { createKey } from './lib/music';
 
 const REFERENCES: Record<string, { title: string; copy: string; href: string }> = {
   'gm-bb': {
@@ -27,6 +29,9 @@ export function AfterHoursAutumnPortBody() {
   const [keyId, setKeyId] = useState('gm-bb');
   const study = useMemo(() => AUTUMN_STUDIES.find(item => item.id === keyId) ?? AUTUMN_STUDIES[0], [keyId]);
   const reference = REFERENCES[study.id];
+  const minorContext = useMemo(() => createKey(study.minorKey.split(' ')[0], 'naturalMinor'), [study.minorKey]);
+  const majorContext = useMemo(() => createKey(study.majorKey.split(' ')[0], 'major'), [study.majorKey]);
+  const keyPair = <><KeyNotation context={minorContext} /> / <KeyNotation context={majorContext} /></>;
   const uniqueChords = [...new Set(study.form.flatMap(section => section.bars.flat().map(cell => cell.label)))].filter(label => !label.includes('/'));
 
   return <article className="ah-port ah-piece" data-music-context="true">
@@ -34,7 +39,7 @@ export function AfterHoursAutumnPortBody() {
     <section className="ah-port-keybar">
       <div>
         <span className="eyebrow">Choose a key</span>
-        <h2>{study.label}</h2>
+        <h2>{keyPair}</h2>
         <p>{study.rationale}</p>
         <KeyArrangementReference title={reference.title} copy={reference.copy} href={reference.href} />
       </div>
@@ -45,13 +50,13 @@ export function AfterHoursAutumnPortBody() {
       <FormMap form={study.form} />
     </section>
     <AfterHoursFretboardCustomizer
-      keyLabel={study.short}
+      keyLabel={keyPair}
       majorRoot={study.majorKey.split(' ')[0]}
       minorRoot={study.minorKey.split(' ')[0]}
       chords={uniqueChords.map(label => ({ label }))}
-      cagedLabel={`${study.majorKey} positions`}
-      pentatonicLabel={`${study.minorKey} boxes`}
-      description="Toggle the maps you need on the same full neck. CAGED tracks the relative-major world; pentatonic tracks the minor color; arpeggio and scale layers follow the active chord."
+      cagedLabel={<><KeyNotation context={majorContext} /> positions</>}
+      pentatonicLabel={<><KeyNotation context={minorContext} /> boxes</>}
+      description={<>Toggle the maps you need on the same full neck. CAGED tracks the relative-major world; pentatonic tracks the minor color; arpeggio and scale layers follow the active chord.</>}
     />
     <AutumnPortFooter study={study} onSwitchKey={setKeyId} />
   </article>;
