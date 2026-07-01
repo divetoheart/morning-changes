@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useTheme, type ThemeName } from './ThemeProvider';
 
 const choices: Array<{ id: ThemeName; name: string; description: string }> = [
-  { id: 'studio', name: 'Studio', description: 'Warm midnight and brass' },
-  { id: 'student', name: 'Student', description: 'Paper, blue ink, red marks' },
-  { id: 'bluesy', name: 'Bluesy', description: 'Midnight blue and cigar brown' }
+  { id: 'dark', name: 'Dark', description: 'Warm midnight and brass' },
+  { id: 'light', name: 'Light', description: 'Clean paper and soft ink' },
+  { id: 'student', name: 'Student', description: 'Paper, red marks, blue ink' },
+  { id: 'bluesy', name: 'Bluesy', description: 'Electric blue, walnut, smoke' },
+  { id: 'vintage', name: 'Vintage Burst', description: 'Cream, tobacco, black hardware' }
 ];
 
 export function ThemeDock() {
