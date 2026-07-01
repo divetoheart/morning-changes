@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ArpType } from './after-hours-types';
 import { CAGED_POSITIONS, PENTATONIC_BOXES } from './after-hours-shapes';
 
@@ -54,11 +54,9 @@ function scaleForQuality(quality: ArpType): ScaleKind { return quality === 'maj7
 function cellKey(source: number, fret: number) { return `${source}:${fret}`; }
 function buildPatternSet(patterns: ReadonlyArray<ReadonlyArray<readonly [number, number, string]>>, anchor: number) {
   const set = new Map<string, string>();
-  for (const shift of [-24, -12, 0, 12, 24]) {
-    for (const pattern of patterns) for (const [source, offset, label] of pattern) {
-      const fret = anchor + offset + shift;
-      if (fret >= 0 && fret < FRET_COUNT) set.set(cellKey(source, fret), label);
-    }
+  for (const shift of [-24, -12, 0, 12, 24]) for (const pattern of patterns) for (const [source, offset, label] of pattern) {
+    const fret = anchor + offset + shift;
+    if (fret >= 0 && fret < FRET_COUNT) set.set(cellKey(source, fret), label);
   }
   return set;
 }
@@ -67,13 +65,12 @@ function membership(openPc: number, fret: number, rootPc: number, intervals: Arr
   return intervals.find(([value]) => value === delta)?.[1];
 }
 
-/**
- * Shared full-neck primitive. After Hours uses all layers; lessons can pass a
- * roots-only layer preset or a filtered chord list without drawing a second fretboard.
- */
+/** Shared full-neck primitive. Lessons can pass a filtered chord list and layer preset instead of drawing another fretboard. */
 export function FretboardMap({ keyLabel, majorRoot, minorRoot, chords, description, cagedLabel, pentatonicLabel, defaultLayers }: FretboardMapProps) {
   const [enabled, setEnabled] = useState<Record<Layer, boolean>>({ ...DEFAULT_LAYERS, ...defaultLayers });
   const [activeChordLabel, setActiveChordLabel] = useState(chords[0]?.label ?? 'C');
+  const chordSignature = chords.map(chord => chord.label).join('|');
+  useEffect(() => { setActiveChordLabel(chords[0]?.label ?? 'C'); }, [chordSignature]);
   const activeChord = chords.find(chord => chord.label === activeChordLabel) ?? chords[0] ?? { label:'C7' };
   const activeRoot = activeChord.root ?? rootForLabel(activeChord.label);
   const activeQuality = activeChord.quality ?? qualityForLabel(activeChord.label);
