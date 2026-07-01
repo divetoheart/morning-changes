@@ -65,7 +65,9 @@ lib/music/
   harmony.ts     Keys, scales, chords, functional harmony
   fretboard.ts   Tuning, coordinates, position lookup, interval maps
   shapes.ts      Validated physical guitar templates and placement
+  layers.ts      One-label collision resolution and layer membership
   notation.ts    Structured semantic token schema
+  contract.ts    Dependency-free music correctness contract
   index.ts       Public engine boundary
 ```
 
@@ -82,17 +84,19 @@ lib/music/
 ### Phase 0 — Safety and reference
 - [x] Document this work order.
 - [x] Keep live app behavior stable during engine construction.
-- [ ] Add a Music Engine contract page with all token classes across every theme.
-- [ ] Add automated build/test harness for engine cases.
+- [x] Add development music-engine contract suite for spelling, chord formulas, tuning order, root coordinates, all 12 major-key roots, and layer collisions.
+- [ ] Add an inspectable Music Engine contract page with every token class across every theme.
+- [ ] Wire contract suite into CI/test command.
 
 ### Phase 1 — Core engine foundation
-- [x] Typed note, interval, key, chord, scale, tuning, shape, and notation models.
+- [x] Typed note, interval, key, chord, scale, tuning, shape, notation, and collision models.
 - [x] Correct pitch-class and interval transposition primitives.
 - [x] Context-aware note spelling from interval + root.
 - [x] Key/scale and chord construction primitives.
 - [x] Fretboard coordinate and interval-location primitives.
 - [x] Shape-template placement primitive.
-- [ ] Add test cases for all 12 chromatic roots, flat/sharp spellings, and supported chord qualities.
+- [x] Contract cases for all 12 major roots plus critical flat/sharp, diminished, augmented, and half-diminished spellings.
+- [ ] Add coverage for all supported modes, chord qualities, tunings, and arbitrary fret ranges.
 
 ### Phase 2 — Notation migration
 - [ ] Build React renderers for semantic notation tokens.
@@ -102,12 +106,12 @@ lib/music/
 - [ ] Narrow then retire regex/MusicTypography inference.
 
 ### Phase 3 — Fretboard migration
-- [ ] Make `FretboardMap` consume `lib/music/fretboard` only.
-- [ ] Replace current duplicated pitch-class, scale, and chord-quality tables.
-- [ ] Add focus-layer and collision-detail model.
-- [ ] Add segmented/ring marker visual treatment.
-- [ ] Replace legacy root lesson visual fully through the shared component.
-- [ ] Build roots, triads, scale, chord-tone, and voice-leading configurations from the same map.
+- [x] Use `lib/music` for standard tuning, display order, roots-only mode, chord-tone positions, and scale positions in the shared `FretboardMap`.
+- [ ] Replace current legacy CAGED and pentatonic coordinate arrays with validated shape templates.
+- [x] Build collision-resolution data model with arpeggio as the default focus layer.
+- [ ] Render segmented/ring markers and an accessible per-fret detail panel from collision data.
+- [x] Replace legacy root lesson visual through the shared component path.
+- [ ] Build triad, chord-tone, scale, and voice-leading configurations from the same map.
 
 ### Phase 4 — Shape validation
 - [ ] Validate and encode five CAGED templates.
@@ -127,21 +131,22 @@ lib/music/
 ## Acceptance tests
 
 ### Music correctness
-- [ ] `B minor` harmonic minor spells `A♯`, not `B♭`.
-- [ ] `B♭ major` spells `E♭`, not `D♯`.
-- [ ] `F♯7` contains F♯, A♯, C♯, E.
-- [ ] `Aø7` contains A, C, E♭, G.
-- [ ] The same pitch class can be spelled differently when harmony requires it.
+- [x] `B minor` harmonic minor spells `A♯`, not `B♭`.
+- [x] `B♭ major` spells `E♭`, not `D♯`.
+- [x] `F♯7` contains F♯, A♯, C♯, E.
+- [x] `Aø7` contains A, C, E♭, G.
+- [x] The same pitch class can be spelled differently when harmony requires it.
+- [x] All 12 flat/natural key centers render a correctly lettered major scale.
 - [ ] All 12 keys can render major, natural minor, harmonic minor, melodic minor, dorian, mixolydian, and locrian maps.
 
 ### Fretboard correctness
-- [ ] Standard tuning low-to-high is E A D G B e.
-- [ ] Display order is high e to low E.
-- [ ] Root lesson updates every root position after a key change.
-- [ ] Fret labels never receive interval styling.
-- [ ] Interval labels never show as fret labels.
-- [ ] One visible label maximum per string/fret position.
-- [ ] Layer membership remains inspectable when labels are collapsed.
+- [x] Standard tuning low-to-high is E A D G B e.
+- [x] Display order is high e to low E.
+- [x] Shared root view derives root positions from the engine.
+- [x] Collision resolver creates one visible marker per string/fret and retains memberships for detail.
+- [ ] Fret labels never receive interval styling after semantic notation migration.
+- [ ] Interval labels never show as fret labels after semantic notation migration.
+- [ ] Layer membership is visible through segmented marker treatment and accessible detail.
 
 ### Notation correctness
 - [ ] `B minor` is a bold key token.
@@ -155,4 +160,4 @@ lib/music/
 
 ## Current implementation warning
 
-The current app still has legacy helpers and transitional CSS/DOM adapters. They are not the final source of truth. New music functionality should target `lib/music` first, then migrate a UI surface deliberately rather than adding another local parser or coordinate table.
+The current app still has legacy helpers and transitional CSS/DOM adapters. CAGED and pentatonic templates remain legacy data until shape validation is complete. New music functionality should target `lib/music` first, then migrate a UI surface deliberately rather than adding another local parser or coordinate table.
