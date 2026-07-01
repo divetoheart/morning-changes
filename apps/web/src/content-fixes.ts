@@ -27,7 +27,17 @@ if (!standards.some(standard => standard.id === 'texas-flood')) {
     subtitle: 'SRV recording: G♭ major concert pitch. Use G shapes with the guitar tuned down one half-step.',
     status: 'available',
     access: 'free',
-    href: 'https://en.wikipedia.org/wiki/Texas_Flood_(song)',
+    href: '#/after-hours/autumn-leaves?standard=texas-flood',
     focus: 'Slow 12-bar Texas blues · SRV key reference'
   });
+}
+
+if (typeof window !== 'undefined') {
+  document.addEventListener('click', event => {
+    const target = event.target as Element | null;
+    const standard = target?.closest<HTMLElement>('.standard-row');
+    if (!standard || !/Texas Flood/i.test(standard.textContent ?? '')) return;
+    event.preventDefault();
+    window.location.hash = '/after-hours/autumn-leaves?standard=texas-flood';
+  }, true);
 }
