@@ -3,6 +3,7 @@ import { FormMap } from './AfterHoursDiagrams';
 import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
 import { KeyArrangementReference, StandardFooter, StandardIntro, ThreeForHeadphones } from './AfterHoursStandardSections';
 import type { FormSection } from './after-hours-types';
+import type { FunctionalChord } from './lib/music';
 
 type BluesKey = {
   id: string;
@@ -43,10 +44,17 @@ const KEYS: BluesKey[] = [
   }
 ];
 
+const majorI = { degree: 'I', quality: 'dominant7', context: 'major' } satisfies FunctionalChord;
+const majorIV = { degree: 'IV', quality: 'dominant7', context: 'major' } satisfies FunctionalChord;
+const majorV = { degree: 'V', quality: 'dominant7', context: 'major' } satisfies FunctionalChord;
+const minorI = { degree: 'i', quality: 'minor7', context: 'minor' } satisfies FunctionalChord;
+const minorIV = { degree: 'iv', quality: 'minor7', context: 'minor' } satisfies FunctionalChord;
+const minorV = { degree: 'V', quality: 'dominant7', context: 'minor' } satisfies FunctionalChord;
+
 function makeForm(key: BluesKey): FormSection[] {
-  const bar = (label: string, roman?: string) => [{ label, roman }];
-  if (key.minor) return [{ name:'12-bar minor blues', bars:[bar(key.root,'i7'),bar(key.root,'i7'),bar(key.root,'i7'),bar(key.root,'i7'),bar(key.IV,'iv7'),bar(key.IV,'iv7'),bar(key.root,'i7'),bar(key.root,'i7'),bar(key.V,'V7'),bar(key.IV,'iv7'),bar(key.root,'i7'),bar(key.V,'turnaround')] }];
-  return [{ name:'12-bar chorus', bars:[bar(key.root,'I7'),bar(key.root,'I7'),bar(key.root,'I7'),bar(key.root,'I7'),bar(key.IV,'IV7'),bar(key.IV,'IV7'),bar(key.root,'I7'),bar(key.root,'I7'),bar(key.V,'V7'),bar(key.IV,'IV7'),bar(key.root,'I7'),bar(key.V,'turnaround')] }];
+  const bar = (label: string, functional: FunctionalChord) => [{ label, function: functional }];
+  if (key.minor) return [{ name:'12-bar minor blues', bars:[bar(key.root, minorI),bar(key.root, minorI),bar(key.root, minorI),bar(key.root, minorI),bar(key.IV, minorIV),bar(key.IV, minorIV),bar(key.root, minorI),bar(key.root, minorI),bar(key.V, minorV),bar(key.IV, minorIV),bar(key.root, minorI),bar(key.V, minorV)] }];
+  return [{ name:'12-bar chorus', bars:[bar(key.root, majorI),bar(key.root, majorI),bar(key.root, majorI),bar(key.root, majorI),bar(key.IV, majorIV),bar(key.IV, majorIV),bar(key.root, majorI),bar(key.root, majorI),bar(key.V, majorV),bar(key.IV, majorIV),bar(key.root, majorI),bar(key.V, majorV)] }];
 }
 
 export function AfterHoursBluesApp() {
@@ -94,7 +102,7 @@ export function AfterHoursBluesApp() {
       picks={[
         { meta:'1983 · Texas Flood', title:'Texas Flood', artist:'Stevie Ray Vaughan & Double Trouble', note:'Slow-blues study. Hear the silence, the held bends, and how each chorus becomes a new sentence while the form stays completely clear.', href:'https://www.youtube.com/results?search_query=Stevie+Ray+Vaughan+Texas+Flood+official+audio', keyLabel:'G / G♭ concert', onSwitchKey:() => setKeyId('g') },
         { meta:'1968 · Wheels of Fire', title:'Crossroads', artist:'Cream', note:'High-energy live blues. Study call-and-response phrasing and how the trio keeps the I–IV–V movement audible under a lot of velocity.', href:'https://www.youtube.com/results?search_query=Cream+Crossroads+Wheels+of+Fire+official+audio', keyLabel:'A blues', onSwitchKey:() => setKeyId('a') },
-        { meta:'1969 · Completely Well', title:'The Thrill Is Gone', artist:'B.B. King', note:'A slow B minor twelve-bar blues and a masterclass in vocal phrasing, heavy vibrato, and leaving the perfect amount of air after a note.', href:'https://www.youtube.com/results?search_query=B.B.+King+The+Thrill+Is+Gone+official+audio', keyLabel:'B minor', onSwitchKey:() => setKeyId('bm') }
+        { meta:'1969 · Completely Well', title:'The Thrill Is Gone', artist:'B.B. King', note:'A slow B minor twelve-bar blues and a masterclass in vocal phrasing, heavy vibrato, and leaving the perfect amount of air after a note.', href:'https://www.youtube.com/results?search_query=B.B.+King+The+Thrill+Is_Gone+official+audio', keyLabel:'B minor', onSwitchKey:() => setKeyId('bm') }
       ]}
     />
     <section className="ah-port-sources"><span className="eyebrow">Sources & further reading</span><ul><li><a href="https://en.wikipedia.org/wiki/Texas_Flood" target="_blank" rel="noreferrer">Texas Flood — album and song context ↗</a><span>Release and recording context for Vaughan’s 1983 debut.</span></li><li><a href="https://en.wikipedia.org/wiki/Wheels_of_Fire" target="_blank" rel="noreferrer">Wheels of Fire — Cream ↗</a><span>Album context for Crossroads.</span></li><li><a href="https://en.wikipedia.org/wiki/The_Thrill_Is_Gone" target="_blank" rel="noreferrer">The Thrill Is Gone — B.B. King ↗</a><span>Song history and B.B. King’s 1969 recording context.</span></li></ul></section>
