@@ -1,4 +1,4 @@
-import { buildChord, buildScale, chordSymbol, createKey, displayStringOrder, noteToString, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING } from './index';
+import { buildChord, buildScale, chordSymbol, createKey, displayStringOrder, findGuitarVoicings, generateVoicing, noteToString, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING } from './index';
 
 export type MusicEngineContractCase = {
   id: string;
@@ -39,9 +39,20 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
   addCase(cases, 'G root exists at high e fret 3', 'true', String(gRoots.some(position => position.stringIndex === 5 && position.fret === 3)));
   addCase(cases, 'Root positions use interval label one only', 'true', String(gRoots.every(position => position.interval === '1' && position.role === 'root')));
 
+  const cMajorSeven = buildChord('C', 'major7');
+  const cMajorSevenDrop2 = generateVoicing(cMajorSeven, { kind: 'drop2', inversion: 0 });
+  addCase(cases, 'C major seven Drop 2 voice order', '5 1 3 7', cMajorSevenDrop2.voices.map(voice => voice.interval).join(' '));
+  const cMajorSevenFirstInversionDrop2 = generateVoicing(cMajorSeven, { kind: 'drop2', inversion: 1 });
+  addCase(cases, 'C major seven first inversion Drop 2 voice order', '7 3 5 1', cMajorSevenFirstInversionDrop2.voices.map(voice => voice.interval).join(' '));
+  const fSevenShell = generateVoicing(buildChord('F', 'dominant7'), { kind: 'shell', includeRoot: true, guideToneOrder: '3-7' });
+  addCase(cases, 'F seven shell keeps root third flat seventh', '1 3 b7', fSevenShell.voices.map(voice => voice.interval).join(' '));
+  const drop2Candidates = findGuitarVoicings(cMajorSevenDrop2, { stringSet: [2, 3, 4, 5], fretRange: { start: 0, end: 12 } });
+  addCase(cases, 'Drop 2 guitar search finds playable D-G-B-e candidate', 'true', String(drop2Candidates.length > 0));
+  addCase(cases, 'Guitar candidates ascend in actual pitch', 'true', String(drop2Candidates.every(candidate => candidate.positions.every((position, index, all) => index === 0 || position.midi > all[index - 1].midi))));
+
   const collision = resolveLayerCells([
-    { stringIndex: 0, fret: 3, pitchClass: 7, note: parseNote('G'), interval: '1', role: 'root', layer: 'pentatonic' },
-    { stringIndex: 0, fret: 3, pitchClass: 7, note: parseNote('G'), interval: '5', role: 'chordTone', layer: 'arpeggio' }
+    { stringIndex: 0, fret: 3, pitchClass: 7, midi: 43, note: parseNote('G'), interval: '1', role: 'root', layer: 'pentatonic' },
+    { stringIndex: 0, fret: 3, pitchClass: 7, midi: 43, note: parseNote('G'), interval: '5', role: 'chordTone', layer: 'arpeggio' }
   ]);
   addCase(cases, 'Layer collision collapses to one visible cell', '1', String(collision.length));
   addCase(cases, 'Arpeggio focus wins collision label', '5', collision[0]?.primary.interval ?? '');
@@ -49,8 +60,8 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
   addCase(cases, 'Conflict retains both layers for detail treatment', 'arpeggio pentatonic', collision[0]?.segments.join(' ') ?? '');
 
   const agreement = resolveLayerCells([
-    { stringIndex: 2, fret: 5, pitchClass: 0, note: parseNote('C'), interval: '1', role: 'root', layer: 'pentatonic' },
-    { stringIndex: 2, fret: 5, pitchClass: 0, note: parseNote('C'), interval: '1', role: 'root', layer: 'arpeggio' }
+    { stringIndex: 2, fret: 5, pitchClass: 0, midi: 55, note: parseNote('C'), interval: '1', role: 'root', layer: 'pentatonic' },
+    { stringIndex: 2, fret: 5, pitchClass: 0, midi: 55, note: parseNote('C'), interval: '1', role: 'root', layer: 'arpeggio' }
   ]);
   addCase(cases, 'Agreeing layers are marked as agreement', 'agreement', agreement[0]?.marker ?? '');
 
