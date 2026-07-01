@@ -12,6 +12,7 @@ import './theme-clarity.css';
 import './after-hours.css';
 import './p1-practice.css';
 import './qa-polish.css';
+import './after-hours-theme-audit.css';
 
 const mountNode = document.querySelector('#root');
 
