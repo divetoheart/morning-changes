@@ -1,0 +1,66 @@
+/* Final contrast pass: every fretboard layer uses black ink on a light marker in every theme. */
+.ah-layer-dot,
+.ah-layer-dot small,
+.ah-layer-dot.caged,
+.ah-layer-dot.caged small,
+.ah-layer-dot.pentatonic,
+.ah-layer-dot.pentatonic small,
+.ah-layer-dot.arpeggio,
+.ah-layer-dot.arpeggio small,
+.ah-layer-dot.scale,
+.ah-layer-dot.scale small,
+.ah-layer-dot.root,
+.ah-layer-dot.root small {
+  color: #0b0f16 !important;
+}
+.ah-full-neck-string { min-height: 66px !important; }
+.ah-full-neck-cell {
+  grid-template-columns: repeat(2, 22px) !important;
+  grid-template-rows: repeat(2, 22px) !important;
+  gap: 3px !important;
+  padding: 4px !important;
+}
+.ah-layer-dot {
+  width: 22px !important;
+  height: 22px !important;
+  border-color: rgba(0,0,0,.5) !important;
+}
+.ah-layer-dot small { font-size: 10px !important; font-weight: 900 !important; }
+.ah-layer-dot.root { border-color: #111827 !important; background: #f5d46b !important; }
+
+.ah-recording-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+.ah-recording-actions a,
+.ah-recording-actions button {
+  margin-top: 0 !important;
+  font: inherit;
+  font-size: 12px;
+}
+.ah-recording-actions button {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--panel-raised);
+  color: var(--ink);
+  padding: 7px 9px;
+  white-space: nowrap;
+}
+.ah-recording-actions button:hover { border-color: var(--gold); }
+
+@media (max-width: 760px) {
+  .ah-full-neck-string { min-height: 58px !important; }
+  .ah-full-neck-cell {
+    grid-template-columns: repeat(2, 19px) !important;
+    grid-template-rows: repeat(2, 19px) !important;
+    gap: 2px !important;
+    padding: 3px !important;
+  }
+  .ah-layer-dot { width: 19px !important; height: 19px !important; }
+  .ah-layer-dot small { font-size: 9px !important; }
+  .ah-recording-actions { align-items: flex-start; flex-wrap: wrap; }
+}
