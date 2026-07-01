@@ -37,7 +37,7 @@ function normalizeStructuredNotation(root: HTMLElement) {
 function applyNotation(root: HTMLElement) {
   normalizeStructuredNotation(root);
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const nodes: Array<{ node: Text; allowIntervals: boolean }> = [];
-  while (walker.nextNode()) { const node = walker.currentNode as Text; const parent = node.parentElement; if (!parent || parent.closest('script, style, select, option, button, input, textarea, .chord-symbol, .function-symbol, .interval-symbol')) continue; nodes.push({ node, allowIntervals: Boolean(parent.closest('[data-music-context="true"], .lesson-page, .interval-panel, .symbol-pattern')) }); }
+  while (walker.nextNode()) { const node = walker.currentNode as Text; const parent = node.parentElement; if (!parent || parent.closest('script, style, select, option, button, input, textarea, .chord-symbol, .function-symbol, .interval-symbol')) continue; nodes.push({ node, allowIntervals: Boolean(parent.closest('[data-music-context="true"], .interval-panel, .symbol-pattern')) }); }
   nodes.forEach(({ node, allowIntervals }) => replaceTextNode(node, allowIntervals));
 }
 
