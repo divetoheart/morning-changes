@@ -2,11 +2,11 @@
 .music-typography-root .interval-symbol,
 .music-typography-root .function-symbol,
 .music-typography-root .chord-symbol{
-  display:inline-flex;
-  align-items:baseline;
+  display:inline-block;
   vertical-align:baseline;
   font-weight:800;
   line-height:1;
+  white-space:nowrap;
 }
 .music-typography-root .interval-symbol{
   color:var(--gold)!important;
@@ -15,25 +15,19 @@
   padding:0 .08em .08em!important;
   margin:0 .06em!important;
 }
-.music-typography-root .function-symbol{
-  color:var(--gold)!important;
-  font-size:1.18em!important;
-  letter-spacing:-.02em;
-}
+.music-typography-root .function-symbol{color:var(--gold)!important;font-size:1.18em!important;letter-spacing:-.02em}
 .music-typography-root .function-symbol em{color:inherit!important;font-weight:850}
 .music-typography-root .function-symbol sup{color:inherit!important;font-size:.58em!important;opacity:.9}
 .music-typography-root .chord-symbol{font-size:1.27em!important;letter-spacing:-.035em}
 .music-typography-root .chord-symbol .chord-root{font-weight:800!important}
 .music-typography-root .chord-symbol .chord-quality{font-size:.62em!important;font-weight:800!important}
 
-/* First-pass practice copy gets the strongest signal. */
+/* First-pass practice copy gets the strongest signal without turning bare prose numbers into layout objects. */
 .play-now .interval-symbol,.play-now .function-symbol,.play-now .chord-symbol,
 .lesson-hero .interval-symbol,.lesson-hero .function-symbol,.lesson-hero .chord-symbol,
-.routine-list .interval-symbol,.routine-list .function-symbol,.routine-list .chord-symbol,
-.compact-row .interval-symbol,.compact-row .function-symbol,.compact-row .chord-symbol{
-  font-size:1.38em!important;
-}
-.play-now .interval-symbol,.lesson-hero .interval-symbol,.routine-list .interval-symbol,.compact-row .interval-symbol{font-size:1.3em!important}
+.compact-row .interval-symbol,.compact-row .function-symbol,.compact-row .chord-symbol{font-size:1.38em!important}
+.play-now .interval-symbol,.lesson-hero .interval-symbol,.compact-row .interval-symbol{font-size:1.3em!important}
+.routine-list .interval-symbol,.routine-list .function-symbol,.routine-list .chord-symbol{font-size:1.08em!important}
 
 /* Light was using decorative gold against paper. Music tokens need ink-level contrast. */
 :root[data-theme='light'] .music-typography-root .interval-symbol{color:#124f7c!important;border-bottom-color:#124f7c!important;background:rgba(18,79,124,.08)!important}
@@ -41,19 +35,16 @@
 :root[data-theme='light'] .music-typography-root .chord-symbol .chord-root{color:#102f4b!important}
 :root[data-theme='light'] .music-typography-root .chord-symbol .music-accidental{color:#8b4608!important}
 :root[data-theme='light'] .music-typography-root .chord-symbol .chord-quality{color:#244f73!important}
-
 :root[data-theme='student'] .music-typography-root .interval-symbol{color:#9d2632!important;border-bottom-color:#9d2632!important;background:rgba(157,38,50,.08)!important}
 :root[data-theme='student'] .music-typography-root .function-symbol{color:#164f85!important}
 :root[data-theme='student'] .music-typography-root .chord-symbol .chord-root{color:#153c64!important}
 :root[data-theme='student'] .music-typography-root .chord-symbol .music-accidental{color:#9d2632!important}
 :root[data-theme='student'] .music-typography-root .chord-symbol .chord-quality{color:#345875!important}
-
 :root[data-theme='bluesy'] .music-typography-root .interval-symbol{color:#ffe0aa!important;border-bottom-color:#ffe0aa!important;background:rgba(255,224,170,.09)!important}
 :root[data-theme='bluesy'] .music-typography-root .function-symbol{color:#90e8f6!important}
 :root[data-theme='bluesy'] .music-typography-root .chord-symbol .chord-root{color:#ffe0aa!important}
 :root[data-theme='bluesy'] .music-typography-root .chord-symbol .music-accidental{color:#90e8f6!important}
 :root[data-theme='bluesy'] .music-typography-root .chord-symbol .chord-quality{color:#f6e5cd!important}
-
 :root[data-theme='vintage'] .music-typography-root .interval-symbol{color:#fff0ca!important;border-bottom-color:#fff0ca!important;background:rgba(255,240,202,.08)!important}
 :root[data-theme='vintage'] .music-typography-root .function-symbol{color:#f7c674!important}
 :root[data-theme='vintage'] .music-typography-root .chord-symbol .chord-root{color:#fff0ca!important}
