@@ -40,7 +40,7 @@ jobs:
           mkdir -p dist _guide
           cp -R apps/web/dist/. dist/
 
-      - name: Restore dedicated After Hours guide
+      - name: Package After Hours inside Morning Changes
         shell: bash
         run: |
           set -euo pipefail
@@ -63,26 +63,25 @@ jobs:
           bundle.write_text(cleaned)
           PY
 
-          mkdir -p dist/after-hours/autumn-leaves/arpeggios
-          cp -R _guide/. dist/after-hours/autumn-leaves/
-
-          # Preserve absolute bundle imports without replacing the React build assets.
+          mkdir -p dist/after-hours/autumn-leaves/guide/arpeggios
+          cp -R _guide/. dist/after-hours/autumn-leaves/guide/
           mkdir -p dist/assets
           cp -R -n _guide/assets/. dist/assets/
 
-          cp standards/autumn-leaves/arpeggio-playalong.html dist/after-hours/autumn-leaves/arpeggios/index.html
-          sed -i 's|href="../../"|href="../../../"|' dist/after-hours/autumn-leaves/arpeggios/index.html
+          cp standards/autumn-leaves/arpeggio-playalong.html dist/after-hours/autumn-leaves/guide/arpeggios/index.html
+          sed -i 's|href="../../"|href="../../../#\/"|' dist/after-hours/autumn-leaves/guide/arpeggios/index.html
+          sed -i 's|data-key="Cm">C minor|data-key="Bm">Clapton · B minor|g' dist/after-hours/autumn-leaves/guide/arpeggios/index.html
+          sed -i 's|C minor is ready as a selectable arrangement key.|Eric Clapton · B minor is ready as a selectable arrangement key.|g' dist/after-hours/autumn-leaves/guide/arpeggios/index.html
 
           python3 - <<'PY'
           from pathlib import Path
 
-          path = Path('dist/after-hours/autumn-leaves/index.html')
+          path = Path('dist/after-hours/autumn-leaves/guide/index.html')
           html = path.read_text()
           html = html.replace('href="/assets/', 'href="./assets/')
           html = html.replace('src="/assets/', 'src="./assets/')
           html = html.replace("href='/assets/", "href='./assets/")
           html = html.replace("src='/assets/", "src='./assets/")
-          html = html.replace('</head>', '<style>html,body,#root{background:#0b0907;color:#f4eee5;min-height:100%;}</style></head>')
 
           start = html.find('<script data-pplx-inline-edit>')
           if start != -1:
@@ -91,11 +90,30 @@ jobs:
                   html = html[:start] + html[end + len('</script>'):]
 
           launch = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./arpeggios/" style="display:block;border:1px solid #6e512b;background:#17110b;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Play Along</span><strong style="display:block;font-family:Georgia,serif;font-size:29px;margin-top:8px;">Autumn Leaves Arpeggios →</strong><span style="display:block;margin-top:8px;color:#c4b7a8;line-height:1.5;">Verified chord tones, movable fretboard windows, and the A section in chronological bar order.</span></a></section>'
-          nav = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="../../" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:22px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Morning Changes</span><strong style="display:block;font-family:Georgia,serif;font-size:24px;margin-top:8px;">← Daily launchpad</strong></a></section>'
-          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · Standards Catalog</footer>'
-          html = html.replace('</body>', launch + nav + marker + '\n</body>')
+          html = html.replace('</body>', launch + '\n</body>')
           path.write_text(html)
           PY
+
+          cat > dist/after-hours/autumn-leaves/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+            <title>Morning Changes · After Hours · Autumn Leaves</title>
+            <script>
+              (function(){var t=localStorage.getItem('morning-changes.theme.v1')||'dark';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=(t==='light'||t==='student'||t==='vintage')?'light':'dark';})();
+            </script>
+            <style>
+              :root{--bg:#090806;--panel:#15100c;--ink:#f6efe6;--muted:#b9aa9a;--line:#38291d;--gold:#e2aa62;--nav:#090806;--active:#25190f}:root[data-theme="light"]{--bg:#f8f6f1;--panel:#fff;--ink:#1b2633;--muted:#5f6d7a;--line:#c8cdd0;--gold:#9c6116;--nav:#faf9f5;--active:#e5edf5}:root[data-theme="student"]{--bg:#f9f8f3;--panel:#fff;--ink:#17263e;--muted:#53657d;--line:#c2d0de;--gold:#bd3039;--nav:#f9f8f3;--active:#e8f0fb}:root[data-theme="bluesy"]{--bg:#111a31;--panel:#1a355a;--ink:#edf3f3;--muted:#b8c8d2;--line:#4d7198;--gold:#75d1e8;--nav:#0c182f;--active:#203f66}:root[data-theme="vintage"]{--bg:#1a0d07;--panel:#35180b;--ink:#f7e5c6;--muted:#d2b88e;--line:#e3c99d;--gold:#f1bd68;--nav:#0a0705;--active:#51210c}*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Inter",Arial,sans-serif}.top{height:66px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 22px;border-bottom:1px solid var(--line);background:var(--nav)}.brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none}.mark{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--line);border-radius:10px;color:var(--gold);font-size:20px}.brand strong{display:block;font-family:Georgia,serif;font-size:18px}.brand small{display:block;margin-top:1px;color:var(--muted);font-size:10px}.nav{display:flex;gap:5px}.nav a{padding:8px 10px;border-radius:9px;color:var(--muted);font-size:13px;text-decoration:none}.nav a.active{background:var(--active);color:var(--gold)}.after-label{color:var(--gold);font-size:11px;letter-spacing:.2em;text-transform:uppercase}.frame{display:block;width:100%;height:calc(100dvh - 66px);border:0;background:#0b0907}@media(max-width:760px){.top{height:58px;padding:0 13px}.nav{display:none}.after-label{font-size:9px}.frame{height:calc(100dvh - 58px)}}
+            </style>
+          </head>
+          <body>
+            <header class="top"><a class="brand" href="../../#/"><span class="mark">◒</span><span><strong>Morning Changes</strong><small>After Hours · tune study</small></span></a><nav class="nav"><a href="../../#/">Home</a><a href="../../#/learn">Learn</a><a href="../../#/paths">Paths</a><a class="active" href="../../#/after-hours">After</a><a href="../../#/tools">Tools</a><a href="../../#/progress">Progress</a></nav><span class="after-label">Autumn Leaves</span></header>
+            <iframe class="frame" title="After Hours — Autumn Leaves" src="guide/"></iframe>
+          </body>
+          </html>
+          HTML
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
