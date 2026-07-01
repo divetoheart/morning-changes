@@ -36,7 +36,28 @@
   border-color: rgba(0,0,0,.5) !important;
 }
 .ah-layer-dot small { font-size: 10px !important; font-weight: 900 !important; }
-.ah-layer-dot.root { border-color: #111827 !important; background: #f5d46b !important; }
+.ah-layer-dot.root:not(.multi) { border-color: #111827 !important; background: #f5d46b !important; }
+
+/* One position, one label: memberships become a compact segmented outer ring. */
+.ah-layer-dot.multi {
+  display: grid !important;
+  place-items: center;
+  padding: 3px !important;
+  border-color: rgba(0,0,0,.74) !important;
+}
+.ah-layer-dot.multi small {
+  display: grid !important;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--marker-core) !important;
+  color: #0b0f16 !important;
+  line-height: 1;
+}
+.ah-layer-dot.multi.root { border-radius: 5px !important; }
+.ah-layer-dot.multi.agreement { border-style: double !important; }
+.ah-layer-dot.multi.conflict { box-shadow: 0 0 0 1px rgba(255,255,255,.22), 0 0 0 3px rgba(0,0,0,.1); }
 
 /* Semantic key references are prose, not chord symbols. */
 .music-typography-root .key-name {
@@ -79,6 +100,7 @@
     padding: 3px !important;
   }
   .ah-layer-dot { width: 19px !important; height: 19px !important; }
+  .ah-layer-dot.multi { padding: 2px !important; }
   .ah-layer-dot small { font-size: 9px !important; }
   .ah-recording-actions { align-items: flex-start; flex-wrap: wrap; }
 }
