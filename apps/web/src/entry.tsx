@@ -16,6 +16,7 @@ import './after-hours-theme-audit.css';
 import './music-contrast.css';
 import './after-hours-restored.css';
 import './after-hours-port.css';
+import './after-hours-fixes.css';
 import './mobile-nav-guard.css';
 
 const mountNode = document.querySelector('#root');
