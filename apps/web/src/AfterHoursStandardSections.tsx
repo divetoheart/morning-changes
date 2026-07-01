@@ -1,7 +1,16 @@
 import type { ReactNode } from 'react';
 
 export type StandardFact = { label: string; value: string };
-export type HeadphonePick = { meta: string; title: string; artist: string; note: string; href?: string; linkLabel?: string };
+export type HeadphonePick = {
+  meta: string;
+  title: string;
+  artist: string;
+  note: string;
+  href?: string;
+  linkLabel?: string;
+  keyLabel?: string;
+  onSwitchKey?: () => void;
+};
 
 export function StandardIntro({
   number,
@@ -64,7 +73,10 @@ export function ThreeForHeadphones({ title, subtitle, picks }: { title: string; 
       <h3>{pick.title}</h3>
       <strong>{pick.artist}</strong>
       <p>{pick.note}</p>
-      {pick.href && <a href={pick.href} target="_blank" rel="noreferrer">{pick.linkLabel ?? 'Open YouTube reference ↗'}</a>}
+      <div className="ah-recording-actions">
+        {pick.href && <a href={pick.href} target="_blank" rel="noreferrer">{pick.linkLabel ?? 'Open YouTube reference ↗'}</a>}
+        {pick.onSwitchKey && <button type="button" onClick={pick.onSwitchKey}>Switch to {pick.keyLabel ?? 'this key'} →</button>}
+      </div>
     </article>)}</div>
   </section>;
 }
