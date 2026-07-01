@@ -1,13 +1,23 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 
 const KEY_NAME = /\b([A-G])([b#♭♯]?)(\s+(?:major|minor))\b/g;
-const CHORD = /\b([A-G])([b#♭♯]?)(maj7|m7b5|m7♭5|m7|7|maj|m|dim)\b/g;
+const CHORD = /\b([A-G])([b#♭♯]?)(maj7|m7b5|m7♭5|m7|dim7?|aug|ø7?|°7?|\+|7|maj|m)(?=$|[^A-Za-z0-9])/g;
 const NOTE = /\b([A-G])([b#♭♯])\b/g;
-const FUNCTION = /\b([ivIV]+)(m7b5|m7♭5|maj7|m7|7|maj|m|ø)?\b/g;
+const FUNCTION = /\b([ivIV]+)(m7b5|m7♭5|maj7|m7|7|maj|m|ø|°|\+)?\b/g;
 const INTERVAL = /(?<![A-Za-z0-9])((?:bb|b|##|#|♭|♯)?)([1-7])((?:st|nd|rd|th)s?)?(?![A-Za-z0-9])/g;
+
+type SymbolKind = 'half-diminished' | 'diminished' | 'augmented' | null;
 
 function prettyAccidental(value: string) { return value.replaceAll('bb', '♭♭').replaceAll('##', '♯♯').replaceAll('b', '♭').replaceAll('#', '♯'); }
 function prettyQuality(value: string) { return value.replace('m7b5', 'm7♭5'); }
+function symbolKind(value: string): SymbolKind {
+  const quality = prettyQuality(value);
+  if (quality.includes('ø') || quality.includes('m7♭5')) return 'half-diminished';
+  if (quality.includes('°') || quality.includes('dim')) return 'diminished';
+  if (quality.includes('+') || quality.includes('aug')) return 'augmented';
+  return null;
+}
+function symbolClass(kind: SymbolKind) { return kind ? ` is-${kind}` : ''; }
 function shouldLeaveAsPlainNumber(text: string, end: number) {
   const after = text.slice(end);
   const before = text.slice(0, end);
@@ -21,8 +31,22 @@ function playerLanguage(value: string) { return value.replace(/\bRender\b/g, 'Bu
 type Match = { index: number; length: number; node: Node };
 function makeText(value: string) { return document.createTextNode(value); }
 function makeKeyName(root: string, accidental: string, descriptor: string) { const key = document.createElement('strong'); key.className = 'key-name'; key.textContent = `${root}${prettyAccidental(accidental)}${descriptor}`; return key; }
-function makeChord(root: string, accidental: string, quality: string) { const chord = document.createElement('span'); chord.className = 'chord-symbol'; const note = document.createElement('span'); note.className = 'chord-root'; note.textContent = root; chord.append(note); if (accidental) { const acc = document.createElement('sup'); acc.className = 'music-accidental'; acc.textContent = prettyAccidental(accidental); chord.append(acc); } if (quality) { const suffix = document.createElement('sup'); suffix.className = 'chord-quality'; suffix.textContent = prettyQuality(quality); chord.append(suffix); } return chord; }
-function makeFunction(numeral: string, quality: string) { const symbol = document.createElement('span'); symbol.className = 'function-symbol'; const main = document.createElement('em'); main.textContent = numeral; symbol.append(main); if (quality) { const suffix = document.createElement('sup'); suffix.textContent = quality === 'ø' ? 'ø' : prettyQuality(quality); symbol.append(suffix); } return symbol; }
+function makeChord(root: string, accidental: string, quality: string) {
+  const kind = symbolKind(quality);
+  const chord = document.createElement('span');
+  chord.className = `chord-symbol${symbolClass(kind)}`;
+  const note = document.createElement('span'); note.className = 'chord-root'; note.textContent = root; chord.append(note);
+  if (accidental) { const acc = document.createElement('sup'); acc.className = 'music-accidental'; acc.textContent = prettyAccidental(accidental); chord.append(acc); }
+  if (quality) { const suffix = document.createElement('sup'); suffix.className = `chord-quality${symbolClass(kind)}`; suffix.textContent = prettyQuality(quality); chord.append(suffix); }
+  return chord;
+}
+function makeFunction(numeral: string, quality: string) {
+  const kind = symbolKind(quality);
+  const symbol = document.createElement('span'); symbol.className = `function-symbol${symbolClass(kind)}`;
+  const main = document.createElement('em'); main.textContent = numeral; symbol.append(main);
+  if (quality) { const suffix = document.createElement('sup'); suffix.className = symbolClass(kind).trim(); suffix.textContent = quality === 'ø' ? 'ø' : prettyQuality(quality); symbol.append(suffix); }
+  return symbol;
+}
 function makeInterval(accidental: string, degree: string, ordinal: string) { const symbol = document.createElement('span'); symbol.className = 'interval-symbol'; if (accidental) { const acc = document.createElement('sup'); acc.className = 'music-accidental'; acc.textContent = prettyAccidental(accidental); symbol.append(acc); } const number = document.createElement('b'); number.textContent = degree; symbol.append(number); if (ordinal) { const suffix = document.createElement('small'); suffix.textContent = ordinal; symbol.append(suffix); } return symbol; }
 
 function replaceTextNode(textNode: Text, allowIntervals: boolean, allowBareDegrees: boolean) {
@@ -41,13 +65,24 @@ function replaceTextNode(textNode: Text, allowIntervals: boolean, allowBareDegre
   textNode.replaceWith(fragment);
 }
 
+function applySymbolClasses(symbol: HTMLElement, quality: string) {
+  const kind = symbolKind(quality);
+  symbol.classList.toggle('is-half-diminished', kind === 'half-diminished');
+  symbol.classList.toggle('is-diminished', kind === 'diminished');
+  symbol.classList.toggle('is-augmented', kind === 'augmented');
+}
 function normalizeStructuredNotation(root: HTMLElement) {
   root.querySelectorAll<HTMLElement>('.chord-symbol').forEach(symbol => {
     const rootText = Array.from(symbol.children).find(child => child.tagName !== 'SUP');
     if (rootText) { const next = prettyAccidental(rootText.textContent ?? ''); if (rootText.textContent !== next) rootText.textContent = next; }
-    symbol.querySelectorAll('sup').forEach(suffix => { const next = prettyQuality(suffix.textContent ?? ''); if (suffix.textContent !== next) suffix.textContent = next; });
+    const suffix = symbol.querySelector('sup');
+    if (suffix) { const next = prettyQuality(suffix.textContent ?? ''); if (suffix.textContent !== next) suffix.textContent = next; applySymbolClasses(symbol, next); applySymbolClasses(suffix as HTMLElement, next); }
   });
-  root.querySelectorAll<HTMLElement>('.function-symbol sup').forEach(suffix => { const next = prettyQuality(suffix.textContent ?? ''); if (suffix.textContent !== next) suffix.textContent = next; });
+  root.querySelectorAll<HTMLElement>('.function-symbol sup').forEach(suffix => {
+    const next = prettyQuality(suffix.textContent ?? ''); if (suffix.textContent !== next) suffix.textContent = next;
+    applySymbolClasses(suffix.closest('.function-symbol') as HTMLElement, next);
+    applySymbolClasses(suffix, next);
+  });
 }
 
 function applyNotation(root: HTMLElement) {
