@@ -95,6 +95,7 @@ export function AfterHoursAutumnLeavesApp() {
     };
 
     element.addEventListener('load', observeGuide);
+    if (element.contentDocument?.readyState === 'complete') observeGuide();
     return () => {
       element.removeEventListener('load', observeGuide);
       guideObserver?.disconnect();
