@@ -2,7 +2,8 @@ import type { IntervalPosition } from './types';
 
 export type FretboardLayerId = 'caged' | 'pentatonic' | 'arpeggio' | 'scale' | 'roots';
 
-export type LayerMembership = IntervalPosition & {
+/** The resolver needs semantic location/role data, not a duplicated note object. */
+export type LayerMembership = Pick<IntervalPosition, 'stringIndex' | 'fret' | 'interval' | 'role'> & {
   layer: FretboardLayerId;
 };
 
