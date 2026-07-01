@@ -12,24 +12,21 @@ export function AutumnPortIntro() {
     facts={[{ label:'Music', value:'Joseph Kosma' }, { label:'Lyrics', value:'Prévert · Mercer' }, { label:'Introduced', value:'1945' }, { label:'Form', value:'A A′ B C · 32 bars' }]}
     why="Autumn Leaves is the classic vehicle for hearing relative major and relative minor in one form: each eight-bar group carries a major ii–V–I–IV thought and a minor iiø–V7–i thought."
     note="Notation and tab for the copyrighted melody remain omitted. This guide is harmony, guitar-shape, and original-study material."
-  >
-    <div className="ah-port-standard-select"><button className="active" type="button">Autumn Leaves</button><button type="button" disabled>Ain’t Misbehavin’ · next</button><button type="button" disabled>Day and Age · next</button></div>
-  </StandardIntro>;
+  />;
 }
 
 export function AutumnPortFooter({ study }: { study: StudyKey }) {
   return <>
-    <section className="ah-port-etude"><span className="eyebrow">Play now · original study</span><h2>Etude in {study.short}</h2><p>Original 8-bar study over the A-section changes. Use your licensed lead sheet for the copyrighted melody and lyrics.</p><div>{study.form[0].bars.map((bar, index) => <span key={index}>{bar.map(cell => chordMarkup(cell.label))}</span>)}</div></section>
     <ThreeForHeadphones
       title="Three versions, three ways to hear the form."
       subtitle="Start with the melody, then listen for space, time feel, and how each version keeps the harmony audible without sounding like an exercise."
       picks={[
-        { meta:'1958 · Somethin’ Else', title:'Autumn Leaves', artist:'Cannonball Adderley featuring Miles Davis', note:'The Gm/B♭ modern-jazz reference: Miles’s spacious statement, Adderley’s alto, and a lesson in playing the form without crowding it.', href:'https://www.milesdavis.com/albums/cannonball-adderley-somethin-else/' },
+        { meta:'1958 · Somethin’ Else', title:'Autumn Leaves', artist:'Cannonball Adderley featuring Miles Davis', note:'The Gm/B♭ modern-jazz reference: Miles’s spacious statement, Adderley’s alto, and a lesson in playing the form without crowding it.', href:'https://www.youtube.com/watch?v=u37RF5xKNq8' },
         { meta:'1959 / released 1960 · Portrait in Jazz', title:'Autumn Leaves', artist:'Bill Evans Trio', note:'Hear the form as a conversation. This is the reference for trio interaction, comping space, and a rhythm section that moves as one line.', href:'https://www.youtube.com/watch?v=r-Z8KuwI7Gc' },
-        { meta:'2010 · Clapton', title:'Autumn Leaves', artist:'Eric Clapton', note:'A vocal, guitar-forward reading from Clapton’s 2010 album. The Bm/D option above is the dedicated guitar study key for this reference.', href:'https://en.wikipedia.org/wiki/Clapton_(2010_album)', linkLabel:'Album reference ↗' }
+        { meta:'2010 · Clapton', title:'Autumn Leaves', artist:'Eric Clapton', note:'A vocal, guitar-forward reading from Clapton’s 2010 album. The Bm/D option above is the dedicated guitar study key for this reference.', href:'https://www.youtube.com/results?search_query=Eric+Clapton+Autumn+Leaves+Clapton+2010', linkLabel:'Open YouTube reference ↗' }
       ]}
     />
-    <section className="ah-port-sources"><span className="eyebrow">Sources & further reading</span><ul><li><a href="https://www.crj-online.org/v4/CRJ-AutumnLeaves.php" target="_blank" rel="noreferrer">Current Research in Jazz — Autumn Leaves study ↗</a><span>History, key variants, recordings, and pedagogical context.</span></li><li><a href="https://www.milesdavis.com/albums/cannonball-adderley-somethin-else/" target="_blank" rel="noreferrer">Cannonball Adderley — Somethin’ Else ↗</a><span>Personnel, session date, and album notes.</span></li><li><a href="https://en.wikipedia.org/wiki/Clapton_(2010_album)" target="_blank" rel="noreferrer">Eric Clapton — Clapton (2010) ↗</a><span>The album’s track list includes Autumn Leaves as its closing song.</span></li></ul></section>
+    <section className="ah-port-sources"><span className="eyebrow">Sources & further reading</span><ul><li><a href="https://www.crj-online.org/v4/CRJ-AutumnLeaves.php" target="_blank" rel="noreferrer">Current Research in Jazz — Autumn Leaves study ↗</a><span>History, key variants, recordings, and pedagogical context.</span></li><li><a href="https://en.wikipedia.org/wiki/Somethin%27_Else_(Cannonball_Adderley_album)" target="_blank" rel="noreferrer">Somethin’ Else — recording context ↗</a><span>Personnel and 1958 session context for the canonical version.</span></li><li><a href="https://en.wikipedia.org/wiki/Clapton_(2010_album)" target="_blank" rel="noreferrer">Eric Clapton — Clapton (2010) ↗</a><span>Album context for Clapton’s version.</span></li></ul></section>
     <StandardFooter />
   </>;
 }
