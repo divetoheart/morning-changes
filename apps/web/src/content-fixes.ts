@@ -1,4 +1,4 @@
-import { lessons } from './content/catalog';
+import { lessons, standards } from './content/catalog';
 
 const minorCadence = lessons.find(lesson => lesson.id === 'minor-ii-v-i-cadence');
 if (minorCadence) {
@@ -17,5 +17,17 @@ if (minorCadence) {
         .replace('Render iim7b5 V7 im7', 'Build iiø7 V7 i7')
         .replace('resolve V7 into i', 'resolve V7 into i using the raised 7th')
     }))
+  });
+}
+
+const blues = standards.find(standard => standard.id === 'blues-lab-standard');
+if (blues) {
+  Object.assign(blues, {
+    title: '12-Bar Blues',
+    subtitle: 'Form, dominant chord targets, turnarounds, and three essential recordings: Texas Flood, Crossroads, and Pride and Joy.',
+    status: 'available',
+    access: 'free',
+    href: '#/after-hours/12-bar-blues',
+    focus: 'I–IV–V form · slow blues · dominant targeting'
   });
 }
