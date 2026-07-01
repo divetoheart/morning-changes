@@ -33,11 +33,24 @@ if (!standards.some(standard => standard.id === 'texas-flood')) {
 }
 
 if (typeof window !== 'undefined') {
-  window.setTimeout(() => {
+  const texasRoute = '#/after-hours/autumn-leaves?standard=texas-flood';
+  const patchTexasFloodLink = () => {
     document.querySelectorAll<HTMLElement>('.standard-row').forEach(row => {
       if (!/Texas Flood/i.test(row.textContent ?? '')) return;
-      const link = row.querySelector<HTMLAnchorElement>('a');
-      if (link) link.setAttribute('href', '#/after-hours/autumn-leaves?standard=texas-flood');
+      row.querySelector<HTMLAnchorElement>('a')?.setAttribute('href', texasRoute);
     });
-  }, 0);
+  };
+  let attempts = 0;
+  const retryPatch = () => {
+    patchTexasFloodLink();
+    attempts += 1;
+    if (attempts < 12) window.setTimeout(retryPatch, 50);
+  };
+  retryPatch();
+  document.addEventListener('click', event => {
+    const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('a');
+    if (!link || !/Texas Flood/i.test(link.closest('.standard-row')?.textContent ?? '')) return;
+    event.preventDefault();
+    window.location.hash = '/after-hours/autumn-leaves?standard=texas-flood';
+  }, true);
 }
