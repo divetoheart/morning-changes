@@ -40,23 +40,29 @@ jobs:
           mkdir -p dist
           cp -R apps/web/dist/. dist/
 
-          # Old public After Hours URLs now land inside the shared React application.
-          for path in dist/after-hours/autumn-leaves dist/after-hours/autumn-leaves/arpeggios; do
-            mkdir -p "$path"
-            cat > "$path/index.html" <<'HTML'
+          mkdir -p dist/after-hours/autumn-leaves
+          cat > dist/after-hours/autumn-leaves/index.html <<'HTML'
           <!doctype html>
-          <html lang="en">
-            <head>
-              <meta charset="utf-8" />
-              <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-              <meta http-equiv="refresh" content="0; url=../../#/after-hours/autumn-leaves" />
-              <title>Morning Changes · After Hours</title>
-              <script>location.replace('../../#/after-hours/autumn-leaves');</script>
-            </head>
-            <body></body>
-          </html>
+          <html lang="en"><head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+            <meta http-equiv="refresh" content="0; url=../../#/after-hours/autumn-leaves" />
+            <title>Morning Changes · After Hours</title>
+            <script>location.replace('../../#/after-hours/autumn-leaves');</script>
+          </head><body></body></html>
           HTML
-          done
+
+          mkdir -p dist/after-hours/autumn-leaves/arpeggios
+          cat > dist/after-hours/autumn-leaves/arpeggios/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en"><head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+            <meta http-equiv="refresh" content="0; url=../../../#/after-hours/autumn-leaves" />
+            <title>Morning Changes · After Hours</title>
+            <script>location.replace('../../../#/after-hours/autumn-leaves');</script>
+          </head><body></body></html>
+          HTML
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
