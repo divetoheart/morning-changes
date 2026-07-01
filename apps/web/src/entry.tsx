@@ -10,6 +10,7 @@ import './lesson-rendering.css';
 import './notation.css';
 import './themes.css';
 import './after-hours.css';
+import './theme-clarity.css';
 
 function UnifiedRoot() {
   const [hash, setHash] = useState(() => window.location.hash);
