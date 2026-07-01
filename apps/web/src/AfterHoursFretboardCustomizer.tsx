@@ -1,4 +1,4 @@
-import { type CSSProperties, useEffect, useMemo, useState } from 'react';
+import { type CSSProperties, type ReactNode, useEffect, useMemo, useState } from 'react';
 import type { ArpType } from './after-hours-types';
 import { CAGED_POSITIONS, PENTATONIC_BOXES } from './after-hours-shapes';
 import { assertMusicEngineContract } from './lib/music/contract';
@@ -27,13 +27,13 @@ type Layer = 'caged' | 'pentatonic' | 'arpeggio' | 'scale';
 type ChordOption = { label: string; root?: string; quality?: ArpType };
 
 type FretboardMapProps = {
-  keyLabel: string;
+  keyLabel: ReactNode;
   majorRoot: string;
   minorRoot: string;
   chords: ChordOption[];
-  description: string;
-  cagedLabel: string;
-  pentatonicLabel: string;
+  description: ReactNode;
+  cagedLabel: ReactNode;
+  pentatonicLabel: ReactNode;
   defaultLayers?: Partial<Record<Layer, boolean>>;
   mode?: 'layers' | 'roots';
   eyebrow?: string;
