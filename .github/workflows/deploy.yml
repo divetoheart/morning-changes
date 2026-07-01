@@ -36,33 +36,66 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf dist
-          mkdir -p dist
+          rm -rf dist _guide
+          mkdir -p dist _guide
           cp -R apps/web/dist/. dist/
 
-          mkdir -p dist/after-hours/autumn-leaves
-          cat > dist/after-hours/autumn-leaves/index.html <<'HTML'
-          <!doctype html>
-          <html lang="en"><head>
-            <meta charset="utf-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-            <meta http-equiv="refresh" content="0; url=../../#/after-hours/autumn-leaves" />
-            <title>Morning Changes · After Hours</title>
-            <script>location.replace('../../#/after-hours/autumn-leaves');</script>
-          </head><body></body></html>
-          HTML
+      - name: Restore dedicated After Hours guide
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -o "Autumn Leaves Jazz Guide.zip" -d _guide
+
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          bundle = Path('_guide/assets/index-D0-FcZsw.js')
+          source = bundle.read_text()
+          cleaned, count = re.subn(
+              r'\$x=\{id:"aint-misbehavin".*?co=\[Fx,\$x,Vx\]',
+              'co=[Fx]',
+              source,
+              flags=re.S,
+          )
+          if count != 1:
+              raise RuntimeError(f'Expected one extra-standard bundle block, found {count}')
+          bundle.write_text(cleaned)
+          PY
 
           mkdir -p dist/after-hours/autumn-leaves/arpeggios
-          cat > dist/after-hours/autumn-leaves/arpeggios/index.html <<'HTML'
-          <!doctype html>
-          <html lang="en"><head>
-            <meta charset="utf-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-            <meta http-equiv="refresh" content="0; url=../../../#/after-hours/autumn-leaves" />
-            <title>Morning Changes · After Hours</title>
-            <script>location.replace('../../../#/after-hours/autumn-leaves');</script>
-          </head><body></body></html>
-          HTML
+          cp -R _guide/. dist/after-hours/autumn-leaves/
+
+          # Preserve absolute bundle imports without replacing the React build assets.
+          mkdir -p dist/assets
+          cp -R -n _guide/assets/. dist/assets/
+
+          cp standards/autumn-leaves/arpeggio-playalong.html dist/after-hours/autumn-leaves/arpeggios/index.html
+          sed -i 's|href="../../"|href="../../../"|' dist/after-hours/autumn-leaves/arpeggios/index.html
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('dist/after-hours/autumn-leaves/index.html')
+          html = path.read_text()
+          html = html.replace('href="/assets/', 'href="./assets/')
+          html = html.replace('src="/assets/', 'src="./assets/')
+          html = html.replace("href='/assets/", "href='./assets/")
+          html = html.replace("src='/assets/", "src='./assets/")
+          html = html.replace('</head>', '<style>html,body,#root{background:#0b0907;color:#f4eee5;min-height:100%;}</style></head>')
+
+          start = html.find('<script data-pplx-inline-edit>')
+          if start != -1:
+              end = html.find('</script>', start)
+              if end != -1:
+                  html = html[:start] + html[end + len('</script>'):]
+
+          launch = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="./arpeggios/" style="display:block;border:1px solid #6e512b;background:#17110b;color:#f4eee5;text-decoration:none;border-radius:28px;padding:24px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Play Along</span><strong style="display:block;font-family:Georgia,serif;font-size:29px;margin-top:8px;">Autumn Leaves Arpeggios →</strong><span style="display:block;margin-top:8px;color:#c4b7a8;line-height:1.5;">Verified chord tones, movable fretboard windows, and the A section in chronological bar order.</span></a></section>'
+          nav = '<section style="margin:28px auto;max-width:720px;padding:0 18px;"><a href="../../" style="display:block;border:1px solid #3d3026;background:#15110e;color:#f4eee5;text-decoration:none;border-radius:28px;padding:22px;"><span style="display:block;color:#d7a05b;font-size:11px;letter-spacing:4px;text-transform:uppercase;">Morning Changes</span><strong style="display:block;font-family:Georgia,serif;font-size:24px;margin-top:8px;">← Daily launchpad</strong></a></section>'
+          marker = '<footer style="text-align:center;padding:28px 0 44px;color:#8f8478;font-size:11px;letter-spacing:4px;text-transform:uppercase;background:#0b0907;">After Hours · Standards Catalog</footer>'
+          html = html.replace('</body>', launch + nav + marker + '\n</body>')
+          path.write_text(html)
+          PY
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
