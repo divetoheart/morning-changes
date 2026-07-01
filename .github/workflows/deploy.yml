@@ -70,8 +70,6 @@ jobs:
 
           cp standards/autumn-leaves/arpeggio-playalong.html dist/after-hours/autumn-leaves/guide/arpeggios/index.html
           sed -i 's|href="../../"|href="../../../#\/"|' dist/after-hours/autumn-leaves/guide/arpeggios/index.html
-          sed -i 's|data-key="Cm">C minor|data-key="Bm">Clapton · B minor|g' dist/after-hours/autumn-leaves/guide/arpeggios/index.html
-          sed -i 's|C minor is ready as a selectable arrangement key.|Eric Clapton · B minor is ready as a selectable arrangement key.|g' dist/after-hours/autumn-leaves/guide/arpeggios/index.html
 
           python3 - <<'PY'
           from pathlib import Path
