@@ -8,6 +8,7 @@ import './lesson-rendering.css';
 import './notation.css';
 import './themes.css';
 import './theme-clarity.css';
+import './after-hours.css';
 
 const mountNode = document.querySelector('#root');
 
