@@ -31,12 +31,22 @@
   padding: 4px !important;
 }
 .ah-layer-dot {
+  display: grid !important;
+  place-items: center;
   width: 22px !important;
   height: 22px !important;
-  border-color: rgba(0,0,0,.5) !important;
+  box-sizing: border-box;
+  border: 1px solid rgba(0,0,0,.5) !important;
+  border-radius: 50%;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
 }
+.ah-layer-dot:hover { transform: scale(1.12); }
+.ah-layer-dot:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.ah-layer-dot[aria-pressed='true'] { box-shadow: 0 0 0 2px var(--surface-bg), 0 0 0 4px var(--gold); }
 .ah-layer-dot small { font-size: 10px !important; font-weight: 900 !important; }
-.ah-layer-dot.root:not(.multi) { border-color: #111827 !important; background: #f5d46b !important; }
+.ah-layer-dot.root:not(.multi) { border-color: #111827 !important; border-radius: 5px; background: #f5d46b !important; }
 
 /* One position, one label: memberships become a compact segmented outer ring. */
 .ah-layer-dot.multi {
@@ -58,6 +68,60 @@
 .ah-layer-dot.multi.root { border-radius: 5px !important; }
 .ah-layer-dot.multi.agreement { border-style: double !important; }
 .ah-layer-dot.multi.conflict { box-shadow: 0 0 0 1px rgba(255,255,255,.22), 0 0 0 3px rgba(0,0,0,.1); }
+
+.ah-fretboard-detail {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px 16px;
+  max-width: 640px;
+  margin: 12px 0 16px;
+  padding: 13px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--panel-raised);
+}
+.ah-fretboard-detail .eyebrow { display: block; margin-bottom: 3px; }
+.ah-fretboard-detail strong { font-size: 13px; }
+.ah-fretboard-detail p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+.ah-fretboard-detail > button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 19px;
+  line-height: 1;
+}
+.ah-fretboard-detail ul {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ah-fretboard-detail li {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 7px 8px;
+  border-radius: 9px;
+  background: var(--surface-bg);
+  font-size: 11px;
+}
+.ah-fretboard-detail li > span:last-child { color: var(--muted); white-space: nowrap; }
+.ah-detail-swatch { width: 9px; height: 9px; border-radius: 50%; background: #f5d46b; }
+.ah-detail-swatch.caged { background: #84bdff; }
+.ah-detail-swatch.pentatonic { background: #f7bf65; }
+.ah-detail-swatch.arpeggio { background: #e69bc6; }
+.ah-detail-swatch.scale { background: #83d5b7; }
+.ah-detail-swatch.roots { background: #f5d46b; }
 
 /* Semantic key references are prose, not chord symbols. */
 .music-typography-root .key-name {
@@ -102,5 +166,6 @@
   .ah-layer-dot { width: 19px !important; height: 19px !important; }
   .ah-layer-dot.multi { padding: 2px !important; }
   .ah-layer-dot small { font-size: 9px !important; }
+  .ah-fretboard-detail { margin-bottom: 13px; }
   .ah-recording-actions { align-items: flex-start; flex-wrap: wrap; }
 }
