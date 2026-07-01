@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 
+const KEY_NAME = /\b([A-G])([b#♭♯]?)(\s+(?:major|minor))\b/g;
 const CHORD = /\b([A-G])([b#♭♯]?)(maj7|m7b5|m7♭5|m7|7|maj|m|dim)\b/g;
 const NOTE = /\b([A-G])([b#♭♯])\b/g;
 const FUNCTION = /\b([ivIV]+)(m7b5|m7♭5|maj7|m7|7|maj|m|ø)?\b/g;
@@ -19,6 +20,7 @@ function playerLanguage(value: string) { return value.replace(/\bRender\b/g, 'Bu
 
 type Match = { index: number; length: number; node: Node };
 function makeText(value: string) { return document.createTextNode(value); }
+function makeKeyName(root: string, accidental: string, descriptor: string) { const key = document.createElement('strong'); key.className = 'key-name'; key.textContent = `${root}${prettyAccidental(accidental)}${descriptor}`; return key; }
 function makeChord(root: string, accidental: string, quality: string) { const chord = document.createElement('span'); chord.className = 'chord-symbol'; const note = document.createElement('span'); note.className = 'chord-root'; note.textContent = root; chord.append(note); if (accidental) { const acc = document.createElement('sup'); acc.className = 'music-accidental'; acc.textContent = prettyAccidental(accidental); chord.append(acc); } if (quality) { const suffix = document.createElement('sup'); suffix.className = 'chord-quality'; suffix.textContent = prettyQuality(quality); chord.append(suffix); } return chord; }
 function makeFunction(numeral: string, quality: string) { const symbol = document.createElement('span'); symbol.className = 'function-symbol'; const main = document.createElement('em'); main.textContent = numeral; symbol.append(main); if (quality) { const suffix = document.createElement('sup'); suffix.textContent = quality === 'ø' ? 'ø' : prettyQuality(quality); symbol.append(suffix); } return symbol; }
 function makeInterval(accidental: string, degree: string, ordinal: string) { const symbol = document.createElement('span'); symbol.className = 'interval-symbol'; if (accidental) { const acc = document.createElement('sup'); acc.className = 'music-accidental'; acc.textContent = prettyAccidental(accidental); symbol.append(acc); } const number = document.createElement('b'); number.textContent = degree; symbol.append(number); if (ordinal) { const suffix = document.createElement('small'); suffix.textContent = ordinal; symbol.append(suffix); } return symbol; }
@@ -26,6 +28,7 @@ function makeInterval(accidental: string, degree: string, ordinal: string) { con
 function replaceTextNode(textNode: Text, allowIntervals: boolean, allowBareDegrees: boolean) {
   const source = playerLanguage(textNode.nodeValue ?? ''); const matches: Match[] = [];
   const collect = (regex: RegExp, builder: (match: RegExpMatchArray) => Node, guard?: (match: RegExpMatchArray, end: number) => boolean) => { regex.lastIndex = 0; for (const match of source.matchAll(regex)) { const index = match.index ?? 0; const end = index + match[0].length; if (!guard?.(match, end)) matches.push({ index, length: match[0].length, node: builder(match) }); } };
+  collect(KEY_NAME, match => makeKeyName(match[1], match[2] ?? '', match[3] ?? ''));
   collect(CHORD, match => makeChord(match[1], match[2] ?? '', match[3] ?? ''));
   collect(NOTE, match => makeChord(match[1], match[2] ?? '', ''));
   collect(FUNCTION, match => makeFunction(match[1], match[2] ?? ''));
@@ -53,7 +56,7 @@ function applyNotation(root: HTMLElement) {
   while (walker.nextNode()) {
     const node = walker.currentNode as Text;
     const parent = node.parentElement;
-    if (!parent || parent.closest('script, style, select, option, input, textarea, .chord-symbol, .function-symbol, .interval-symbol')) continue;
+    if (!parent || parent.closest('script, style, select, option, input, textarea, .chord-symbol, .function-symbol, .interval-symbol, .key-name, .ah-layer-dot')) continue;
     const insideButton = Boolean(parent.closest('button'));
     const buttonAllowsNotation = Boolean(parent.closest('.compact-row, .lesson-card, .change-step-rail, .change-step-actions, .sheet-course-list'));
     if (insideButton && !buttonAllowsNotation) continue;
