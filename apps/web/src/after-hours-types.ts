@@ -1,6 +1,13 @@
+import type { FunctionalChord } from './lib/music';
+
 export type ArpType = 'maj7' | 'm7' | '7' | 'm7b5';
 export type ScaleType = 'major' | 'dorian' | 'mixolydian' | 'halfWhole';
-export type HarmonyCell = { label: string; roman?: string };
+export type HarmonyCell = {
+  label: string;
+  /** Transitional legacy display string; prefer function for new material. */
+  roman?: string;
+  function?: FunctionalChord;
+};
 export type FormSection = { name: string; bars: HarmonyCell[][] };
 export type StudyKey = {
   id: string;
