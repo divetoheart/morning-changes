@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { KEYS, transpose, type KeyName } from './lib/theory';
 
 type Quality = 'm7' | '7' | 'maj7' | 'm7b5';
 type Bar = { function: string; degree: '1' | '2' | '3' | '4' | '5' | '6' | '7'; quality: Quality; label: string };
-
+type TexasBar = { function: 'I' | 'IV' | 'V'; root: KeyName; label: string };
 type Tone = { interval: string; note: string };
 
 const MINOR_LABELS: Record<KeyName, string> = {
@@ -21,6 +22,13 @@ const A_SECTION: Bar[] = [
   { function: 'i', degree: '1', quality: 'm7', label: 'hold / loop' }
 ];
 
+const TEXAS_FLOOD_FORM: TexasBar[] = [
+  { function: 'I', root: 'G', label: 'home' }, { function: 'I', root: 'G', label: 'hold' }, { function: 'I', root: 'G', label: 'home' }, { function: 'I', root: 'G', label: 'turn' },
+  { function: 'IV', root: 'C', label: 'lift' }, { function: 'IV', root: 'C', label: 'hold' },
+  { function: 'I', root: 'G', label: 'home' }, { function: 'I', root: 'G', label: 'space' },
+  { function: 'V', root: 'D', label: 'peak' }, { function: 'IV', root: 'C', label: 'answer' }, { function: 'I', root: 'G', label: 'resolve' }, { function: 'V', root: 'D', label: 'turnaround' }
+];
+
 const FORMULAS: Record<Quality, Array<[string, '1' | 'b3' | '3' | 'b5' | '5' | 'b7' | '7']>> = {
   m7: [['1', '1'], ['♭3', 'b3'], ['5', '5'], ['♭7', 'b7']],
   '7': [['1', '1'], ['3', '3'], ['5', '5'], ['♭7', 'b7']],
@@ -31,43 +39,62 @@ const FORMULAS: Record<Quality, Array<[string, '1' | 'b3' | '3' | 'b5' | '5' | '
 function displayNote(value: string) { return value.replaceAll('bb', '♭♭').replaceAll('b', '♭').replaceAll('##', '♯♯').replaceAll('#', '♯'); }
 function displayQuality(value: Quality) { return value === 'm7b5' ? 'm7♭5' : value; }
 function relativeMajor(minor: KeyName) { return transpose(minor, 'b3') as KeyName; }
-function rootFor(minor: KeyName, bar: Bar, index: number) {
-  const major = relativeMajor(minor);
-  if (index <= 3) return transpose(major, bar.degree) as KeyName;
-  return transpose(minor, bar.degree) as KeyName;
-}
+function rootFor(minor: KeyName, bar: Bar, index: number) { const major = relativeMajor(minor); return index <= 3 ? transpose(major, bar.degree) as KeyName : transpose(minor, bar.degree) as KeyName; }
 function tones(root: KeyName, quality: Quality): Tone[] { return FORMULAS[quality].map(([interval, degree]) => ({ interval, note: transpose(root, degree) })); }
-function Chord({ root, quality }: { root: string; quality: Quality }) {
-  const letter = root.slice(0, 1);
-  const accidental = root.slice(1);
-  return <span className="chord-symbol after-native-chord"><span className="chord-root">{letter}</span>{accidental && <sup className="music-accidental">{displayNote(accidental)}</sup>}<sup className="chord-quality">{displayQuality(quality)}</sup></span>;
-}
-function FunctionMark({ value }: { value: string }) {
-  return <span className="function-symbol"><em>{value.replace('ø', '')}</em>{value.includes('ø') && <sup>ø</sup>}</span>;
+function Chord({ root, quality }: { root: string; quality: Quality }) { const letter = root.slice(0, 1); const accidental = root.slice(1); return <span className="chord-symbol after-native-chord"><span className="chord-root">{letter}</span>{accidental && <sup className="music-accidental">{displayNote(accidental)}</sup>}<sup className="chord-quality">{displayQuality(quality)}</sup></span>; }
+function FunctionMark({ value }: { value: string }) { return <span className="function-symbol"><em>{value.replace('ø', '')}</em>{value.includes('ø') && <sup>ø</sup>}</span>; }
+
+function ToneGrid({ tones: values, guideOnly = false }: { tones: Tone[]; guideOnly?: boolean }) {
+  return <div className="after-native-tones">{values.map(tone => <span key={`${tone.interval}-${tone.note}`} className={guideOnly && (tone.interval === '3' || tone.interval === '♭3' || tone.interval === '7' || tone.interval === '♭7') ? 'target' : tone.interval === '1' ? 'root' : ''}><small>{tone.interval}</small><b>{displayNote(tone.note)}</b></span>)}</div>;
 }
 
-function TexasFloodReference() {
+function TexasFloodStudy() {
+  const [activeBar, setActiveBar] = useState(0);
+  const current = TEXAS_FLOOD_FORM[activeBar];
+  const next = TEXAS_FLOOD_FORM[(activeBar + 1) % TEXAS_FLOOD_FORM.length];
+  const currentTones = useMemo(() => tones(current.root, '7'), [current.root]);
+  const nextTones = useMemo(() => tones(next.root, '7'), [next.root]);
+
   return <article className="after-native" data-music-context="true">
     <section className="after-native-hero">
-      <div><span className="eyebrow">After Hours · Standards Library</span><h1>Texas Flood</h1><p>Stevie Ray Vaughan’s reference: use <strong>G blues shapes</strong> with the guitar tuned down one half-step. The band sounds in G♭ concert pitch.</p></div>
+      <div><span className="eyebrow">After Hours · Standards Library</span><h1>Texas Flood</h1><p>Work from SRV’s guitar perspective: use G blues shapes with the entire guitar tuned down one half-step. The band sounds in G♭ concert pitch.</p></div>
       <a className="secondary-button" href="#/after-hours">← Standards Library</a>
     </section>
+
     <section className="after-native-grid after-native-key-card">
-      <article><span className="eyebrow">Guitar shape key</span><strong className="after-native-key">G</strong><p>Think and finger the tune in G.</p></article>
-      <article><span className="eyebrow">Concert key</span><strong className="after-native-key">G♭</strong><p>Everything sounds a semitone lower.</p></article>
-      <article><span className="eyebrow">Tuning</span><strong className="after-native-tuning">E♭ A♭ D♭ G♭ B♭ E♭</strong><p>One half-step below standard.</p></article>
+      <article><span className="eyebrow">Guitar shapes</span><strong className="after-native-key">G</strong><p>Finger and think in G.</p></article>
+      <article><span className="eyebrow">Concert pitch</span><strong className="after-native-key">G♭</strong><p>The band sounds one half-step lower.</p></article>
+      <article><span className="eyebrow">Tuning</span><strong className="after-native-tuning">E♭ A♭ D♭ G♭ B♭ E♭</strong><p>Down one semitone from standard.</p></article>
     </section>
-    <section className="after-native-practice-card">
-      <div><span className="eyebrow">Play now · slow blues</span><h2>Start with the 12-bar skeleton.</h2><p>Use G7 as home, C7 as IV, and D7 as V in your hands. Feel the slow space first; add vocabulary after the form is automatic.</p></div>
-      <div className="after-native-progression"><span><small>I</small><b>G7</b></span><span><small>IV</small><b>C7</b></span><span><small>V</small><b>D7</b></span></div>
+
+    <nav className="after-native-jump" aria-label="Texas Flood sections"><a href="#texas-form">12-bar form</a><a href="#texas-play">Play now</a><a href="#texas-targets">Chord tones</a><a href="#texas-movement">Voice leading</a></nav>
+
+    <section id="texas-form" className="after-native-section">
+      <div className="after-native-section-head"><div><span className="eyebrow">Slow 12-bar blues · guitar shapes in G</span><h2>Feel the space before the lick.</h2><p>Each box is one bar. Keep the basic I–IV–V form steady first; phrasing only works once the time feels unhurried.</p></div><span className="after-native-counter">Bar {activeBar + 1} of 12</span></div>
+      <div className="after-native-bars texas-bars">{TEXAS_FLOOD_FORM.map((bar, index) => <button key={`${bar.function}-${index}`} className={index === activeBar ? 'active' : ''} type="button" onClick={() => setActiveBar(index)}><small>Bar {index + 1} · {bar.label}</small><strong><Chord root={bar.root} quality="7" /></strong><span><FunctionMark value={bar.function} /></span></button>)}</div>
+    </section>
+
+    <section id="texas-play" className="after-native-practice-card">
+      <div><span className="eyebrow">Play now · 5 minutes</span><h2>Play the 3rd and ♭7, then leave room.</h2><p>Against the slow form, do not fill every beat. Place one guide tone on the chord change, then let the note breathe before you answer it.</p></div>
+      <ol className="after-native-steps"><li><b>1</b><span>Count the bar and name <FunctionMark value={current.function} /> before you play.</span></li><li><b>2</b><span>Land the 3rd or ♭7 of <Chord root={current.root} quality="7" />.</span></li><li><b>3</b><span>When the form moves, answer with the nearest guide tone in <Chord root={next.root} quality="7" />.</span></li></ol>
+    </section>
+
+    <section id="texas-targets" className="after-native-target-grid">
+      <article><span className="eyebrow">Now · bar {activeBar + 1}</span><h2><Chord root={current.root} quality="7" /></h2><p><FunctionMark value={current.function} /> · the 3rd and ♭7 define the dominant sound.</p><ToneGrid tones={currentTones} guideOnly /></article>
+      <article><span className="eyebrow">Next · bar {activeBar + 1 === 12 ? 1 : activeBar + 2}</span><h2><Chord root={next.root} quality="7" /></h2><p><FunctionMark value={next.function} /> · move only as far as you need to make the change clear.</p><ToneGrid tones={nextTones} guideOnly /></article>
+    </section>
+
+    <section id="texas-movement" className="after-native-movement">
+      <div><span className="eyebrow">Voice leading</span><h2>Let one chord answer the last.</h2><p>Stay close. A small change from the 3rd or ♭7 of the current dominant chord into the next chord says more than restarting a blues box every bar.</p></div>
+      <div className="after-native-movement-line"><div><span>From</span><strong><Chord root={current.root} quality="7" /></strong></div><i>→</i><div><span>To</span><strong><Chord root={next.root} quality="7" /></strong></div></div>
+      <div className="after-native-actions"><button className="secondary-button" type="button" onClick={() => setActiveBar(index => (index + 11) % 12)}>← Previous bar</button><button className="primary-button" type="button" onClick={() => setActiveBar(index => (index + 1) % 12)}>Next bar →</button></div>
     </section>
   </article>;
 }
 
-export function AfterHoursAutumnLeavesApp() {
+function AutumnLeavesStudy() {
   const [minor, setMinor] = useState<KeyName>('G');
   const [activeBar, setActiveBar] = useState(0);
-  const isTexasFlood = window.location.hash.includes('standard=texas-flood');
   const major = relativeMajor(minor);
   const current = A_SECTION[activeBar];
   const next = A_SECTION[(activeBar + 1) % A_SECTION.length];
@@ -75,8 +102,6 @@ export function AfterHoursAutumnLeavesApp() {
   const nextRoot = rootFor(minor, next, (activeBar + 1) % A_SECTION.length);
   const currentTones = useMemo(() => tones(currentRoot, current.quality), [currentRoot, current.quality]);
   const nextTones = useMemo(() => tones(nextRoot, next.quality), [nextRoot, next.quality]);
-
-  if (isTexasFlood) return <TexasFloodReference />;
 
   return <article className="after-native" data-music-context="true">
     <section className="after-native-hero">
@@ -97,8 +122,8 @@ export function AfterHoursAutumnLeavesApp() {
     </section>
 
     <section id="after-targets" className="after-native-target-grid">
-      <article><span className="eyebrow">Now · bar {activeBar + 1}</span><h2><Chord root={currentRoot} quality={current.quality} /></h2><p><FunctionMark value={current.function} /> · pick any tone, but hear the 3rd and 7th most clearly.</p><div className="after-native-tones">{currentTones.map(tone => <span key={`${tone.interval}-${tone.note}`} className={tone.interval === '1' ? 'root' : ''}><small>{tone.interval}</small><b>{displayNote(tone.note)}</b></span>)}</div></article>
-      <article><span className="eyebrow">Next · bar {(activeBar + 1) % 8 + 1}</span><h2><Chord root={nextRoot} quality={next.quality} /></h2><p><FunctionMark value={next.function} /> · aim for the closest 3rd or 7th when the bar turns.</p><div className="after-native-tones">{nextTones.map(tone => <span key={`${tone.interval}-${tone.note}`} className={tone.interval === '3' || tone.interval === '♭3' || tone.interval === '7' || tone.interval === '♭7' ? 'target' : ''}><small>{tone.interval}</small><b>{displayNote(tone.note)}</b></span>)}</div></article>
+      <article><span className="eyebrow">Now · bar {activeBar + 1}</span><h2><Chord root={currentRoot} quality={current.quality} /></h2><p><FunctionMark value={current.function} /> · pick any tone, but hear the 3rd and 7th most clearly.</p><ToneGrid tones={currentTones} /></article>
+      <article><span className="eyebrow">Next · bar {(activeBar + 1) % 8 + 1}</span><h2><Chord root={nextRoot} quality={next.quality} /></h2><p><FunctionMark value={next.function} /> · aim for the closest 3rd or 7th when the bar turns.</p><ToneGrid tones={nextTones} guideOnly /></article>
     </section>
 
     <section id="after-movement" className="after-native-movement">
@@ -107,4 +132,9 @@ export function AfterHoursAutumnLeavesApp() {
       <div className="after-native-actions"><button className="secondary-button" type="button" onClick={() => setActiveBar(index => (index + 7) % 8)}>← Previous bar</button><button className="primary-button" type="button" onClick={() => setActiveBar(index => (index + 1) % 8)}>Next bar →</button></div>
     </section>
   </article>;
+}
+
+export function AfterHoursAutumnLeavesApp() {
+  const location = useLocation();
+  return new URLSearchParams(location.search).get('standard') === 'texas-flood' ? <TexasFloodStudy /> : <AutumnLeavesStudy />;
 }
