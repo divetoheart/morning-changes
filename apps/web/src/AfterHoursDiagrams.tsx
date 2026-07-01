@@ -1,5 +1,6 @@
 import type { ArpType, FormSection } from './after-hours-types';
 import type { ShapeTone } from './after-hours-shapes';
+import { ChordFromSymbol, FunctionNotation } from './MusicNotation';
 
 type Diagram = { title: string; subtitle: string; notes: Array<{ string: number; fret: number; label: string; root?: boolean }> };
 type RootString = 'E' | 'A';
@@ -9,9 +10,9 @@ const STRINGS = ['E', 'A', 'D', 'G', 'B', 'e'];
 const PCS: Record<string, number> = { C:0,'C♯':1,Db:1,'D♭':1,D:2,'D♯':3,Eb:3,'E♭':3,E:4,F:5,'F♯':6,Gb:6,'G♭':6,G:7,'G♯':8,Ab:8,'A♭':8,A:9,'A♯':10,Bb:10,'B♭':10,B:11 };
 const CHORD_TITLE = /^[A-G](?:♭|♯|b|#)?(?:maj7|m7♭5|m7|m|7)?$/;
 
+/** Compatibility export for legacy callers; backed by the semantic notation component. */
 export function chordMarkup(value: string) {
-  const match = value.match(/^([A-G])([♭♯b#]?)(.*)$/);
-  return <span className="chord-symbol"><span className="chord-root">{match?.[1] ?? value}</span>{match?.[2] && <sup className="music-accidental">{match[2].replace('b','♭').replace('#','♯')}</sup>}{match?.[3] && <sup className="chord-quality">{match[3]}</sup>}</span>;
+  return <ChordFromSymbol value={value} />;
 }
 
 export function makeDiagram(title: string, subtitle: string, anchor: number, offsets: ReadonlyArray<ShapeTone>): Diagram {
@@ -35,7 +36,7 @@ export function makeShellDiagram(voicing: Voicing): Diagram {
     maj7:[[0,0,'1'],[2,1,'7'],[3,1,'3'],[4,0,'5']], m7:[[0,0,'1'],[2,0,'♭7'],[3,0,'♭3'],[4,0,'5']], '7':[[0,0,'1'],[2,0,'♭7'],[3,1,'3'],[4,0,'5']], m7b5:[[0,0,'1'],[2,0,'♭7'],[3,0,'♭3'],[4,-1,'♭5']]
   };
   const A: Record<ArpType, ReadonlyArray<ShapeTone>> = {
-    maj7:[[1,0,'1'],[2,2,'5'],[3,1,'7'],[4,2,'3']], m7:[[1,0,'1'],[2,2,'5'],[3,0,'♭7'],[4,1,'♭3']], '7':[[1,0,'1'],[2,2,'5'],[3,0,'♭7'],[4,1,'3']], m7b5:[[1,0,'1'],[2,1,'♭5'],[3,0,'♭7'],[4,1,'♭3']]
+    maj7:[[1,0,'1'],[2,2,'5'],[3,1,'7'],[4,2,'3']], m7:[[1,0,'1'],[2,2,'5'],[3,0,'♭7'],[4,1,'♭3']], '7':[[1,0,'1'],[2,2,'5'],[3,0,'♭7'],[4,1,'3']], m7b5:[[1,0,'1'],[2,1,'♭5'],[3,0,'♭7'],[4,1,'♭3]]
   };
   return makeDiagram(voicing.chord, 'Four-note shell voicing', rootFret(voicing.root, voicing.rootString), voicing.rootString === 'E' ? E[voicing.quality] : A[voicing.quality]);
 }
@@ -46,5 +47,5 @@ export function DiagramCard({ diagram }: { diagram: Diagram }) {
 }
 
 export function FormMap({ form }: { form: FormSection[] }) {
-  return <div className="ah-port-form">{form.map(section => <section key={section.name}><header>{section.name}</header><div>{section.bars.map((bar, index) => <article key={index}>{bar.map(cell => <span key={cell.label}>{chordMarkup(cell.label)}{cell.roman && <small>{cell.roman}</small>}</span>)}</article>)}</div></section>)}</div>;
+  return <div className="ah-port-form">{form.map(section => <section key={section.name}><header>{section.name}</header><div>{section.bars.map((bar, index) => <article key={index}>{bar.map(cell => <span key={`${cell.label}-${cell.function?.degree ?? cell.roman ?? ''}`}>{chordMarkup(cell.label)}{cell.function ? <FunctionNotation functional={cell.function} /> : cell.roman && <small>{cell.roman}</small>}</span>)}</article>)}</div></section>)}</div>;
 }
