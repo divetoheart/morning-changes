@@ -2,6 +2,7 @@ import { Fragment, type ReactNode } from 'react';
 import {
   chordQualitySuffix,
   chordSymbol,
+  functionQualitySuffix,
   functionSymbol,
   noteToString,
   parseChordSymbol,
@@ -44,7 +45,7 @@ export function ChordFromSymbol({ value, className }: { value: string; className
 }
 
 export function FunctionNotation({ functional, className = '' }: { functional: FunctionalChord; className?: string }) {
-  const suffix = chordQualitySuffix(functional.quality);
+  const suffix = functionQualitySuffix(functional.quality);
   const styleClass = qualityClass(functional.quality);
   return <span className={`function-symbol ${styleClass} ${className}`.trim()} data-music-token="function" aria-label={functionSymbol(functional)}>
     <em>{functional.degree}</em>
