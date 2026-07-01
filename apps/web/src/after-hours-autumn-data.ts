@@ -25,6 +25,14 @@ export const AUTUMN_STUDIES: StudyKey[] = [
     modes:[['Cm7','C dorian (notes of B♭ major)','Lean on 9 (D) and 13 (A) for color.'],['F7','F mixolydian','Approach the B♭ landing through F–E♭–D.'],['B♭maj7','B♭ Ionian','Aim for 3 (D) and 9 (C) at downbeats.'],['E♭maj7','E♭ Lydian or B♭ major','Use ♯11 (A) to color this IV.'],['Am7♭5','A locrian ♮2','Highlight E♭ (♭5) and B♮ (9).'],['D7','D phrygian dominant / altered','Resolve E♭ down to D over Gm.'],['Gm','G dorian / harmonic minor','B♭, A, G are strong landings.']]
   },
   {
+    id:'em-g', label:'E minor / G major', short:'Em / G', minorKey:'E minor', majorKey:'G major', minorRoot:0, majorRoot:3,
+    rationale:'The guitar-friendly open-position study. It is paired with Bill Evans’s Portrait in Jazz as a listening reference, then translated into an E minor / G major fretboard setting where open strings and first-position shapes make the form unusually approachable.',
+    form:makeForm({ ii:'Am7',V:'D7',I:'Gmaj7',IV:'Cmaj7',half:'F♯m7♭5',minorV:'B7',minor:'Em',minor7:'Em7',flatVII:'C7' }),
+    arpeggios:[arp('Am7',5,'m7'),arp('D7',5,'7'),arp('Gmaj7',3,'maj7'),arp('F♯m7♭5',2,'m7b5'),arp('B7',2,'7'),arp('Em',0,'m7')],
+    scales:[scale('G major scale','Use over Gmaj7 and Cmaj7',3,'major'),scale('A dorian','Use over Am7',5,'dorian'),scale('D mixolydian','Use over D7',5,'mixolydian'),scale('B half-whole diminished','Tension over B7 to E minor',2,'halfWhole')],
+    modes:[['Am7','A dorian','Hold the 9 (B) and 6 (F♯).'],['D7','D mixolydian','Approach the G landing through F♯ and E.'],['Gmaj7','G Ionian','B and A are resting tones.'],['Cmaj7','C Lydian or G major','F♯ as ♯11 adds shimmer.'],['F♯m7♭5','F♯ locrian ♮2','Aim for C (♭5) and G♯ (9).'],['B7','B phrygian dominant / altered','C♮ and D♮ are upper tensions.'],['Em','E dorian / harmonic minor','Resolve to E or G chord tones.']]
+  },
+  {
     id:'bm-d', label:'B minor / D major', short:'Bm / D', minorKey:'B minor', majorKey:'D major', minorRoot:7, majorRoot:10,
     rationale:'A guitar-forward B minor / D major study setting tied to Eric Clapton’s 2010 recording. It preserves the tune’s functional movement while putting the minor tonic in a comfortable, singing guitar register.',
     form:makeForm({ ii:'Em7',V:'A7',I:'Dmaj7',IV:'Gmaj7',half:'C♯m7♭5',minorV:'F♯7',minor:'Bm',minor7:'Bm7',flatVII:'G7' }),
