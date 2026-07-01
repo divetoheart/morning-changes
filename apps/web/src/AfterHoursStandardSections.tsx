@@ -1,14 +1,14 @@
 import type { ReactNode } from 'react';
 
-export type StandardFact = { label: string; value: string };
+export type StandardFact = { label: string; value: ReactNode };
 export type HeadphonePick = {
   meta: string;
   title: string;
   artist: string;
-  note: string;
+  note: ReactNode;
   href?: string;
   linkLabel?: string;
-  keyLabel?: string;
+  keyLabel?: ReactNode;
   onSwitchKey?: () => void;
 };
 
