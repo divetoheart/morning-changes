@@ -1,5 +1,5 @@
-import { AfterHoursPortPreview } from './AfterHoursPortPreview';
+import { AfterHoursAutumnPortBody } from './AfterHoursAutumnPortBody';
 
 export function AfterHoursAutumnPort() {
-  return <AfterHoursPortPreview />;
+  return <AfterHoursAutumnPortBody />;
 }
