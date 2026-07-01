@@ -21,7 +21,15 @@
 .music-typography-root .chord-symbol{font-size:1.27em!important;letter-spacing:-.035em}
 .music-typography-root .chord-symbol .chord-root{font-weight:800!important}
 .music-typography-root .chord-symbol .chord-quality,
-.music-typography-root .chord-symbol > sup:not(.music-accidental){color:var(--gold)!important;font-size:.62em!important;font-weight:800!important}
+.music-typography-root .chord-symbol > sup:not(.music-accidental){font-size:.62em!important;font-weight:800!important}
+
+/* Half-diminished ø, diminished °, and augmented + are harmonic-function symbols. */
+.music-typography-root .chord-symbol.is-half-diminished .chord-quality,
+.music-typography-root .chord-symbol.is-half-diminished > sup:not(.music-accidental),
+.music-typography-root .chord-symbol.is-diminished .chord-quality,
+.music-typography-root .chord-symbol.is-diminished > sup:not(.music-accidental),
+.music-typography-root .chord-symbol.is-augmented .chord-quality,
+.music-typography-root .chord-symbol.is-augmented > sup:not(.music-accidental){color:var(--gold)!important}
 
 /* First-pass practice copy gets the strongest signal without turning bare prose numbers into layout objects. */
 .play-now .interval-symbol,.play-now .function-symbol,.play-now .chord-symbol,
@@ -35,23 +43,39 @@
 :root[data-theme='light'] .music-typography-root .function-symbol{color:#124f7c!important}
 :root[data-theme='light'] .music-typography-root .chord-symbol .chord-root{color:#102f4b!important}
 :root[data-theme='light'] .music-typography-root .chord-symbol .music-accidental{color:#8b4608!important}
-:root[data-theme='light'] .music-typography-root .chord-symbol .chord-quality,
-:root[data-theme='light'] .music-typography-root .chord-symbol > sup:not(.music-accidental){color:#124f7c!important}
+:root[data-theme='light'] .music-typography-root .chord-symbol.is-half-diminished .chord-quality,
+:root[data-theme='light'] .music-typography-root .chord-symbol.is-half-diminished > sup:not(.music-accidental),
+:root[data-theme='light'] .music-typography-root .chord-symbol.is-diminished .chord-quality,
+:root[data-theme='light'] .music-typography-root .chord-symbol.is-diminished > sup:not(.music-accidental),
+:root[data-theme='light'] .music-typography-root .chord-symbol.is-augmented .chord-quality,
+:root[data-theme='light'] .music-typography-root .chord-symbol.is-augmented > sup:not(.music-accidental){color:#124f7c!important}
 :root[data-theme='student'] .music-typography-root .interval-symbol{color:#9d2632!important;border-bottom-color:#9d2632!important;background:rgba(157,38,50,.08)!important}
 :root[data-theme='student'] .music-typography-root .function-symbol{color:#164f85!important}
 :root[data-theme='student'] .music-typography-root .chord-symbol .chord-root{color:#153c64!important}
 :root[data-theme='student'] .music-typography-root .chord-symbol .music-accidental{color:#9d2632!important}
-:root[data-theme='student'] .music-typography-root .chord-symbol .chord-quality,
-:root[data-theme='student'] .music-typography-root .chord-symbol > sup:not(.music-accidental){color:#164f85!important}
+:root[data-theme='student'] .music-typography-root .chord-symbol.is-half-diminished .chord-quality,
+:root[data-theme='student'] .music-typography-root .chord-symbol.is-half-diminished > sup:not(.music-accidental),
+:root[data-theme='student'] .music-typography-root .chord-symbol.is-diminished .chord-quality,
+:root[data-theme='student'] .music-typography-root .chord-symbol.is-diminished > sup:not(.music-accidental),
+:root[data-theme='student'] .music-typography-root .chord-symbol.is-augmented .chord-quality,
+:root[data-theme='student'] .music-typography-root .chord-symbol.is-augmented > sup:not(.music-accidental){color:#164f85!important}
 :root[data-theme='bluesy'] .music-typography-root .interval-symbol{color:#ffe0aa!important;border-bottom-color:#ffe0aa!important;background:rgba(255,224,170,.09)!important}
 :root[data-theme='bluesy'] .music-typography-root .function-symbol{color:#90e8f6!important}
 :root[data-theme='bluesy'] .music-typography-root .chord-symbol .chord-root{color:#ffe0aa!important}
 :root[data-theme='bluesy'] .music-typography-root .chord-symbol .music-accidental{color:#90e8f6!important}
-:root[data-theme='bluesy'] .music-typography-root .chord-symbol .chord-quality,
-:root[data-theme='bluesy'] .music-typography-root .chord-symbol > sup:not(.music-accidental){color:#90e8f6!important}
+:root[data-theme='bluesy'] .music-typography-root .chord-symbol.is-half-diminished .chord-quality,
+:root[data-theme='bluesy'] .music-typography-root .chord-symbol.is-half-diminished > sup:not(.music-accidental),
+:root[data-theme='bluesy'] .music-typography-root .chord-symbol.is-diminished .chord-quality,
+:root[data-theme='bluesy'] .music-typography-root .chord-symbol.is-diminished > sup:not(.music-accidental),
+:root[data-theme='bluesy'] .music-typography-root .chord-symbol.is-augmented .chord-quality,
+:root[data-theme='bluesy'] .music-typography-root .chord-symbol.is-augmented > sup:not(.music-accidental){color:#90e8f6!important}
 :root[data-theme='vintage'] .music-typography-root .interval-symbol{color:#fff0ca!important;border-bottom-color:#fff0ca!important;background:rgba(255,240,202,.08)!important}
 :root[data-theme='vintage'] .music-typography-root .function-symbol{color:#f7c674!important}
 :root[data-theme='vintage'] .music-typography-root .chord-symbol .chord-root{color:#fff0ca!important}
 :root[data-theme='vintage'] .music-typography-root .chord-symbol .music-accidental{color:#f7c674!important}
-:root[data-theme='vintage'] .music-typography-root .chord-symbol .chord-quality,
-:root[data-theme='vintage'] .music-typography-root .chord-symbol > sup:not(.music-accidental){color:#f7c674!important}
+:root[data-theme='vintage'] .music-typography-root .chord-symbol.is-half-diminished .chord-quality,
+:root[data-theme='vintage'] .music-typography-root .chord-symbol.is-half-diminished > sup:not(.music-accidental),
+:root[data-theme='vintage'] .music-typography-root .chord-symbol.is-diminished .chord-quality,
+:root[data-theme='vintage'] .music-typography-root .chord-symbol.is-diminished > sup:not(.music-accidental),
+:root[data-theme='vintage'] .music-typography-root .chord-symbol.is-augmented .chord-quality,
+:root[data-theme='vintage'] .music-typography-root .chord-symbol.is-augmented > sup:not(.music-accidental){color:#f7c674!important}
