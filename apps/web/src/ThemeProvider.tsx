@@ -1,6 +1,6 @@
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 
-export type ThemeName = 'studio' | 'student' | 'bluesy';
+export type ThemeName = 'dark' | 'light' | 'student' | 'bluesy' | 'vintage';
 
 type ThemeContextValue = {
   theme: ThemeName;
@@ -12,7 +12,9 @@ const STORAGE_KEY = 'morning-changes.theme.v1';
 
 function storedTheme(): ThemeName {
   const value = window.localStorage.getItem(STORAGE_KEY);
-  return value === 'student' || value === 'bluesy' || value === 'studio' ? value : 'studio';
+  if (value === 'dark' || value === 'light' || value === 'student' || value === 'bluesy' || value === 'vintage') return value;
+  // Existing Studio users continue into the new regular dark mode.
+  return 'dark';
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -20,7 +22,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    document.documentElement.style.colorScheme = theme === 'student' ? 'light' : 'dark';
+    document.documentElement.style.colorScheme = theme === 'light' || theme === 'student' || theme === 'vintage' ? 'light' : 'dark';
     window.localStorage.setItem(STORAGE_KEY, theme);
   }, [theme]);
 
