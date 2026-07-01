@@ -2,6 +2,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { lessons, standards } from './content/catalog';
 import { FretboardMap } from './AfterHoursFretboardCustomizer';
+import { IntervalNotation } from './MusicNotation';
 import type { KeyName } from './lib/theory';
 
 const minorCadence = lessons.find(lesson => lesson.id === 'minor-ii-v-i-cadence');
@@ -63,7 +64,7 @@ function renderRootLessonFretboard(selectedKey: KeyName) {
     majorRoot: selectedKey,
     minorRoot: selectedKey,
     chords: [{ label: `${selectedKey}maj7`, root: selectedKey, quality: 'maj7' }],
-    description: 'Change the key above. Every marker is interval 1 for that selected key, all the way through the first repeated position after the twelfth fret.',
+    description: createElement('span', null, 'Change the key above. Every marker is interval ', createElement(IntervalNotation, { interval: '1' }), ' for that selected key, all the way through the first repeated position after the twelfth fret.'),
     cagedLabel: '',
     pentatonicLabel: '',
     mode: 'roots',
