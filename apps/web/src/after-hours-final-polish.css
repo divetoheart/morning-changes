@@ -46,13 +46,6 @@
   white-space: nowrap;
 }
 
-/* A dominant quality is the same harmonic signal as the V7 function. */
-.ah-port .chord-symbol .chord-quality { color: var(--gold) !important; }
-:root[data-theme='light'] .ah-port .chord-symbol .chord-quality { color: #124f7c !important; }
-:root[data-theme='student'] .ah-port .chord-symbol .chord-quality { color: #164f85 !important; }
-:root[data-theme='bluesy'] .ah-port .chord-symbol .chord-quality { color: #90e8f6 !important; }
-:root[data-theme='vintage'] .ah-port .chord-symbol .chord-quality { color: #f7c674 !important; }
-
 .ah-recording-actions {
   display: flex;
   align-items: center;
