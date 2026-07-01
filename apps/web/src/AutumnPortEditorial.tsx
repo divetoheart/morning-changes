@@ -1,18 +1,35 @@
 import type { StudyKey } from './after-hours-types';
 import { chordMarkup } from './AfterHoursDiagrams';
+import { StandardFooter, StandardIntro, ThreeForHeadphones } from './AfterHoursStandardSections';
 
 export function AutumnPortIntro() {
-  return <>
-    <section className="ah-port-hero"><span className="eyebrow">Standard № 01 · 1945</span><h1>Autumn Leaves</h1><p className="ah-port-subtitle">Les feuilles mortes</p><p className="ah-port-lead">Composed by Joseph Kosma in 1945 with French lyrics by Jacques Prévert, the tune entered the world as <em>Les feuilles mortes</em>. Johnny Mercer’s 1947 English lyric carried it into American popular music and then into the jazz-standard canon.</p><div className="ah-port-standard-select"><button className="active" type="button">Autumn Leaves</button><button type="button" disabled>Ain’t Misbehavin’ · next</button><button type="button" disabled>Day and Age · next</button></div></section>
-    <section className="ah-port-intro-grid"><article><span className="eyebrow">Credits</span><dl><div><dt>Music</dt><dd>Joseph Kosma</dd></div><div><dt>Lyrics</dt><dd>Prévert · Mercer</dd></div><div><dt>Introduced</dt><dd>1945</dd></div><div><dt>Form</dt><dd>A A′ B C · 32 bars</dd></div></dl></article><article><span className="eyebrow">Why we study it</span><p>Autumn Leaves is the classic vehicle for hearing relative major and relative minor in one form: each eight-bar group carries a major ii–V–I–IV thought and a minor iiø–V7–i thought.</p><small>Notation and tab for the copyrighted melody remain omitted. This guide is harmony, guitar-shape, and original-study material.</small></article></section>
-  </>;
+  return <StandardIntro
+    number="01"
+    eyebrow="1945"
+    title="Autumn Leaves"
+    subtitle="Les feuilles mortes"
+    lead={<>Composed by Joseph Kosma in 1945 with French lyrics by Jacques Prévert, the tune entered the world as <em>Les feuilles mortes</em>. Johnny Mercer’s 1947 English lyric carried it into American popular music and then into the jazz-standard canon.</>}
+    facts={[{ label:'Music', value:'Joseph Kosma' }, { label:'Lyrics', value:'Prévert · Mercer' }, { label:'Introduced', value:'1945' }, { label:'Form', value:'A A′ B C · 32 bars' }]}
+    why="Autumn Leaves is the classic vehicle for hearing relative major and relative minor in one form: each eight-bar group carries a major ii–V–I–IV thought and a minor iiø–V7–i thought."
+    note="Notation and tab for the copyrighted melody remain omitted. This guide is harmony, guitar-shape, and original-study material."
+  >
+    <div className="ah-port-standard-select"><button className="active" type="button">Autumn Leaves</button><button type="button" disabled>Ain’t Misbehavin’ · next</button><button type="button" disabled>Day and Age · next</button></div>
+  </StandardIntro>;
 }
 
 export function AutumnPortFooter({ study }: { study: StudyKey }) {
   return <>
-    <section className="ah-port-etude"><span className="eyebrow">Original study</span><h2>Etude in {study.short}</h2><p>Original 8-bar study over the A-section changes. Use your licensed lead sheet for the copyrighted melody and lyrics.</p><div>{study.form[0].bars.map((bar, index) => <span key={index}>{bar.map(cell => chordMarkup(cell.label))}</span>)}</div></section>
-    <section className="ah-port-renditions"><span className="eyebrow">Top renditions — selected for study</span><h2>Three for the headphones</h2><div><article><small>1958 · Somethin’ Else</small><h3>Autumn Leaves</h3><strong>Cannonball Adderley featuring Miles Davis</strong><p>The Gm/B♭ modern-jazz reference: Miles’s spacious statement, Adderley’s alto, and a lesson in playing the form without crowding it.</p><a href="https://www.milesdavis.com/albums/cannonball-adderley-somethin-else/" target="_blank" rel="noreferrer">Open reference ↗</a></article><article><small>1959 / released 1960 · Portrait in Jazz</small><h3>Autumn Leaves</h3><strong>Bill Evans Trio</strong><p>Hear the form as a conversation. This is the reference for trio interaction, comping space, and a rhythm section that moves as one line.</p><a href="https://www.youtube.com/watch?v=r-Z8KuwI7Gc" target="_blank" rel="noreferrer">Open reference ↗</a></article><article><small>2010 · Clapton</small><h3>Autumn Leaves</h3><strong>Eric Clapton</strong><p>A vocal, guitar-forward reading from Clapton’s 2010 album. The Bm/D option above is the dedicated guitar study key for this reference.</p><a href="https://en.wikipedia.org/wiki/Clapton_(2010_album)" target="_blank" rel="noreferrer">Album reference ↗</a></article></div></section>
+    <section className="ah-port-etude"><span className="eyebrow">Play now · original study</span><h2>Etude in {study.short}</h2><p>Original 8-bar study over the A-section changes. Use your licensed lead sheet for the copyrighted melody and lyrics.</p><div>{study.form[0].bars.map((bar, index) => <span key={index}>{bar.map(cell => chordMarkup(cell.label))}</span>)}</div></section>
+    <ThreeForHeadphones
+      title="Three versions, three ways to hear the form."
+      subtitle="Start with the melody, then listen for space, time feel, and how each version keeps the harmony audible without sounding like an exercise."
+      picks={[
+        { meta:'1958 · Somethin’ Else', title:'Autumn Leaves', artist:'Cannonball Adderley featuring Miles Davis', note:'The Gm/B♭ modern-jazz reference: Miles’s spacious statement, Adderley’s alto, and a lesson in playing the form without crowding it.', href:'https://www.milesdavis.com/albums/cannonball-adderley-somethin-else/' },
+        { meta:'1959 / released 1960 · Portrait in Jazz', title:'Autumn Leaves', artist:'Bill Evans Trio', note:'Hear the form as a conversation. This is the reference for trio interaction, comping space, and a rhythm section that moves as one line.', href:'https://www.youtube.com/watch?v=r-Z8KuwI7Gc' },
+        { meta:'2010 · Clapton', title:'Autumn Leaves', artist:'Eric Clapton', note:'A vocal, guitar-forward reading from Clapton’s 2010 album. The Bm/D option above is the dedicated guitar study key for this reference.', href:'https://en.wikipedia.org/wiki/Clapton_(2010_album)', linkLabel:'Album reference ↗' }
+      ]}
+    />
     <section className="ah-port-sources"><span className="eyebrow">Sources & further reading</span><ul><li><a href="https://www.crj-online.org/v4/CRJ-AutumnLeaves.php" target="_blank" rel="noreferrer">Current Research in Jazz — Autumn Leaves study ↗</a><span>History, key variants, recordings, and pedagogical context.</span></li><li><a href="https://www.milesdavis.com/albums/cannonball-adderley-somethin-else/" target="_blank" rel="noreferrer">Cannonball Adderley — Somethin’ Else ↗</a><span>Personnel, session date, and album notes.</span></li><li><a href="https://en.wikipedia.org/wiki/Clapton_(2010_album)" target="_blank" rel="noreferrer">Eric Clapton — Clapton (2010) ↗</a><span>The album’s track list includes Autumn Leaves as its closing song.</span></li></ul></section>
-    <footer className="ah-port-footer"><span>After Hours — a jazz standards guide for guitarists.</span><span>Built inside Morning Changes.</span></footer>
+    <StandardFooter />
   </>;
 }
