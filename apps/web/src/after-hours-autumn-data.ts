@@ -1,14 +1,35 @@
 import type { ArpType, FormSection, ScaleType, StudyKey } from './after-hours-types';
+import type { FunctionalChord } from './lib/music';
 
-const bars = (labels: string[], roman?: string[]) => labels.map((label, index) => [{ label, roman: roman?.[index] }]);
+const MAJOR_II = { degree: 'ii', quality: 'minor7', context: 'major' } satisfies FunctionalChord;
+const MAJOR_V = { degree: 'V', quality: 'dominant7', context: 'major' } satisfies FunctionalChord;
+const MAJOR_I = { degree: 'I', quality: 'major7', context: 'major' } satisfies FunctionalChord;
+const MAJOR_IV = { degree: 'IV', quality: 'major7', context: 'major' } satisfies FunctionalChord;
+const MINOR_II = { degree: 'ii', quality: 'halfDiminished7', context: 'minor' } satisfies FunctionalChord;
+const MINOR_V = { degree: 'V', quality: 'dominant7', context: 'minor' } satisfies FunctionalChord;
+const MINOR_I = { degree: 'i', quality: 'minor', context: 'minor' } satisfies FunctionalChord;
+const MINOR_I7 = { degree: 'i', quality: 'minor7', context: 'minor' } satisfies FunctionalChord;
+
+const cell = (label: string, functional?: FunctionalChord) => ({ label, function: functional });
+const bars = (labels: string[], functions: readonly FunctionalChord[]) => labels.map((label, index) => [cell(label, functions[index])]);
 
 function makeForm(chords: { ii: string; V: string; I: string; IV: string; half: string; minorV: string; minor: string; minor7: string; flatVII: string }): FormSection[] {
   const first = [chords.ii, chords.V, chords.I, chords.IV, chords.half, chords.minorV, chords.minor, chords.minor];
+  const firstFunctions = [MAJOR_II, MAJOR_V, MAJOR_I, MAJOR_IV, MINOR_II, MINOR_V, MINOR_I, MINOR_I];
   return [
-    { name: 'A', bars: bars(first, ['iiⁿ','V⁷','Iᶜ','IVᶜ','iiø','V⁷/i','i','i']) },
-    { name: 'A′', bars: bars(first) },
-    { name: 'B', bars: bars([chords.half,chords.minorV,chords.minor,chords.minor,chords.ii,chords.V,chords.I,chords.I]) },
-    { name: 'C', bars: [[{label:chords.half}],[{label:chords.minorV}],[{label:chords.minor},{label:chords.minor7}],[{label:chords.ii},{label:chords.V}],[{label:chords.I},{label:chords.flatVII}],[{label:chords.half},{label:chords.minorV}],[{label:chords.minor}],[{label:chords.minor}]] }
+    { name: 'A', bars: bars(first, firstFunctions) },
+    { name: 'A′', bars: bars(first, firstFunctions) },
+    { name: 'B', bars: bars([chords.half, chords.minorV, chords.minor, chords.minor, chords.ii, chords.V, chords.I, chords.I], [MINOR_II, MINOR_V, MINOR_I, MINOR_I, MAJOR_II, MAJOR_V, MAJOR_I, MAJOR_I]) },
+    { name: 'C', bars: [
+      [cell(chords.half, MINOR_II)],
+      [cell(chords.minorV, MINOR_V)],
+      [cell(chords.minor, MINOR_I), cell(chords.minor7, MINOR_I7)],
+      [cell(chords.ii, MAJOR_II), cell(chords.V, MAJOR_V)],
+      [cell(chords.I, MAJOR_I), cell(chords.flatVII)],
+      [cell(chords.half, MINOR_II), cell(chords.minorV, MINOR_V)],
+      [cell(chords.minor, MINOR_I)],
+      [cell(chords.minor, MINOR_I)]
+    ] }
   ];
 }
 
