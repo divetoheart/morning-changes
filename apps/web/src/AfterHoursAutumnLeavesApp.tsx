@@ -1,18 +1,59 @@
+import { useEffect, useRef } from 'react';
+import { useTheme, type ThemeName } from './ThemeProvider';
+
+const themeCss: Record<ThemeName, string> = {
+  dark: '--mc-bg:#090806;--mc-panel:#15100c;--mc-ink:#f6efe6;--mc-muted:#b9aa9a;--mc-line:#38291d;--mc-gold:#e2aa62;',
+  light: '--mc-bg:#f8f6f1;--mc-panel:#ffffff;--mc-ink:#1b2633;--mc-muted:#5f6d7a;--mc-line:#c8cdd0;--mc-gold:#9c6116;',
+  student: '--mc-bg:#f9f8f3;--mc-panel:#ffffff;--mc-ink:#17263e;--mc-muted:#53657d;--mc-line:#c2d0de;--mc-gold:#bd3039;',
+  bluesy: '--mc-bg:#111a31;--mc-panel:#1a355a;--mc-ink:#edf3f3;--mc-muted:#b8c8d2;--mc-line:#4d7198;--mc-gold:#75d1e8;',
+  vintage: '--mc-bg:#1a0d07;--mc-panel:#35180b;--mc-ink:#f7e5c6;--mc-muted:#d2b88e;--mc-line:#e3c99d;--mc-gold:#f1bd68;'
+};
+
+function bridgeTheme(frame: HTMLIFrameElement | null, theme: ThemeName) {
+  const document = frame?.contentDocument;
+  if (!document) return;
+
+  document.documentElement.dataset.morningChangesTheme = theme;
+  let style = document.querySelector<HTMLStyleElement>('#morning-changes-guide-theme');
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'morning-changes-guide-theme';
+    document.head.append(style);
+  }
+
+  style.textContent = `
+    html[data-morning-changes-theme] { ${themeCss[theme]} }
+    html[data-morning-changes-theme] body,
+    html[data-morning-changes-theme] #root { background:var(--mc-bg)!important; color:var(--mc-ink)!important; }
+    html[data-morning-changes-theme] a { color:var(--mc-gold)!important; }
+    html[data-morning-changes-theme] button,
+    html[data-morning-changes-theme] select { color:var(--mc-ink)!important; border-color:var(--mc-line)!important; }
+    html[data-morning-changes-theme='light'] button,
+    html[data-morning-changes-theme='light'] select,
+    html[data-morning-changes-theme='student'] button,
+    html[data-morning-changes-theme='student'] select { background:#ffffff!important; }
+  `;
+}
+
 export function AfterHoursAutumnLeavesApp() {
-  return <div className="app-shell after-hours-embed-shell">
-    <header className="app-topbar">
-      <a className="wordmark" href="#/"><span className="wordmark-mark">◒</span><span><strong>Morning Changes</strong><small>Daily guitar practice</small></span></a>
-      <nav className="desktop-nav" aria-label="Main navigation">
-        <a href="#/">Home</a><a href="#/learn">Learn</a><a href="#/paths">Paths</a><a className="active" href="#/after-hours">After</a><a href="#/tools">Tools</a><a href="#/progress">Progress</a>
-      </nav>
-      <a className="tempo-button" href="#/after-hours">After Hours</a>
-    </header>
-    <main className="after-hours-embed-main">
-      <div className="after-hours-embed-bar"><a href="#/after-hours">← After Hours</a><span>Autumn Leaves</span><a href="after-hours/autumn-leaves/" target="_blank" rel="noreferrer">Open guide ↗</a></div>
-      <iframe className="after-hours-guide-frame" title="After Hours — Autumn Leaves" src="after-hours/autumn-leaves/" />
-    </main>
-    <nav className="bottom-nav" aria-label="Mobile navigation">
-      <a href="#/"><span>⌂</span><small>Home</small></a><a href="#/learn"><span>▤</span><small>Learn</small></a><a href="#/paths"><span>◉</span><small>Paths</small></a><a className="active" href="#/after-hours"><span>♫</span><small>After</small></a><a href="#/tools"><span>⚙</span><small>Tools</small></a><a href="#/progress"><span>↗</span><small>Progress</small></a>
-    </nav>
-  </div>;
+  const { theme } = useTheme();
+  const frame = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    bridgeTheme(frame.current, theme);
+  }, [theme]);
+
+  return <section className="after-hours-route">
+    <div className="after-hours-route-topline">
+      <span className="eyebrow">After Hours · Autumn Leaves</span>
+      <span>Dedicated tune study</span>
+    </div>
+    <iframe
+      ref={frame}
+      className="after-hours-guide-frame"
+      title="After Hours — Autumn Leaves"
+      src="after-hours/autumn-leaves/guide/"
+      onLoad={() => bridgeTheme(frame.current, theme)}
+    />
+  </section>;
 }
