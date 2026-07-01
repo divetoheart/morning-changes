@@ -1,0 +1,96 @@
+/* Gradients belong to the room, not to the cards inside it. */
+:root[data-theme] .focus-session,
+:root[data-theme] .path-focus,
+:root[data-theme] .lesson-hero,
+:root[data-theme] .lesson-card,
+:root[data-theme] .interval-panel,
+:root[data-theme] .fretboard-card,
+:root[data-theme] .sheet,
+:root[data-theme] .fretboard,
+:root[data-theme] .extra-card,
+:root[data-theme] .after-control-panel,
+:root[data-theme] .function-map,
+:root[data-theme] .after-current,
+:root[data-theme] .after-targets,
+:root[data-theme] .after-fretboard,
+:root[data-theme] .after-route article {
+  background-image: none !important;
+  background-color: var(--surface-bg) !important;
+}
+
+/* Inline intervals are typographic notation—not a pile of pills. */
+.interval-symbol {
+  border: 0 !important;
+  border-bottom: 1px solid currentColor !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 .04em .05em !important;
+  margin: 0 .03em !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: .88em !important;
+  letter-spacing: -.04em !important;
+}
+.interval-symbol .music-accidental { margin-right: -.04em; }
+.tone-pair,
+.mode-notes span {
+  border-radius: 7px !important;
+  background: transparent !important;
+}
+
+/* Neck/pattern contrast stays deliberate in every theme. */
+:root[data-theme] .fretboard,
+:root[data-theme] .after-neck { background: var(--panel) !important; border-color: var(--line-strong); }
+:root[data-theme] .fret-row,
+:root[data-theme] .after-string { border-color: var(--line-strong); }
+:root[data-theme] .fret-row>b,
+:root[data-theme] .after-string>b,
+:root[data-theme] .fret-numbers,
+:root[data-theme] .after-frets { background: var(--panel-raised) !important; color: var(--gold) !important; }
+:root[data-theme] .has-dot i { border-radius: 9px; background: var(--gold-bright); color: var(--bg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 18%, transparent); }
+:root[data-theme] .after-string i { background: var(--panel-raised); border-color: var(--gold); color: var(--ink); }
+:root[data-theme] .after-string i.root { background: var(--gold-bright); border-color: var(--gold-bright); color: var(--bg); }
+
+/* Restore Student's original paper-and-blue character; only red and gold trade jobs. */
+:root[data-theme='student'] {
+  --gold: #bd3039;
+  --gold-bright: #d6414a;
+  --panel-raised: #edf1f6;
+  --nav-active-bg: #e8f0fb;
+  --nav-active-ink: #1769b0;
+}
+:root[data-theme='student'] .primary-button { background: #1769b0; border-color: #1769b0; color: #fff; }
+:root[data-theme='student'] .after-hours-bridge { background: #a5690a; border-color: #a5690a; color: #fff; }
+:root[data-theme='student'] .chord-symbol .chord-root { color: #1260a4; }
+:root[data-theme='student'] .chord-symbol .music-accidental { color: #a5690a; }
+:root[data-theme='student'] .chord-symbol .chord-quality { color: #6d4b43; }
+:root[data-theme='student'] .interval-symbol { color: #bd3039; }
+
+/* Lean into the blue instead of collapsing Bluesy back toward black. */
+:root[data-theme='bluesy'] {
+  --panel: #1a355a;
+  --panel-raised: #244a74;
+  --surface-bg: #1d3d66;
+  --control-bg: #132e50;
+  --line: #4d7198;
+  --line-strong: #78a8d0;
+}
+:root[data-theme='bluesy'] .after-hours-app .after-hero,
+:root[data-theme='bluesy'] .after-hours-app .after-control-panel { border-color: #77acd3; }
+:root[data-theme='bluesy'] .after-neck,
+:root[data-theme='bluesy'] .fretboard { background: #132a49 !important; }
+:root[data-theme='bluesy'] .interval-symbol { color: #9ee8f8; }
+
+/* Vintage remains burst-like through the page atmosphere—not card gradients. */
+:root[data-theme='vintage'] .after-neck,
+:root[data-theme='vintage'] .fretboard { background: #120805 !important; }
+:root[data-theme='vintage'] .after-string i { background: #32150a; }
+:root[data-theme='vintage'] .after-string i.root,
+:root[data-theme='vintage'] .has-dot i { background: #f0c777; color: #120805; }
+
+:root[data-theme='light'] .after-neck,
+:root[data-theme='student'] .after-neck,
+:root[data-theme='light'] .fretboard,
+:root[data-theme='student'] .fretboard { background: #f9fbfd !important; }
+:root[data-theme='light'] .after-string i,
+:root[data-theme='student'] .after-string i { background: #fff; border-color: var(--line-strong); }
