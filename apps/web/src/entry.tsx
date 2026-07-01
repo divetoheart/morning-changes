@@ -10,6 +10,7 @@ import './themes.css';
 import './theme-clarity.css';
 import './after-hours.css';
 import './p1-practice.css';
+import './qa-polish.css';
 
 const mountNode = document.querySelector('#root');
 
