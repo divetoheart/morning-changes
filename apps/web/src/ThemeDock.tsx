@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme, type ThemeName } from './ThemeProvider';
 
 const choices: Array<{ id: ThemeName; name: string; description: string }> = [
@@ -12,6 +12,19 @@ const choices: Array<{ id: ThemeName; name: string; description: string }> = [
 export function ThemeDock() {
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const keepInsideMorningChanges = (event: MouseEvent) => {
+      const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('a[href]');
+      const href = link?.getAttribute('href');
+      if (href === 'after-hours/autumn-leaves/' || href === './after-hours/autumn-leaves/') {
+        event.preventDefault();
+        location.hash = '/after-hours/autumn-leaves';
+      }
+    };
+    document.addEventListener('click', keepInsideMorningChanges, true);
+    return () => document.removeEventListener('click', keepInsideMorningChanges, true);
+  }, []);
 
   return <aside className="theme-dock">
     {open && <div className="theme-menu" role="dialog" aria-label="Choose theme">
