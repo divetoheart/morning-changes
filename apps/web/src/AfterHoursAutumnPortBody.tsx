@@ -8,7 +8,7 @@ import { KeyArrangementReference } from './AfterHoursStandardSections';
 const REFERENCES: Record<string, { title: string; copy: string; href: string }> = {
   'gm-bb': {
     title: 'Cannonball Adderley with Miles Davis · Somethin’ Else · recorded 1958',
-    copy: 'The canonical modern-jazz arrangement: a G minor / B-flat major setting with Miles Davis’s spacious theme statement and Cannonball Adderley’s alto defining the session vocabulary for the tune.',
+    copy: 'The canonical modern-jazz arrangement: a G minor / B♭ major setting with Miles Davis’s spacious theme statement and Cannonball Adderley’s alto defining the session vocabulary for the tune.',
     href: 'https://www.youtube.com/watch?v=u37RF5xKNq8'
   },
   'em-g': {
