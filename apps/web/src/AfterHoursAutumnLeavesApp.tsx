@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { AfterHoursPortPreview } from './AfterHoursPortPreview';
 
 function fitFrameToGuide(frame: HTMLIFrameElement | null) {
   const guideDocument = frame?.contentDocument;
@@ -17,8 +18,10 @@ function fitFrameToGuide(frame: HTMLIFrameElement | null) {
 
 export function AfterHoursAutumnLeavesApp() {
   const frame = useRef<HTMLIFrameElement>(null);
+  const portPreview = window.location.hash.includes('port=1');
 
   useEffect(() => {
+    if (portPreview) return;
     const element = frame.current;
     if (!element) return;
     let guideObserver: ResizeObserver | undefined;
@@ -37,7 +40,9 @@ export function AfterHoursAutumnLeavesApp() {
       element.removeEventListener('load', observeGuide);
       guideObserver?.disconnect();
     };
-  }, []);
+  }, [portPreview]);
+
+  if (portPreview) return <AfterHoursPortPreview />;
 
   return <section className="after-hours-route after-hours-restored">
     <iframe
