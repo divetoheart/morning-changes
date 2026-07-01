@@ -12,8 +12,7 @@ export function StandardIntro({
   facts,
   whyTitle = 'Why we study it',
   why,
-  note,
-  children
+  note
 }: {
   number: string;
   eyebrow: string;
@@ -24,15 +23,13 @@ export function StandardIntro({
   why?: ReactNode;
   whyTitle?: string;
   note?: ReactNode;
-  children?: ReactNode;
 }) {
   return <>
     <section className="ah-port-hero">
       <span className="eyebrow">Standard № {number} · {eyebrow}</span>
       <h1>{title}</h1>
       <p className="ah-port-subtitle">{subtitle}</p>
-      <p className="ah-port-lead">{lead}</p>
-      {children}
+      <div className="ah-piece-history"><span className="eyebrow">Brief history</span><p className="ah-port-lead">{lead}</p></div>
     </section>
     <section className="ah-port-intro-grid">
       <article>
@@ -48,6 +45,15 @@ export function StandardIntro({
   </>;
 }
 
+export function KeyArrangementReference({ title, copy, href, linkLabel = 'Open YouTube reference ↗' }: { title: string; copy: ReactNode; href: string; linkLabel?: string }) {
+  return <aside className="ah-arrangement-reference">
+    <span className="eyebrow">Arrangement reference</span>
+    <strong>{title}</strong>
+    <p>{copy}</p>
+    <a href={href} target="_blank" rel="noreferrer">{linkLabel}</a>
+  </aside>;
+}
+
 export function ThreeForHeadphones({ title, subtitle, picks }: { title: string; subtitle: string; picks: HeadphonePick[] }) {
   return <section className="ah-port-renditions">
     <span className="eyebrow">Three for the headphones</span>
@@ -58,11 +64,11 @@ export function ThreeForHeadphones({ title, subtitle, picks }: { title: string; 
       <h3>{pick.title}</h3>
       <strong>{pick.artist}</strong>
       <p>{pick.note}</p>
-      {pick.href && <a href={pick.href} target="_blank" rel="noreferrer">{pick.linkLabel ?? 'Open reference ↗'}</a>}
+      {pick.href && <a href={pick.href} target="_blank" rel="noreferrer">{pick.linkLabel ?? 'Open YouTube reference ↗'}</a>}
     </article>)}</div>
   </section>;
 }
 
-export function StandardFooter({ children }: { children?: ReactNode }) {
-  return <footer className="ah-port-footer"><span>After Hours — a standards guide for guitarists.</span>{children ?? <span>Built inside Morning Changes.</span>}</footer>;
+export function StandardFooter() {
+  return <footer className="ah-port-footer"><a href="#/after-hours">← Back to Standards Library</a><span>After Hours · Morning Changes</span></footer>;
 }
