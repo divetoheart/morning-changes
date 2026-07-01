@@ -1,4 +1,5 @@
 import { createRoot } from 'react-dom/client';
+import './content-fixes';
 import App from './App';
 import { MusicTypography } from './MusicTypography';
 import { ThemeDock } from './ThemeDock';
