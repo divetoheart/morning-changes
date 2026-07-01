@@ -18,7 +18,7 @@ const arp = (chord: string, anchor: number, type: ArpType) => ({ chord, anchor, 
 export const AUTUMN_STUDIES: StudyKey[] = [
   {
     id:'gm-bb', label:'G minor / B♭ major', short:'Gm / B♭', minorKey:'G minor', majorKey:'B♭ major', minorRoot:3, majorRoot:6,
-    rationale:'The standard modern-jazz setting: Cannonball Adderley’s 1958 recording with Miles Davis made this Gm / B♭ version a default language for jam sessions and lead sheets.',
+    rationale:'The standard modern-jazz setting: Cannonball Adderley’s 1958 recording with Miles Davis made this G minor / B♭ major version a default language for jam sessions and lead sheets.',
     form:makeForm({ ii:'Cm7',V:'F7',I:'B♭maj7',IV:'E♭maj7',half:'Am7♭5',minorV:'D7',minor:'Gm',minor7:'Gm7',flatVII:'E♭7' }),
     arpeggios:[arp('Cm7',8,'m7'),arp('F7',8,'7'),arp('B♭maj7',6,'maj7'),arp('Am7♭5',5,'m7b5'),arp('D7',5,'7'),arp('Gm',3,'m7')],
     scales:[scale('B♭ major scale','Use over B♭maj7 and E♭maj7',6,'major'),scale('C dorian','Use over Cm7',8,'dorian'),scale('F mixolydian','Use over F7',8,'mixolydian'),scale('D half-whole diminished','Tension over D7 to G minor',5,'halfWhole')],
