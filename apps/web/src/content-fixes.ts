@@ -36,16 +36,13 @@ if (blues) {
   });
 }
 
-/*
- * The first root lesson now renders the shared full-neck primitive instead of
- * retaining a second visual with hard-coded note labels. It stays synchronized
- * to the lesson key selector and uses roots-only mode.
- */
+/* The root lesson uses the same full-neck primitive as After Hours, in roots-only mode. */
 let rootLessonRoot: Root | undefined;
 let rootLessonHost: HTMLElement | undefined;
 let rootLessonLegacyCard: HTMLElement | undefined;
 let rootLessonSelect: HTMLSelectElement | undefined;
 let rootLessonTimer: number | undefined;
+let renderedRootKey: KeyName | undefined;
 
 function unmountRootLessonFretboard() {
   rootLessonRoot?.unmount();
@@ -55,6 +52,24 @@ function unmountRootLessonFretboard() {
   if (rootLessonLegacyCard) rootLessonLegacyCard.style.display = '';
   rootLessonLegacyCard = undefined;
   rootLessonSelect = undefined;
+  renderedRootKey = undefined;
+}
+
+function renderRootLessonFretboard(selectedKey: KeyName) {
+  if (!rootLessonRoot || renderedRootKey === selectedKey) return;
+  renderedRootKey = selectedKey;
+  rootLessonRoot.render(createElement(FretboardMap, {
+    keyLabel: selectedKey,
+    majorRoot: selectedKey,
+    minorRoot: selectedKey,
+    chords: [{ label: `${selectedKey}maj7`, root: selectedKey, quality: 'maj7' }],
+    description: 'Change the key above. Every marker is interval 1 for that selected key, all the way through the first repeated position after the twelfth fret.',
+    cagedLabel: '',
+    pentatonicLabel: '',
+    mode: 'roots',
+    eyebrow: 'Fretboard visual',
+    heading: 'Find the root across the neck.'
+  }));
 }
 
 function mountRootLessonFretboard() {
@@ -73,29 +88,14 @@ function mountRootLessonFretboard() {
     rootLessonHost.className = 'shared-root-fretboard-host';
     legacyCard.after(rootLessonHost);
     rootLessonRoot = createRoot(rootLessonHost);
+    renderedRootKey = undefined;
   }
-
-  const render = () => {
-    const selectedKey = keySelect.value as KeyName;
-    rootLessonRoot?.render(createElement(FretboardMap, {
-      keyLabel: selectedKey,
-      majorRoot: selectedKey,
-      minorRoot: selectedKey,
-      chords: [{ label: `${selectedKey}maj7`, root: selectedKey, quality: 'maj7' }],
-      description: 'Change the key above. Every marker is interval 1 for that selected key, all the way through the first repeated position after the twelfth fret.',
-      cagedLabel: '',
-      pentatonicLabel: '',
-      mode: 'roots',
-      eyebrow: 'Fretboard visual',
-      heading: 'Find the root across the neck.'
-    }));
-  };
 
   if (rootLessonSelect !== keySelect) {
     rootLessonSelect = keySelect;
-    keySelect.addEventListener('change', render);
+    keySelect.addEventListener('change', () => renderRootLessonFretboard(keySelect.value as KeyName));
   }
-  render();
+  renderRootLessonFretboard(keySelect.value as KeyName);
 }
 
 function scheduleRootLessonFretboard() {
