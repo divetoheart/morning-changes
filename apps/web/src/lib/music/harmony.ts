@@ -32,6 +32,13 @@ export function chordQualitySuffix(quality: ChordQuality): string {
   return QUALITY_SUFFIX[quality];
 }
 
+/** Roman-numeral case already carries basic major/minor quality. */
+export function functionQualitySuffix(quality: ChordQuality): string {
+  if (quality === 'major' || quality === 'minor') return '';
+  if (quality === 'minor7') return '7';
+  return chordQualitySuffix(quality);
+}
+
 export function chordQualityFromSuffix(value: string): ChordQuality {
   const normalized = value.trim().replace('m7b5', 'm7♭5');
   const match = QUALITY_FROM_SUFFIX.find(([suffix]) => suffix === normalized);
@@ -80,7 +87,7 @@ export function buildFunctionalChord(key: KeyContext, functional: FunctionalChor
 }
 
 export function functionSymbol(functional: FunctionalChord): string {
-  return `${functional.degree}${chordQualitySuffix(functional.quality)}`;
+  return `${functional.degree}${functionQualitySuffix(functional.quality)}`;
 }
 
 export function relativeMajorKey(minorKey: KeyContext): KeyContext {
