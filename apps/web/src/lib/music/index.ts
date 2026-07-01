@@ -5,4 +5,5 @@ export * from './harmony';
 export * from './fretboard';
 export * from './shapes';
 export * from './layers';
+export * from './voicings';
 export * from './notation';
