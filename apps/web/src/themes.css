@@ -1,0 +1,154 @@
+:root[data-theme='student'] {
+  --bg: #f7f6f1;
+  --panel: #ffffff;
+  --panel-raised: #edf1f6;
+  --ink: #13233e;
+  --muted: #52627a;
+  --muted-dim: #708096;
+  --line: #cbd4df;
+  --line-strong: #8ea3bb;
+  --gold: #a5690a;
+  --gold-bright: #b56e00;
+  --green: #38735a;
+  --blue: #1769b0;
+}
+
+:root[data-theme='student'] body {
+  background: radial-gradient(circle at 95% 0%, rgba(27, 100, 177, .11), transparent 34rem), var(--bg);
+}
+
+:root[data-theme='student'] .app-topbar,
+:root[data-theme='student'] .bottom-nav {
+  background: rgba(247, 246, 241, .94);
+  border-color: #c7d0db;
+}
+
+:root[data-theme='student'] .wordmark-mark,
+:root[data-theme='student'] .row-icon,
+:root[data-theme='student'] .tempo-button,
+:root[data-theme='student'] .secondary-button,
+:root[data-theme='student'] .close-button,
+:root[data-theme='student'] .key-selector select {
+  background: #fff;
+  color: var(--ink);
+  border-color: #9eb0c4;
+}
+
+:root[data-theme='student'] .focus-session,
+:root[data-theme='student'] .path-focus,
+:root[data-theme='student'] .lesson-hero {
+  background: linear-gradient(145deg, #ffffff, #eef4fb);
+  border-color: #7f9cbd;
+  box-shadow: 0 15px 40px rgba(29, 74, 122, .1);
+}
+
+:root[data-theme='student'] .lesson-card,
+:root[data-theme='student'] .continue-card,
+:root[data-theme='student'] .interval-panel,
+:root[data-theme='student'] .fretboard-card,
+:root[data-theme='student'] .sheet,
+:root[data-theme='student'] .extra-card,
+:root[data-theme='student'] .standard-row,
+:root[data-theme='student'] .fretboard,
+:root[data-theme='student'] .interval-grid span,
+:root[data-theme='student'] .tone-pair,
+:root[data-theme='student'] .mode-notes span {
+  background: #fff;
+  color: var(--ink);
+  border-color: #c2cfdd;
+}
+
+:root[data-theme='student'] .focus-session p,
+:root[data-theme='student'] .lesson-hero p,
+:root[data-theme='student'] .interval-panel p,
+:root[data-theme='student'] .lesson-card p,
+:root[data-theme='student'] .fretboard-card p,
+:root[data-theme='student'] .routine-list li,
+:root[data-theme='student'] .chord-render-list p,
+:root[data-theme='student'] .standard-row p {
+  color: #42536d;
+}
+
+:root[data-theme='student'] .primary-button {
+  background: #1769b0;
+  border-color: #1769b0;
+  color: #fff;
+}
+
+:root[data-theme='student'] .after-hours-bridge {
+  background: #ba3137;
+  border-color: #ba3137;
+  color: #fff;
+}
+
+:root[data-theme='student'] .eyebrow,
+:root[data-theme='student'] .row-label,
+:root[data-theme='student'] .function-symbol em,
+:root[data-theme='student'] .interval-symbol,
+:root[data-theme='student'] .interval-symbol b {
+  color: #925b00;
+}
+
+:root[data-theme='student'] .chord-symbol .chord-root { color: #1260a4; }
+:root[data-theme='student'] .chord-symbol .music-accidental { color: #bc343a; }
+:root[data-theme='student'] .chord-symbol .chord-quality { color: #6d4b43; }
+:root[data-theme='student'] .interval-symbol { background: #fff5dc; border-color: #d59b37; }
+:root[data-theme='student'] .fret-row>b { background: #edf3fb; }
+:root[data-theme='student'] .fret-numbers { background: #f4f7fb; }
+:root[data-theme='student'] .bottom-nav a.active { background: #e8f0fb; color: #1769b0; }
+
+:root[data-theme='bluesy'] {
+  --bg: #0b1019;
+  --panel: #151923;
+  --panel-raised: #1a1d26;
+  --ink: #edf0e9;
+  --muted: #b8b6ac;
+  --muted-dim: #888a88;
+  --line: #403d43;
+  --line-strong: #766047;
+  --gold: #c4965e;
+  --gold-bright: #e0bb80;
+  --green: #8fa890;
+  --blue: #729abd;
+}
+
+:root[data-theme='bluesy'] body {
+  background: radial-gradient(circle at 100% 0%, rgba(82, 105, 139, .21), transparent 32rem), radial-gradient(circle at 0% 20%, rgba(99, 62, 34, .2), transparent 31rem), var(--bg);
+}
+
+:root[data-theme='bluesy'] .app-topbar,
+:root[data-theme='bluesy'] .bottom-nav {
+  background: rgba(11, 16, 25, .93);
+  border-color: #4e4747;
+}
+
+:root[data-theme='bluesy'] .focus-session,
+:root[data-theme='bluesy'] .lesson-hero,
+:root[data-theme='bluesy'] .path-focus {
+  background: radial-gradient(circle at 100% 0, rgba(127, 94, 51, .21), transparent 45%), linear-gradient(145deg, #1b202b, #15110e);
+}
+
+:root[data-theme='bluesy'] .lesson-card,
+:root[data-theme='bluesy'] .interval-panel,
+:root[data-theme='bluesy'] .fretboard-card,
+:root[data-theme='bluesy'] .sheet,
+:root[data-theme='bluesy'] .fretboard {
+  background: linear-gradient(145deg, #171c26, #12100f);
+}
+
+.theme-dock { position: fixed; z-index: 40; right: 18px; bottom: calc(92px + env(safe-area-inset-bottom)); }
+.theme-dock-trigger { display: inline-grid; grid-template-columns: auto auto; align-items: center; gap: 6px; border: 1px solid var(--line-strong); border-radius: 999px; padding: 9px 11px; background: var(--panel); color: var(--ink); box-shadow: 0 9px 28px rgba(0,0,0,.22); }
+.theme-dock-trigger span { color: var(--gold); font-size: 18px; }
+.theme-dock-trigger small { color: var(--muted); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.theme-menu { position: absolute; right: 0; bottom: 48px; width: 240px; padding: 10px; border: 1px solid var(--line-strong); border-radius: 18px; background: var(--panel); box-shadow: 0 18px 50px rgba(0,0,0,.38); }
+.theme-menu-label { display: block; padding: 4px 6px 8px; color: var(--gold); font-size: 10px; font-weight: 750; letter-spacing: .22em; text-transform: uppercase; }
+.theme-menu button { width: 100%; display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 9px; align-items: center; border: 1px solid transparent; border-radius: 12px; padding: 9px 7px; background: transparent; color: var(--ink); text-align: left; }
+.theme-menu button:hover,
+.theme-menu button.active { border-color: var(--line-strong); background: var(--panel-raised); }
+.theme-menu strong { display: block; font-size: 13px; }
+.theme-menu small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+.theme-swatch { width: 27px; height: 27px; border: 1px solid rgba(255,255,255,.25); border-radius: 9px; background: linear-gradient(135deg,#16100b 0 50%,#e2aa62 50%); }
+.theme-swatch.student { background: linear-gradient(135deg,#f8f7f2 0 50%,#1769b0 50%); border-color:#9eb0c4; }
+.theme-swatch.bluesy { background: linear-gradient(135deg,#0b1019 0 50%,#9c7048 50%); }
+
+@media (min-width: 901px) { .theme-dock { bottom: 22px; } }
