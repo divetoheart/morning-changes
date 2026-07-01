@@ -61,8 +61,8 @@ export function IntervalNotation({ interval, className = '' }: { interval: Inter
   </span>;
 }
 
-export function KeyNotation({ key, className = '' }: { key: KeyContext; className?: string }) {
-  return <strong className={`key-name ${className}`.trim()} data-music-token="key">{noteToString(key.tonic)} {keyModeLabel(key.mode)}</strong>;
+export function KeyNotation({ context, className = '' }: { context: KeyContext; className?: string }) {
+  return <strong className={`key-name ${className}`.trim()} data-music-token="key">{noteToString(context.tonic)} {keyModeLabel(context.mode)}</strong>;
 }
 
 export function NoteNotation({ note, className = '' }: { note: SpelledNote; className?: string }) {
@@ -80,7 +80,7 @@ export function BarNumber({ value, className = '' }: { value: number; className?
 export function MusicTokenList({ tokens }: { tokens: readonly MusicToken[] }): ReactNode {
   return tokens.map((token, index) => {
     if (token.kind === 'text') return <Fragment key={index}>{token.value}</Fragment>;
-    if (token.kind === 'key') return <KeyNotation key={index} key={token.key} />;
+    if (token.kind === 'key') return <KeyNotation key={index} context={token.key} />;
     if (token.kind === 'note') return <NoteNotation key={index} note={token.note} />;
     if (token.kind === 'chord') return <ChordNotation key={index} chord={token.chord} />;
     if (token.kind === 'function') return <FunctionNotation key={index} functional={token.function} />;
