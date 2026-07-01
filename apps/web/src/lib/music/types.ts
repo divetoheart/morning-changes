@@ -66,6 +66,8 @@ export type StringTuning = {
   label: string;
   /** Low-to-high string order. The renderer may reverse this for display. */
   openStrings: readonly SpelledNote[];
+  /** Absolute MIDI pitch for each open string, in the same low-to-high order. */
+  openMidi: readonly number[];
 };
 
 export type FretRange = {
@@ -77,6 +79,7 @@ export type FretPosition = {
   stringIndex: number;
   fret: number;
   pitchClass: PitchClass;
+  midi: number;
 };
 
 export type IntervalPosition = FretPosition & {
@@ -111,6 +114,33 @@ export type PlacedShapeTone = IntervalPosition & {
   shapeId: string;
   shapeFamily: ShapeTemplate['family'];
   colorId: string;
+};
+
+export type VoicingRecipe =
+  | { kind: 'closed'; inversion: 0 | 1 | 2 | 3 }
+  | { kind: 'drop2'; inversion: 0 | 1 | 2 | 3 }
+  | { kind: 'shell'; includeRoot?: boolean; includeFifth?: boolean; guideToneOrder?: '3-7' | '7-3' };
+
+export type VoicingVoice = {
+  interval: IntervalName;
+  note: SpelledNote;
+  /** Relative height from the theoretical root pitch, in semitones. */
+  relativeSemitones: number;
+};
+
+export type GeneratedVoicing = {
+  chord: Chord;
+  recipe: VoicingRecipe;
+  /** Low-to-high theoretical voice order after inversion/drop treatment. */
+  voices: readonly VoicingVoice[];
+};
+
+export type GuitarVoicingCandidate = {
+  voicing: GeneratedVoicing;
+  /** One fretboard location per low-to-high voice. */
+  positions: readonly IntervalPosition[];
+  stringSet: readonly number[];
+  fretSpan: number;
 };
 
 export type MusicToken =
