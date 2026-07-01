@@ -1,4 +1,4 @@
-import { lessons, standards } from './content/catalog';
+import { lessons } from './content/catalog';
 
 const minorCadence = lessons.find(lesson => lesson.id === 'minor-ii-v-i-cadence');
 if (minorCadence) {
@@ -18,39 +18,4 @@ if (minorCadence) {
         .replace('resolve V7 into i', 'resolve V7 into i using the raised 7th')
     }))
   });
-}
-
-if (!standards.some(standard => standard.id === 'texas-flood')) {
-  standards.splice(1, 0, {
-    id: 'texas-flood',
-    title: 'Texas Flood',
-    subtitle: 'SRV recording: G♭ major concert pitch. Use G shapes with the guitar tuned down one half-step.',
-    status: 'available',
-    access: 'free',
-    href: '#/after-hours/autumn-leaves?standard=texas-flood',
-    focus: 'Slow 12-bar Texas blues · SRV key reference'
-  });
-}
-
-if (typeof window !== 'undefined') {
-  const texasRoute = '#/after-hours/autumn-leaves?standard=texas-flood';
-  const patchTexasFloodLink = () => {
-    document.querySelectorAll<HTMLElement>('.standard-row').forEach(row => {
-      if (!/Texas Flood/i.test(row.textContent ?? '')) return;
-      row.querySelector<HTMLAnchorElement>('a')?.setAttribute('href', texasRoute);
-    });
-  };
-  let attempts = 0;
-  const retryPatch = () => {
-    patchTexasFloodLink();
-    attempts += 1;
-    if (attempts < 12) window.setTimeout(retryPatch, 50);
-  };
-  retryPatch();
-  document.addEventListener('click', event => {
-    const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('a');
-    if (!link || !/Texas Flood/i.test(link.closest('.standard-row')?.textContent ?? '')) return;
-    event.preventDefault();
-    window.location.hash = '/after-hours/autumn-leaves?standard=texas-flood';
-  }, true);
 }
