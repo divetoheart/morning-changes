@@ -16,9 +16,13 @@
 .ah-layer-dot.root small {
   color: #0b0f16 !important;
   border-bottom-color: transparent !important;
-  background: transparent;
 }
-.ah-layer-dot .interval-symbol { margin: 0 !important; padding: 0 !important; font-size: inherit !important; }
+.ah-layer-dot .interval-symbol {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: inherit !important;
+  background: transparent !important;
+}
 .ah-full-neck-string { min-height: 66px !important; }
 .ah-full-neck-cell {
   grid-template-columns: repeat(2, 22px) !important;
