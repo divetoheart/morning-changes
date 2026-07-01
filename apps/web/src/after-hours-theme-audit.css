@@ -1,0 +1,48 @@
+/* After Hours is a first-class Morning Changes surface: every visible value comes from the active theme. */
+.after-native{
+  --ah-bg:var(--bg);
+  --ah-surface:var(--surface-bg);
+  --ah-raised:var(--panel-raised);
+  --ah-ink:var(--ink);
+  --ah-muted:var(--muted);
+  --ah-line:var(--line);
+  --ah-line-strong:var(--line-strong);
+  --ah-accent:var(--gold);
+  --ah-active-bg:var(--nav-active-bg);
+  --ah-active-ink:var(--nav-active-ink);
+  background:var(--ah-bg)!important;
+  color:var(--ah-ink)!important;
+}
+.after-native :is(h1,h2,h3,strong,b){color:var(--ah-ink)}
+.after-native :is(p,small){color:var(--ah-muted)}
+.after-native .eyebrow,.after-native .function-symbol em{color:var(--ah-accent)!important}
+.after-native :is(.after-native-section,.after-native-practice-card,.after-native-target-grid>article,.after-native-movement,.after-native-key-card article){background:var(--ah-surface)!important;border-color:var(--ah-line-strong)!important;color:var(--ah-ink)!important}
+.after-native :is(.after-native-bars,.after-native-jump,.after-native-movement-line,.after-native-progression span,.after-native-tones span){background:var(--ah-raised)!important;border-color:var(--ah-line)!important;color:var(--ah-ink)!important}
+.after-native .after-native-bars button{background:transparent!important;color:var(--ah-ink)!important;border-color:var(--ah-line)!important}
+.after-native .after-native-bars button.active{background:var(--ah-active-bg)!important;box-shadow:inset 0 -3px 0 var(--ah-accent)!important}
+.after-native .after-native-bars button small,.after-native .after-native-counter,.after-native .after-native-movement-line span,.after-native .after-native-tones small,.after-native .after-native-progression small{color:var(--ah-muted)!important}
+.after-native .after-native-bars button.active small{color:var(--ah-active-ink)!important}
+.after-native .after-native-jump a{background:transparent!important;color:var(--ah-muted)!important}
+.after-native .after-native-jump a:hover,.after-native .after-native-jump a:focus-visible{background:var(--ah-active-bg)!important;color:var(--ah-active-ink)!important}
+.after-native .after-native-presets button{background:var(--ah-surface)!important;color:var(--ah-ink)!important;border-color:var(--ah-line-strong)!important}
+.after-native .after-native-presets button.active{background:var(--ah-active-bg)!important;color:var(--ah-active-ink)!important;border-color:var(--ah-accent)!important}
+.after-native .after-native-tones span.root,.after-native .after-native-tones span.target{background:color-mix(in srgb,var(--ah-accent) 14%,var(--ah-raised))!important;border-color:var(--ah-accent)!important}
+.after-native .after-native-steps li{color:var(--ah-muted)!important}.after-native .after-native-steps li>b{color:var(--ah-accent)!important;border-color:var(--ah-accent)!important}
+.after-native .after-native-movement-line i{color:var(--ah-accent)!important}
+.after-native .after-native-key,.after-native .after-native-tuning,.after-native .after-native-progression b{color:var(--ah-ink)!important}
+
+/* Chords receive dedicated contrast tokens rather than borrowing the decorative accent. */
+.after-native .chord-symbol .chord-root{color:#f6efe6!important}.after-native .chord-symbol .music-accidental{color:#f2c27e!important}.after-native .chord-symbol .chord-quality{color:#d8c3a8!important}
+:root[data-theme='light'] .after-native .chord-symbol .chord-root{color:#142d47!important}:root[data-theme='light'] .after-native .chord-symbol .music-accidental{color:#8a4d0b!important}:root[data-theme='light'] .after-native .chord-symbol .chord-quality{color:#314f69!important}
+:root[data-theme='student'] .after-native .chord-symbol .chord-root{color:#153e66!important}:root[data-theme='student'] .after-native .chord-symbol .music-accidental{color:#9e2330!important}:root[data-theme='student'] .after-native .chord-symbol .chord-quality{color:#3e5875!important}
+:root[data-theme='bluesy'] .after-native .chord-symbol .chord-root{color:#ffe0b2!important}:root[data-theme='bluesy'] .after-native .chord-symbol .music-accidental{color:#9ae9f5!important}:root[data-theme='bluesy'] .after-native .chord-symbol .chord-quality{color:#f5e6d0!important}
+:root[data-theme='vintage'] .after-native .chord-symbol .chord-root{color:#fff0d0!important}:root[data-theme='vintage'] .after-native .chord-symbol .music-accidental{color:#ffd180!important}:root[data-theme='vintage'] .after-native .chord-symbol .chord-quality{color:#f0d9b2!important}
+
+/* The local key control uses the same text/background pair in every mode. */
+.after-native .key-selector select{background:var(--ah-surface)!important;color:var(--ah-ink)!important;border-color:var(--ah-line-strong)!important}
+.after-native .key-selector>span{color:var(--ah-muted)!important}
+
+@media(max-width:760px){
+  .after-native{background:var(--ah-bg)!important}
+  .after-native .after-native-jump{background:var(--ah-surface)!important}
+}
