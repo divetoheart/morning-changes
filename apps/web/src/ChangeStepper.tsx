@@ -48,9 +48,9 @@ function guideIntervals(quality: Quality): { third: MusicInterval; seventh: Musi
 }
 
 function sequenceFor(lessonId: string) {
-  if (lessonId === 'autumn-leaves-a-section-functions') return { title: 'Autumn Leaves A section', copy: 'Walk the form one bar at a time. The last chord loops back to bar 1.', changes: AUTUMN_LEAVES_A };
-  if (lessonId === 'minor-ii-v-i-cadence') return { title: 'Minor ii–V–i', copy: 'Follow the two guide-tone routes into the minor tonic.', changes: MINOR_CADENCE };
-  return { title: 'Guide-tone movement', copy: 'Use the smallest move into the next chord. Either route will make the harmony speak.', changes: MAJOR_CADENCE };
+  if (lessonId === 'autumn-leaves-a-section-functions') return { title: 'Autumn Leaves A section', copy: 'Walk the form one bar at a time. The final bar loops back to bar 1.', changes: AUTUMN_LEAVES_A };
+  if (lessonId === 'minor-ii-v-i-cadence') return { title: 'Minor ii–V–i', copy: 'Follow either guide-tone route into the minor tonic.', changes: MINOR_CADENCE };
+  return { title: 'Guide-tone movement', copy: 'Use the smallest move into the next chord. Either route makes the harmony speak.', changes: MAJOR_CADENCE };
 }
 
 function chordRoot(key: KeyName, change: Change) {
@@ -82,20 +82,8 @@ export function ChangeStepper({ lessonId, selectedKey }: Props) {
   const currentGuide = guideIntervals(current.quality);
   const nextGuide = guideIntervals(next.quality);
   const routes = [
-    {
-      label: 'Route 1',
-      fromInterval: currentGuide.third,
-      fromNote: transpose(currentRoot, currentGuide.third),
-      toInterval: nextGuide.seventh,
-      toNote: transpose(nextRoot, nextGuide.seventh)
-    },
-    {
-      label: 'Route 2',
-      fromInterval: currentGuide.seventh,
-      fromNote: transpose(currentRoot, currentGuide.seventh),
-      toInterval: nextGuide.third,
-      toNote: transpose(nextRoot, nextGuide.third)
-    }
+    { label: 'Route 1', fromInterval: currentGuide.third, fromNote: transpose(currentRoot, currentGuide.third), toInterval: nextGuide.seventh, toNote: transpose(nextRoot, nextGuide.seventh) },
+    { label: 'Route 2', fromInterval: currentGuide.seventh, fromNote: transpose(currentRoot, currentGuide.seventh), toInterval: nextGuide.third, toNote: transpose(nextRoot, nextGuide.third) }
   ];
 
   return <section className="change-stepper" data-music-context="true">
@@ -103,6 +91,11 @@ export function ChangeStepper({ lessonId, selectedKey }: Props) {
       <div><span className="eyebrow">Follow the movement</span><h2>{pattern.title}</h2><p>{pattern.copy}</p></div>
       <span className="change-step-count">Step {active + 1} / {pattern.changes.length}</span>
     </div>
+
+    <aside className="change-how" aria-label="How to use the movement guide">
+      <span className="eyebrow">How to play it</span>
+      <p>Choose one route. Hold the muted <b>Now</b> note until the chord changes, then land the glowing <b>Next</b> note right on the change. Do not chase a scale shape—just make that smallest move.</p>
+    </aside>
 
     <div className="change-step-rail" role="tablist" aria-label={`${pattern.title} chord steps`}>
       {pattern.changes.map((change, index) => {
@@ -122,7 +115,7 @@ export function ChangeStepper({ lessonId, selectedKey }: Props) {
         <span className="motion-function"><FunctionText value={current.function} /></span>
         <div className="motion-tones">{routes.map(route => <Tone key={route.label} interval={route.fromInterval} note={route.fromNote} state="ghost" />)}</div>
       </article>
-      <div className="motion-arrows" aria-hidden="true"><span>→</span><small>smallest move</small><span>→</span></div>
+      <div className="motion-arrows" aria-hidden="true"><span>→</span><small>move as little as possible</small><span>→</span></div>
       <article className="motion-chord next">
         <span className="eyebrow">Next</span>
         <h3><ChordText root={nextRoot} quality={next.quality} /></h3>
