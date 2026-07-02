@@ -1,4 +1,4 @@
-import { buildChord, buildScale, chordSymbol, createKey, displayStringOrder, findGuitarVoicings, functionSymbol, generateVoicing, noteToString, parseChordSymbol, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING } from './index';
+import { buildChord, buildScale, CAGED_MAJOR_FORM_ORDER, chordSymbol, createKey, displayStringOrder, findGuitarVoicings, functionSymbol, generateCagedMajorCycle, generateCagedMajorForm, generateVoicing, noteToString, parseChordSymbol, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING } from './index';
 
 export type MusicEngineContractCase = {
   id: string;
@@ -16,9 +16,13 @@ function addCase(cases: MusicEngineContractCase[], id: string, expected: string,
   cases.push({ id, expected, actual, passed: expected === actual });
 }
 
+function doesThrow(action: () => unknown): boolean {
+  try { action(); return false; } catch { return true; }
+}
+
 /**
- * Contract tests are deliberately dependency-free. They run in development when
- * the shared fretboard loads and provide a stable test surface for later CI wiring.
+ * Contract tests are deliberately dependency-free. They run in development and
+ * CI, covering the engine's musical spelling, guitar geometry, and collision rules.
  */
 export function evaluateMusicEngineContract(): MusicEngineContractResult {
   const cases: MusicEngineContractCase[] = [];
@@ -66,13 +70,27 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
   ]);
   addCase(cases, 'Agreeing layers are marked as agreement', 'agreement', agreement[0]?.marker ?? '');
 
+  const cMajorCycle = generateCagedMajorCycle('C');
+  addCase(cases, 'CAGED cycle uses C A G E D order', 'C A G E D', cMajorCycle.map(shape => shape.form).join(' '));
+  addCase(cases, 'C major CAGED skeleton frets are canonical', 'C:3 2 0 1 0|A:3 5 5 5 3|G:8 7 5 5 5 8|E:8 10 10 9 8 8|D:10 12 13 12', cMajorCycle.map(shape => `${shape.form}:${shape.positions.map(position => position.fret).join(' ')}`).join('|'));
+  addCase(cases, 'C major CAGED forms preserve parent string counts', '5 5 6 6 4', cMajorCycle.map(shape => shape.positions.length).join(' '));
+
   const chromaticRoots = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
   for (const root of chromaticRoots) {
     const scale = buildScale(createKey(root, 'major'));
     const letters = scale.map(item => item.note.letter);
     addCase(cases, `${root} major uses seven letter names`, '7', String(new Set(letters).size));
     addCase(cases, `${root} major begins on its tonic`, root, noteToString(scale[0].note));
+
+    for (const form of CAGED_MAJOR_FORM_ORDER) {
+      const shape = generateCagedMajorForm(form, root);
+      addCase(cases, `${root} ${form}-form uses only 1 3 5`, 'true', String(shape.positions.every(position => ['1', '3', '5'].includes(position.interval))));
+      addCase(cases, `${root} ${form}-form exposes the selected root`, 'true', String(shape.positions.some(position => position.interval === '1' && noteToString(position.note) === noteToString(parseNote(root)))));
+    }
   }
+
+  const dropDTuning = { ...STANDARD_TUNING, id: 'drop-d-contract', openMidi: [38, 45, 50, 55, 59, 64] };
+  addCase(cases, 'CAGED refuses unvalidated alternate tuning geometry', 'true', String(doesThrow(() => generateCagedMajorForm('E', 'C', dropDTuning))));
 
   return { passed: cases.every(test => test.passed), cases };
 }
