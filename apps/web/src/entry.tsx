@@ -13,6 +13,7 @@ import './notation.css';
 import './themes.css';
 import './theme-clarity.css';
 import './after-hours.css';
+import './after-hours-wordmark.css';
 import './p1-practice.css';
 import './qa-polish.css';
 import './after-hours-theme-audit.css';
