@@ -1,6 +1,6 @@
 import type { IntervalPosition } from './types';
 
-export type FretboardLayerId = 'caged' | 'pentatonic' | 'triad' | 'voicing' | 'arpeggio' | 'scale' | 'roots';
+export type FretboardLayerId = 'caged' | 'pentatonic' | 'triad' | 'voicing' | 'arpeggio' | 'scale' | 'targets' | 'roots';
 
 /** The resolver preserves the engine note, interval, role, and exact neck location for detail UI. */
 export type LayerMembership = Pick<IntervalPosition, 'stringIndex' | 'fret' | 'interval' | 'note' | 'role'> & {
@@ -34,7 +34,7 @@ export type LayerResolutionOptions = {
   priority?: readonly FretboardLayerId[];
 };
 
-const DEFAULT_PRIORITY: readonly FretboardLayerId[] = ['voicing', 'triad', 'arpeggio', 'pentatonic', 'scale', 'caged', 'roots'];
+const DEFAULT_PRIORITY: readonly FretboardLayerId[] = ['targets', 'voicing', 'triad', 'arpeggio', 'pentatonic', 'scale', 'caged', 'roots'];
 
 function keyOf(position: Pick<LayerMembership, 'stringIndex' | 'fret'>) {
   return `${position.stringIndex}:${position.fret}`;
