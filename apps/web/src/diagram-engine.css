@@ -1,0 +1,31 @@
+.guitar-diagram .ah-port-string i,
+.guitar-diagram .ah-port-string i *,
+.shared-full-neck .fret-row i,
+.shared-full-neck .fret-row i * {
+  color: #0b0f16 !important;
+  border-bottom-color: transparent !important;
+}
+
+.guitar-diagram .ah-port-string i.root,
+.shared-full-neck .fret-row i.root {
+  background: #f5d46b !important;
+  border-color: #111827 !important;
+  border-radius: 5px !important;
+}
+
+.guitar-diagram .interval-symbol,
+.shared-full-neck .interval-symbol {
+  box-shadow: none !important;
+}
+
+.guitar-diagram .note-symbol,
+.shared-full-neck .note-symbol {
+  font-size: .88em;
+  font-weight: 800;
+}
+
+.diagram-unavailable {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
