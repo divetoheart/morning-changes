@@ -40,7 +40,9 @@ if ! grep -Fq 'Chord voicing' "$RUNNER_TEMP/fretboard.html"; then fail 'Chord vo
 if ! grep -Fq 'Drop 2' "$RUNNER_TEMP/fretboard.html"; then fail 'Drop 2 selector option did not render.'; fi
 if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard route reached the application error boundary.'; fi
 
-if ! grep -Fq 'ii–V–I at 8th position.' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused ii–V–I study did not render.'; fi
+# Roman numerals are intentionally transformed into notation markup after render.
+if ! grep -Fq 'Apply this in Autumn Leaves' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused study eyebrow did not render.'; fi
+if ! grep -Fq 'at 8th position.' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused position title did not render.'; fi
 if ! grep -Fq 'Focused range · frets 7–11' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused fret range did not render.'; fi
 if ! grep -Fq 'Open full neck' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves full Fretboard expand link did not render.'; fi
 if ! grep -Fq 'Chord voicing' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves shared voicing selector did not render.'; fi
