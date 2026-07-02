@@ -1,6 +1,6 @@
 import { CHORD_FORMULAS, SCALE_FORMULAS } from './intervals';
 import { noteToString, parseNote, transposeNote } from './pitch';
-import type { Chord, ChordQuality, FunctionalChord, KeyContext, RomanDegree, ScaleMode, SpelledNote } from './types';
+import type { Chord, ChordQuality, FunctionalChord, KeyContext, RomanDegree, ScaleMode, SpelledNote, Triad, TriadQuality } from './types';
 
 const DEGREE_INDEX: Record<RomanDegree, number> = {
   I: 0, II: 1, III: 2, IV: 3, V: 4, VI: 5, VII: 6,
@@ -27,6 +27,18 @@ const QUALITY_FROM_SUFFIX: ReadonlyArray<readonly [string, ChordQuality]> = [
   ['aug', 'augmented'], ['+', 'augmented'], ['sus4', 'sus4'], ['sus2', 'sus2'],
   ['maj7', 'major7'], ['M7', 'major7'], ['m7', 'minor7'], ['7', 'dominant7'], ['maj', 'major'], ['m', 'minor'], ['', 'major']
 ];
+
+const TRIAD_QUALITY_BY_CHORD: Readonly<Partial<Record<ChordQuality, TriadQuality>>> = {
+  major: 'major',
+  major7: 'major',
+  dominant7: 'major',
+  minor: 'minor',
+  minor7: 'minor',
+  halfDiminished7: 'diminished',
+  diminished: 'diminished',
+  diminished7: 'diminished',
+  augmented: 'augmented'
+};
 
 export function chordQualitySuffix(quality: ChordQuality): string {
   return QUALITY_SUFFIX[quality];
@@ -76,6 +88,23 @@ export function buildChord(root: string | SpelledNote, quality: ChordQuality): C
     quality,
     tones: CHORD_FORMULAS[quality].map(interval => ({ interval, note: transposeNote(rootNote, interval) }))
   };
+}
+
+/** Builds a correctly spelled major, minor, diminished, or augmented three-tone chord. */
+export function buildTriad(root: string | SpelledNote, quality: TriadQuality): Triad {
+  const chord = buildChord(root, quality);
+  if (chord.tones.length !== 3) throw new Error(`${quality} is not a three-tone chord.`);
+  return { root: chord.root, quality, tones: chord.tones as Triad['tones'] };
+}
+
+/** Reduces a supported chord quality to its underlying tertian three-tone quality. */
+export function triadQualityForChord(quality: ChordQuality): TriadQuality | undefined {
+  return TRIAD_QUALITY_BY_CHORD[quality];
+}
+
+export function triadForChord(chord: Chord): Triad | undefined {
+  const quality = triadQualityForChord(chord.quality);
+  return quality ? buildTriad(chord.root, quality) : undefined;
 }
 
 export function chordSymbol(chord: Chord): string {
