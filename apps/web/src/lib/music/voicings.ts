@@ -47,10 +47,7 @@ function drop2Voicing(chord: Chord, inversion: 0 | 1 | 2 | 3): VoicingVoice[] {
   return voices.sort((left, right) => left.relativeSemitones - right.relativeSemitones);
 }
 
-function shellVoicing(
-  chord: Chord,
-  options: Extract<VoicingRecipe, { kind: 'shell' }>
-): VoicingVoice[] {
+function shellVoicing(chord: Chord, options: Extract<VoicingRecipe, { kind: 'shell' }>): VoicingVoice[] {
   const third = chord.tones.find(tone => tone.interval === '3' || tone.interval === 'b3');
   const seventh = chord.tones.find(tone => tone.interval === '7' || tone.interval === 'b7' || tone.interval === 'bb7');
   if (!third || !seventh) throw new Error(`Shell voicings require a third and seventh; ${chord.quality} does not provide both.`);
@@ -63,11 +60,7 @@ function shellVoicing(
   return ascendingVoices(chord, intervals);
 }
 
-/**
- * Generates theory-level voice order first. This function has no knowledge of
- * strings or fingers, which makes Drop 2 a real voice-leading transformation
- * rather than a display rule such as "hide the A string".
- */
+/** Generates theory-level voice order before any guitar placement occurs. */
 export function generateVoicing(chord: Chord, recipe: VoicingRecipe): GeneratedVoicing {
   const voices = recipe.kind === 'shell'
     ? shellVoicing(chord, recipe)
@@ -90,6 +83,13 @@ export type GuitarVoicingSearchOptions = {
   maxResults?: number;
 };
 
+export type GuitarVoicingSelectionOptions = Omit<GuitarVoicingSearchOptions, 'stringSet'> & {
+  /** The candidate may use one of these explicitly requested low-to-high string sets. */
+  stringSets: readonly (readonly number[])[];
+  /** Optional target center fret. This is a preference, never a musical rule. */
+  preferredFret?: number;
+};
+
 function assertStringSet(stringSet: readonly number[], voiceCount: number, tuning: StringTuning) {
   if (stringSet.length !== voiceCount) throw new Error(`Voicing has ${voiceCount} voices but string set has ${stringSet.length} strings.`);
   if (new Set(stringSet).size !== stringSet.length) throw new Error('String set cannot repeat a string.');
@@ -97,12 +97,7 @@ function assertStringSet(stringSet: readonly number[], voiceCount: number, tunin
   if (stringSet.some(value => value < 0 || value >= tuning.openStrings.length)) throw new Error(`String set is outside ${tuning.id}.`);
 }
 
-/**
- * Finds playable candidates for a generated voice order on a selected string set.
- * It uses actual string MIDI pitches, preserves low-to-high voice order, and
- * filters candidates by fret span. Finger choice and ergonomic scoring can be
- * added later without changing the music model.
- */
+/** Finds playable candidates while preserving intended low-to-high voice order. */
 export function findGuitarVoicings(voicing: GeneratedVoicing, options: GuitarVoicingSearchOptions): GuitarVoicingCandidate[] {
   const tuning = options.tuning ?? STANDARD_TUNING;
   const fretRange = options.fretRange ?? DEFAULT_VOICING_RANGE;
@@ -139,4 +134,25 @@ export function findGuitarVoicings(voicing: GeneratedVoicing, options: GuitarVoi
     const rightLow = Math.min(...right.positions.map(position => position.fret));
     return leftLow - rightLow || left.fretSpan - right.fretSpan;
   });
+}
+
+/**
+ * Picks one stable, playable candidate for a diagram or lesson card. It searches
+ * only the caller's stated string sets, then prefers the requested neck area,
+ * smaller spans, and lower positions in that order.
+ */
+export function selectGuitarVoicingCandidate(voicing: GeneratedVoicing, options: GuitarVoicingSelectionOptions): GuitarVoicingCandidate | undefined {
+  const candidates = options.stringSets.flatMap(stringSet => findGuitarVoicings(voicing, { ...options, stringSet }));
+  const preferredFret = options.preferredFret;
+  return candidates.sort((left, right) => {
+    const midpoint = (candidate: GuitarVoicingCandidate) => {
+      const frets = candidate.positions.map(position => position.fret);
+      return (Math.min(...frets) + Math.max(...frets)) / 2;
+    };
+    const leftDistance = preferredFret === undefined ? 0 : Math.abs(midpoint(left) - preferredFret);
+    const rightDistance = preferredFret === undefined ? 0 : Math.abs(midpoint(right) - preferredFret);
+    const leftLow = Math.min(...left.positions.map(position => position.fret));
+    const rightLow = Math.min(...right.positions.map(position => position.fret));
+    return leftDistance - rightDistance || left.fretSpan - right.fretSpan || leftLow - rightLow;
+  })[0];
 }
