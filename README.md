@@ -13,7 +13,7 @@ The Vite + React app in `apps/web` has four core spaces:
 
 After Hours currently contains two standards:
 
-- Autumn Leaves: relative-major ii–V–I study in frets 7–11.
+- Autumn Leaves: whole-form study in frets 7–11, with every written chord available to the focused Fretboard selector.
 - 12-Bar Blues: three study variants—Texas Flood, Crossroads, and The Thrill Is Gone.
 
 The old lesson library, learning paths, daily lesson rotation, licks, exercises, practice extras, and lesson-progress profile remain retired. Retired routes redirect Home until a new Learn rebuild is explicitly scoped.
@@ -35,9 +35,9 @@ The main Fretboard is the free-form workspace. It supports:
 
 - All 15 conventional key signatures: C, seven sharp signatures through C♯, and seven flat signatures through C♭.
 - Major or minor study context.
-- A typed chord-symbol entry path for built-in engine chords.
-- A tone-builder path that assembles an engine-backed custom chord from selected intervals.
-- CAGED, pentatonic, arpeggio, scale, triad/inversion, Shell, and Drop 2 layers.
+- Typed engine-backed symbols including `9`, `11`, `13`, `maj9–13`, `m9–13`, `add9–13`, `sus`, `sus2`, and `sus4` alongside the foundational chord qualities.
+- A tone-builder path with chord tones, extensions (♭9, 9, ♯9, 11, ♯11, ♭13, 13), and Sus2/Sus4 presets.
+- A deliberately short primary row: **Pentatonic**, **Arpeggio**, and **Chord**. Chord shows one playable voicing; CAGED, Triads, Scale, inversions, and voicing choice live under **More options**.
 - Plain-English fret details using the engine’s spelled note, location, shape identity, and nearest root marker.
 
 The visible Study Key belongs inside the **Shapes and Voicings** Fretboard surface. It is one compact boxed hierarchy—eyebrow, large key/mode label, and key/mode controls—not a standalone panel above the map or a separate badge.

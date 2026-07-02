@@ -46,6 +46,18 @@ export type ChordQuality =
   | 'augmented'
   | 'sus2'
   | 'sus4'
+  | 'add9'
+  | 'add11'
+  | 'add13'
+  | 'dominant9'
+  | 'dominant11'
+  | 'dominant13'
+  | 'major9'
+  | 'major11'
+  | 'major13'
+  | 'minor9'
+  | 'minor11'
+  | 'minor13'
   | 'custom';
 
 export type Chord = {

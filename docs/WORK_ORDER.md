@@ -18,7 +18,7 @@ Navigation is intentionally limited to Home, Fretboard, After Hours, and Tools.
 
 - `/fretboard`: flexible shared-map workspace.
 - `/after-hours`: authored standards library.
-- `/after-hours/autumn-leaves`: Autumn Leaves study.
+- `/after-hours/autumn-leaves`: whole-form Autumn Leaves study.
 - `/after-hours/12-bar-blues`: real 12-Bar Blues study.
 - `/tools`: metronome.
 - Retired lesson/profile/daily routes redirect Home.
@@ -33,7 +33,7 @@ The mark has the same 37px footprint as the normal wordmark mark and must remain
 
 The active standards are:
 
-- Autumn Leaves: focused relative-major ii–V–I application at frets 7–11.
+- Autumn Leaves: whole-form focused application at frets 7–11. Its Fretboard selector is derived from the unique written chords in `study.form`; never replace it with a manually maintained ii–V–I subset.
 - 12-Bar Blues: three authored variants—Texas Flood, Crossroads, and The Thrill Is Gone.
 
 After Hours is authored repertoire. Its active chord selector must stay limited to the real chords in the selected standard. Do not add the free-form Fretboard builder there.
@@ -46,12 +46,12 @@ The main `/fretboard` route is the free-form lab. It supports:
 
 - All 15 conventional key signatures, including C♯ and C♭.
 - Major and minor study context.
-- Typed built-in chord symbols.
-- Engine-backed custom chords built from interval buttons.
-- CAGED, pentatonic, arpeggio, scale, Triads/inversions, Shell, and Drop 2.
+- Typed engine-backed `9`, `11`, `13`, `maj9–13`, `m9–13`, `add9–13`, `sus`, `sus2`, and `sus4` chord symbols.
+- Engine-backed custom chords built from core and extension interval buttons, including ♭9, 9, ♯9, 11, ♯11, ♭13, and 13.
+- Suspended-chord presets for Sus2 and Sus4.
 - Plain-English detail text derived from layer membership note, interval, string/fret, shape identity, and nearest root.
 
-### Study Key hierarchy
+### Control hierarchy
 
 The visible Study Key display belongs **inside** the shared `Shapes and Voicings` Fretboard surface. It must not appear as a separate standalone panel above the map.
 
@@ -63,6 +63,14 @@ beforeControls={<FretboardChordBuilder ... />}
 ```
 
 The renderer owns the boxed mini-card: eyebrow, large key/mode label, and optional controls. It should read as a compact version of the same Study Key hierarchy—not a pill or unrelated badge.
+
+The primary control row is intentionally restricted to:
+
+1. Pentatonic — five connected boxes.
+2. Arpeggio — all active chord tones.
+3. Chord — one playable generated voicing; default voicing is Shell so extended chords remain usable.
+
+CAGED, Triads, Scale, Triad inversion, and Chord voicing belong under the native `More options` disclosure. Do not move them back into the primary row.
 
 Custom chord construction belongs in `lib/music` through `buildCustomChord`. Never add page-local note tables.
 
@@ -86,15 +94,15 @@ npm run build
 Browser smoke verifies:
 
 1. Home remains core-only.
-2. Fretboard has the unified in-surface Study Key controls, no standalone key panel, chord builder, renderer, voicing controls, footer, and no error boundary.
-3. Autumn Leaves has the After Hours identity and focused map.
+2. Fretboard has the unified in-surface Study Key controls, no standalone key panel, extension and Sus builder controls, the primary three-toggle row, More options, footer, and no error boundary.
+3. Autumn Leaves has the After Hours identity, whole-form focused selector, and no error boundary.
 4. 12-Bar Blues exposes all three study variants and no error boundary.
 
 The live footer is the deployment source of truth. See `docs/RELEASE_VERIFICATION.md`.
 
 ## Next work
 
-1. Verify the deployed in-surface Study Key and After Hours mark manually on desktop and mobile.
+1. Verify the deployed extension builder, primary control row, and whole-form Autumn selector manually on desktop and mobile.
 2. Add a true two-octave scale-path generator.
 3. Carry focused-map state into the full-neck link.
 4. Add ii–V–I voice-leading paths.

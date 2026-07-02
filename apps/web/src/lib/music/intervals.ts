@@ -51,7 +51,19 @@ export const CHORD_FORMULAS: Record<BuiltInChordQuality, readonly IntervalName[]
   diminished7: ['1', 'b3', 'b5', 'bb7'],
   augmented: ['1', '3', '#5'],
   sus2: ['1', '2', '5'],
-  sus4: ['1', '4', '5']
+  sus4: ['1', '4', '5'],
+  add9: ['1', '3', '5', '9'],
+  add11: ['1', '3', '5', '11'],
+  add13: ['1', '3', '5', '13'],
+  dominant9: ['1', '3', '5', 'b7', '9'],
+  dominant11: ['1', '3', '5', 'b7', '9', '11'],
+  dominant13: ['1', '3', '5', 'b7', '9', '13'],
+  major9: ['1', '3', '5', '7', '9'],
+  major11: ['1', '3', '5', '7', '9', '11'],
+  major13: ['1', '3', '5', '7', '9', '13'],
+  minor9: ['1', 'b3', '5', 'b7', '9'],
+  minor11: ['1', 'b3', '5', 'b7', '9', '11'],
+  minor13: ['1', 'b3', '5', 'b7', '9', '13']
 };
 
 export function intervalDefinition(interval: IntervalName) {

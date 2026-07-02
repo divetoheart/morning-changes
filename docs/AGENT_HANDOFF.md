@@ -37,7 +37,7 @@ This is a route state, not a parallel app shell.
 
 Active standards:
 
-- Autumn Leaves: relative-major ii–V–I focused at frets 7–11.
+- Autumn Leaves: full written form available to the focused selector at frets 7–11. Derive options from `study.form`; never recreate a manually maintained ii–V–I subset.
 - 12-Bar Blues: Texas Flood, Crossroads, and The Thrill Is Gone variants.
 
 After Hours is an authored setting. Its chord selector must remain restricted to the chords of the selected standard. Never expose the free-form Fretboard builder inside it.
@@ -47,25 +47,27 @@ After Hours is an authored setting. Its chord selector must remain restricted to
 - `apps/web/src/App.tsx`
   - Core routes, real Blues route, standards shelf, and main Fretboard props.
 - `apps/web/src/FretboardChordBuilder.tsx`
-  - Main-Fretboard-only text and interval-button chord builder.
+  - Main-Fretboard-only typed and interval-button chord builder. Includes core tones, extensions, and Sus2/Sus4 presets.
 - `apps/web/src/AfterHoursFretboardCustomizer.tsx`
-  - One shared renderer for full-neck and standard applications. Owns the Study Key boxed display, optional Study Key controls, optional pre-control content, authored selector hiding, and English detail copy.
+  - One shared renderer for full-neck and standard applications. Owns the Study Key boxed display, primary controls, More options, optional pre-control content, authored selector hiding, and English detail copy.
+- `apps/web/src/AfterHoursAutumnPortBody.tsx`
+  - Uses the actual unique chords from `study.form` for the focused Autumn Leaves selector.
 - `apps/web/src/AfterHoursBluesApp.tsx`
   - The three Blues variants.
 - `apps/web/src/after-hours-wordmark.css`
   - Theme-safe solid black ringed After Hours mark.
 - `apps/web/src/fretboard-key-hierarchy.css`
   - Shared Study Key card hierarchy inside the Fretboard surface.
+- `apps/web/src/fretboard-controls.css`
+  - Primary three-toggle row plus native More options disclosure.
 - `apps/web/src/fretboard-builder.css`
-  - Additive responsive chord-builder styling.
-- `apps/web/src/lib/music/study-keys.ts`
-  - Fifteen conventional key signatures and major/minor study-mode types.
+  - Additive responsive builder styling for core tones, extensions, and suspended presets.
+- `apps/web/src/lib/music/intervals.ts`
+  - Typed formulas for add9–13, dominant 9–13, major 9–13, and minor 9–13.
 - `apps/web/src/lib/music/harmony.ts`
-  - Built-in symbols and `buildCustomChord` for interval-selected chords.
+  - Typed symbol parsing for add, sus, and extended chord qualities.
 - `apps/web/src/lib/music/layers.ts`
   - Shared marker membership includes spelled note, interval, string/fret, role, layer, and variant.
-- `apps/web/src/lib/music/contract.ts`
-  - Music correctness contract, including custom chords and fifteen signatures.
 - `apps/web/scripts/fretboard-smoke.sh`
   - Browser checks for Home, Fretboard, Autumn Leaves, and Blues.
 
@@ -79,8 +81,8 @@ For a standard/lesson application:
 fretRange={{ start: 7, end: 11 }}
 compact
 expandHref="#/fretboard"
-chords={[{ chord, scaleMode }]}
-defaultLayers={{ triad: true, arpeggio: true }}
+chords={uniqueChordsFromTheWrittenForm}
+defaultLayers={{ pentatonic: false, triad: false, arpeggio: true }}
 ```
 
 For the main Fretboard:
@@ -93,15 +95,22 @@ beforeControls={<FretboardChordBuilder ... />}
 
 The Study Key is not a separate page-level panel. It lives in the renderer header beside the Shapes and Voicings copy, using the same boxed eyebrow / large-key hierarchy at a compact size. Do not create an unrelated badge or overlay to imitate it.
 
-The renderer supports CAGED, pentatonic, Triads/inversions, arpeggio, scale context, Shell, Drop 2, focused ranges, and collision detail.
+The primary layer row is deliberately only:
+
+1. Pentatonic: five connected boxes.
+2. Arpeggio: all active chord tones.
+3. Chord: one playable generated voicing. Default to Shell because it remains useful on extended chords.
+
+Put Triads, CAGED, Scale, Triad inversion, and Chord voicing in the native `More options` disclosure. Do not put these back in the primary row.
 
 Scale is context, not a dedicated two-octave path. The full-neck link does not yet preserve compact-map configuration. Do not claim either is implemented.
 
 ## Engine expectations
 
 - `buildCustomChord` is the only interval-button builder path. It requires root `1`, spells every selected interval, and creates a readable chord label.
-- `parseChordSymbol` handles typed built-in chord symbols.
-- Custom chords can supply arpeggio/scale data and may derive a triad or usable voicing when their tone set supports it.
+- `parseChordSymbol` supports foundational chord qualities plus `9`, `11`, `13`, `maj9–13`, `m9–13`, `add9–13`, `sus`, `sus2`, and `sus4`.
+- Extended quality formulas belong in `intervals.ts`; do not parse an extended string into a page-local note list.
+- Extended Chord voicings default to Shell; Closed and Drop 2 only resolve when the chord’s voice count is supported.
 - Every marker must carry engine-derived note, interval, string/fret, role, and layer membership.
 - Detail copy uses that data to explain what a selected marker is and where its nearest root lies.
 - Error boundaries contain route crashes; they do not replace source fixes.
@@ -120,15 +129,15 @@ npm run build
 Browser smoke requires:
 
 - Home: core content and no legacy daily/path language.
-- Fretboard: unified in-surface Study Key controls, no standalone `interval-panel`, builder, layers, voicing controls, English-detail guidance, footer, and no error boundary.
-- Autumn Leaves: After Hours mark, focused study, and authored voicing controls.
+- Fretboard: unified in-surface Study Key controls, no standalone `interval-panel`, extension and Sus controls, primary Pentatonic/Arpeggio/Chord row, More options, English-detail guidance, footer, and no error boundary.
+- Autumn Leaves: After Hours mark, whole-form selector including the half-diminished, borrowed dominant, and minor-seven chords, plus More options.
 - Blues: real Blues route plus all three variants and footer.
 
 Failure artifacts include Home, Fretboard, Autumn Leaves, Blues DOM captures, and preview logs.
 
 ## Next work
 
-1. Verify the deployed in-surface Study Key, real Blues route, and solid After Hours mark on desktop and mobile.
+1. Verify the deployed extension builder, primary controls, and whole-form Autumn selector on desktop and mobile.
 2. Add a true two-octave scale-path generator and contract coverage.
 3. Carry compact-map state to the full-neck URL.
 4. Add ii–V–I voice-leading paths.
