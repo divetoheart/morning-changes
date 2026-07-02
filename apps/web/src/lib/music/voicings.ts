@@ -5,16 +5,25 @@ import type {
   Chord,
   ChordQuality,
   FretRange,
+  GeneratedTriadInversion,
   GeneratedVoicing,
   GuitarVoicingCandidate,
   IntervalName,
   IntervalPosition,
   StringTuning,
+  Triad,
+  TriadInversion,
   VoicingRecipe,
   VoicingVoice
 } from './types';
 
 const DEFAULT_VOICING_RANGE: FretRange = { start: 0, end: 15 };
+export const STANDARD_TRIAD_STRING_SETS: readonly (readonly number[])[] = [
+  [0, 1, 2],
+  [1, 2, 3],
+  [2, 3, 4],
+  [3, 4, 5]
+];
 
 function voiceFor(chord: Chord, interval: IntervalName, relativeSemitones = intervalDefinition(interval).semitones): VoicingVoice {
   const tone = chord.tones.find(candidate => candidate.interval === interval);
@@ -33,7 +42,12 @@ function ascendingVoices(chord: Chord, intervals: readonly IntervalName[]): Voic
 }
 
 function closedVoicing(chord: Chord, inversion: 0 | 1 | 2 | 3): VoicingVoice[] {
-  if (chord.tones.length !== 4) throw new Error(`Closed and drop-2 voicings currently require four notes; ${chord.quality} has ${chord.tones.length}.`);
+  if (chord.tones.length !== 3 && chord.tones.length !== 4) {
+    throw new Error(`Closed voicings currently require three or four notes; ${chord.quality} has ${chord.tones.length}.`);
+  }
+  if (inversion >= chord.tones.length) {
+    throw new Error(`${chord.quality} has ${chord.tones.length} voices, so inversion ${inversion} is unavailable.`);
+  }
   const intervals = chord.tones.map(tone => tone.interval);
   const rotated = [...intervals];
   for (let index = 0; index < inversion; index += 1) rotated.push(rotated.shift()!);
@@ -41,6 +55,7 @@ function closedVoicing(chord: Chord, inversion: 0 | 1 | 2 | 3): VoicingVoice[] {
 }
 
 function drop2Voicing(chord: Chord, inversion: 0 | 1 | 2 | 3): VoicingVoice[] {
+  if (chord.tones.length !== 4) throw new Error(`Drop-2 voicings currently require four notes; ${chord.quality} has ${chord.tones.length}.`);
   const voices = closedVoicing(chord, inversion).map(voice => ({ ...voice }));
   const secondHighest = voices.length - 2;
   voices[secondHighest] = { ...voices[secondHighest], relativeSemitones: voices[secondHighest].relativeSemitones - 12 };
@@ -74,6 +89,12 @@ export function generateVoicingFor(root: string, quality: ChordQuality, recipe: 
   return generateVoicing(buildChord(root, quality), recipe);
 }
 
+/** Returns the low-to-high voice order for root, first, or second inversion. */
+export function generateTriadInversion(triad: Triad, inversion: TriadInversion): GeneratedTriadInversion {
+  const voicing = generateVoicing(buildChord(triad.root, triad.quality), { kind: 'closed', inversion });
+  return { triad, inversion, voices: voicing.voices };
+}
+
 export type GuitarVoicingSearchOptions = {
   /** Low-to-high engine string indices, e.g. [2, 3, 4, 5] for D-G-B-e. */
   stringSet: readonly number[];
@@ -88,6 +109,10 @@ export type GuitarVoicingSelectionOptions = Omit<GuitarVoicingSearchOptions, 'st
   stringSets: readonly (readonly number[])[];
   /** Optional target center fret. This is a preference, never a musical rule. */
   preferredFret?: number;
+};
+
+export type GuitarTriadSearchOptions = Omit<GuitarVoicingSearchOptions, 'stringSet'> & {
+  stringSets?: readonly (readonly number[])[];
 };
 
 function assertStringSet(stringSet: readonly number[], voiceCount: number, tuning: StringTuning) {
@@ -134,6 +159,31 @@ export function findGuitarVoicings(voicing: GeneratedVoicing, options: GuitarVoi
     const rightLow = Math.min(...right.positions.map(position => position.fret));
     return leftLow - rightLow || left.fretSpan - right.fretSpan;
   });
+}
+
+/** Finds real closed-position three-note shapes on the requested string sets. */
+export function findGuitarTriadVoicings(
+  triad: Triad,
+  inversion: TriadInversion,
+  options: GuitarTriadSearchOptions = {}
+): GuitarVoicingCandidate[] {
+  const stringSets = options.stringSets ?? STANDARD_TRIAD_STRING_SETS;
+  const maxResults = options.maxResults ?? 24;
+  const voicing = generateVoicing(buildChord(triad.root, triad.quality), { kind: 'closed', inversion });
+  const seen = new Set<string>();
+  return stringSets.flatMap(stringSet => findGuitarVoicings(voicing, { ...options, stringSet }))
+    .filter(candidate => {
+      const key = candidate.positions.map(position => `${position.stringIndex}:${position.fret}`).join('|');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((left, right) => {
+      const leftLow = Math.min(...left.positions.map(position => position.fret));
+      const rightLow = Math.min(...right.positions.map(position => position.fret));
+      return leftLow - rightLow || left.fretSpan - right.fretSpan;
+    })
+    .slice(0, maxResults);
 }
 
 /**
