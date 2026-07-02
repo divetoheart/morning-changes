@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -p tsconfig.app.json --noEmit && vite build",
     "check": "tsc -p tsconfig.app.json --noEmit",
+    "music:contract": "node scripts/run-music-contract.mjs",
+    "quality": "npm run check && npm run music:contract && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
