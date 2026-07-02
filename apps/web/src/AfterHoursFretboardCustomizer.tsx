@@ -48,12 +48,11 @@ type FretboardMapProps = {
   mode?: 'layers' | 'roots';
   eyebrow?: string;
   heading?: string;
-  /** Limits the shared renderer to one playable neck neighborhood. */
   fretRange?: FretRange;
-  /** Compact study surfaces keep the same controls without showing the entire neck. */
   compact?: boolean;
-  /** Optional small route out to the complete Fretboard workspace. */
   expandHref?: string;
+  /** Hide the authored active-chord selector when a parent owns a custom builder. */
+  showChordSelector?: boolean;
 };
 
 const DISPLAY_STRINGS = displayStringOrder(STANDARD_TUNING).map(source => ({ source, label: source === STANDARD_TUNING.openStrings.length - 1 ? 'e' : noteToString(STANDARD_TUNING.openStrings[source]) }));
@@ -93,6 +92,7 @@ function voicingRecipe(mode: Exclude<VoicingMode, 'off'>): VoicingRecipe {
 }
 
 function cellKey(source: number, fret: number) { return `${source}:${fret}`; }
+function membershipIdentity(membership: LayerMembership) { return `${membership.layer}:${membership.variant ?? ''}`; }
 function membershipMap(entries: Array<{ stringIndex: number; fret: number; interval: IntervalName; role: LayerMembership['role'] }>) { return new Map(entries.map(entry => [cellKey(entry.stringIndex, entry.fret), entry])); }
 function membershipGroups(entries: readonly LayerMembership[]) {
   const groups = new Map<string, LayerMembership[]>();
@@ -120,9 +120,25 @@ function detailLayerLabel(membership: LayerMembership): string {
   return membership.layer[0].toUpperCase() + membership.layer.slice(1);
 }
 function markerTitle(cell: LayerCell): string { return `${cell.marker === 'conflict' ? 'Focus label shown first. ' : ''}${cell.memberships.map(item => `${detailLayerLabel(item)}: ${item.interval}`).join(' · ')}`; }
+function stringLabel(source: number) { return DISPLAY_STRINGS.find(string => string.source === source)?.label ?? '?'; }
+function detailMembership(cell: LayerCell) { return cell.memberships.find(membership => membership.layer === 'pentatonic') ?? cell.primary; }
+function englishDetail(cell: LayerCell, membership: LayerMembership, rootAnchors: ReadonlyMap<string, readonly LayerMembership[]>) {
+  const note = noteToString(membership.note);
+  const current = `This is ${detailLayerLabel(membership)}: ${membership.interval} (${note}) at fret ${cell.fret} on the ${stringLabel(cell.stringIndex)} string.`;
+  const roots = rootAnchors.get(membershipIdentity(membership)) ?? [];
+  const nearestRoot = [...roots].sort((left, right) => {
+    const leftDistance = Math.abs(left.fret - cell.fret) + Math.abs(left.stringIndex - cell.stringIndex);
+    const rightDistance = Math.abs(right.fret - cell.fret) + Math.abs(right.stringIndex - cell.stringIndex);
+    return leftDistance - rightDistance || left.fret - right.fret;
+  })[0];
+  if (!nearestRoot) return current;
+  const rootNote = noteToString(nearestRoot.note);
+  if (nearestRoot.stringIndex === cell.stringIndex && nearestRoot.fret === cell.fret) return `${current} It is the root of that shape.`;
+  return `${current} Its nearest root is on fret ${nearestRoot.fret} of the ${stringLabel(nearestRoot.stringIndex)} string (${rootNote}).`;
+}
 
 /** Shared renderer for both full-neck exploration and focused lesson-position studies. */
-export function FretboardMap({ keyLabel, majorRoot, minorRoot, chords, description, cagedLabel, pentatonicLabel, defaultLayers, mode = 'layers', eyebrow = 'Shapes and voicings', heading = 'One neck. Every map you need.', fretRange, compact = false, expandHref }: FretboardMapProps) {
+export function FretboardMap({ keyLabel, majorRoot, minorRoot, chords, description, cagedLabel, pentatonicLabel, defaultLayers, mode = 'layers', eyebrow = 'Shapes and voicings', heading = 'One neck. Every map you need.', fretRange, compact = false, expandHref, showChordSelector = true }: FretboardMapProps) {
   const activeRange = useMemo(() => normalizeFretRange(fretRange), [fretRange?.start, fretRange?.end]);
   const fretNumbers = useMemo(() => Array.from({ length: activeRange.end - activeRange.start + 1 }, (_, index) => activeRange.start + index), [activeRange]);
   const [enabled, setEnabled] = useState<Record<Layer, boolean>>({ ...DEFAULT_LAYERS, ...defaultLayers });
@@ -160,7 +176,7 @@ export function FretboardMap({ keyLabel, majorRoot, minorRoot, chords, descripti
   const rootMap = useMemo(() => activeChord ? membershipMap(positionsForIntervals(activeChord.root, ['1'], 'root')) : new Map(), [activeChord]);
   const focusLayer: FretboardLayerId = voicingMode !== 'off' && voicingGroups.size > 0 ? 'voicing' : enabled.triad && activeTriad ? 'triad' : 'arpeggio';
   const focusLabel = focusLayer === 'voicing' && voicingMode !== 'off' ? VOICING_LABELS[voicingMode] : focusLayer === 'triad' ? 'Triad' : 'Arpeggio';
-  const cellsByPosition = useMemo(() => {
+  const fretboardData = useMemo(() => {
     const memberships: LayerMembership[] = [];
     for (const string of DISPLAY_STRINGS) for (const fret of fretNumbers) {
       const key = cellKey(string.source, fret);
@@ -178,19 +194,29 @@ export function FretboardMap({ keyLabel, majorRoot, minorRoot, chords, descripti
       if (enabled.arpeggio && arpeggio) memberships.push({ ...arpeggio, layer: 'arpeggio' });
       if (enabled.scale && scale) memberships.push({ ...scale, layer: 'scale' });
     }
-    return new Map(resolveLayerCells(memberships, { focusLayer }).map(cell => [cellKey(cell.stringIndex, cell.fret), cell]));
+    const rootAnchors = new Map<string, LayerMembership[]>();
+    for (const membership of memberships) {
+      if (membership.interval !== '1') continue;
+      const identity = membershipIdentity(membership);
+      const roots = rootAnchors.get(identity) ?? [];
+      roots.push(membership);
+      rootAnchors.set(identity, roots);
+    }
+    return { cells: new Map(resolveLayerCells(memberships, { focusLayer }).map(cell => [cellKey(cell.stringIndex, cell.fret), cell])), rootAnchors };
   }, [arpeggioMap, cagedGroups, enabled, focusLayer, fretNumbers, mode, pentatonicGroups, rootMap, scaleMap, triadGroups, voicingGroups]);
+  const cellsByPosition = fretboardData.cells;
   useEffect(() => { if (selectedCellKey && !cellsByPosition.has(selectedCellKey)) setSelectedCellKey(null); }, [cellsByPosition, selectedCellKey]);
 
   const selectedCell = selectedCellKey ? cellsByPosition.get(selectedCellKey) ?? null : null;
-  const selectedString = selectedCell ? DISPLAY_STRINGS.find(string => string.source === selectedCell.stringIndex)?.label : '';
+  const selectedString = selectedCell ? stringLabel(selectedCell.stringIndex) : '';
+  const selectedMembership = selectedCell ? detailMembership(selectedCell) : null;
   const neckStyle = { ['--fret-count' as string]: String(fretNumbers.length) } as CSSProperties;
 
   return <section className={`ah-fretboard-customizer ${compact ? 'ah-fretboard-focus' : ''} ${mode === 'roots' ? 'ah-fretboard-roots' : ''}`}>
     <div className="ah-piece-section-head"><div><span className="eyebrow">{eyebrow}</span><h2>{heading}</h2><p>{description}</p></div><div className="ah-fretboard-meta"><div className="ah-fretboard-key"><small>Study key</small><strong>{keyLabel}</strong></div>{expandHref && <a className="ah-fretboard-expand" href={expandHref} aria-label="Open this study on the full Fretboard">Open full neck <span aria-hidden="true">↗</span></a>}</div></div>
-    {mode === 'layers' && <div className="ah-fretboard-controls"><label className="ah-fretboard-chord"><span>Active chord</span><select value={activeChordKey} onChange={event => { setActiveChordKey(event.target.value); setSelectedCellKey(null); }}>{chords.map(option => { const symbol = chordSymbol(option.chord); return <option key={symbol} value={symbol}>{symbol}</option>; })}</select></label>{activeTriad && <label className="ah-fretboard-chord"><span>Triad inversion</span><select value={triadInversion} onChange={event => { setTriadInversion(Number(event.target.value) as TriadInversion); setSelectedCellKey(null); }}><option value={0}>Root position</option><option value={1}>1st inversion</option><option value={2}>2nd inversion</option></select></label>}<label className="ah-fretboard-chord"><span>Chord voicing</span><select value={voicingMode} onChange={event => { setVoicingMode(event.target.value as VoicingMode); setSelectedCellKey(null); }}><option value="off">Off</option><option value="shell">Shell</option><option value="drop2">Drop 2</option></select></label><div className="ah-fretboard-layers" aria-label="Fretboard layers">{LAYERS.map(layer => { const unavailable = layer.id === 'triad' && !activeTriad; return <button type="button" key={layer.id} className={`layer-${layer.id} ${enabled[layer.id] ? 'active' : ''}`} aria-pressed={enabled[layer.id]} disabled={unavailable} onClick={() => { setEnabled(previous => ({ ...previous, [layer.id]: !previous[layer.id] })); setSelectedCellKey(null); }}><i aria-hidden="true"/><span>{layer.label}</span><small>{layer.id === 'caged' ? cagedLabel : layer.id === 'pentatonic' ? pentatonicLabel : layer.detail}</small></button>; })}</div></div>}
-    <div className="ah-fretboard-legend">{mode === 'roots' ? <span><b className="root-key">1</b> Every highlighted note is the selected key’s root.</span> : <><span><b className="root-key">1</b> {focusLabel} controls the visible label when layers disagree.</span>{compact && <span>Focused range · frets {activeRange.start}–{activeRange.end}</span>}<span>Tap any marker for its complete role list.</span></>}</div>
-    {selectedCell && <aside className="ah-fretboard-detail" aria-live="polite"><div><span className="eyebrow">Fret detail</span><strong>String {selectedString} · fret {selectedCell.fret}</strong><p>{selectedCell.marker === 'conflict' ? `The ${focusLabel.toLowerCase()} label is shown because it is the focus layer. Other memberships remain listed here.` : 'This marker represents every active membership at this position.'}</p></div><button type="button" onClick={() => setSelectedCellKey(null)} aria-label="Close fret detail">×</button><ul>{selectedCell.memberships.map(membership => <li key={`${membership.layer}-${membership.variant ?? ''}-${membership.interval}`}><span className={`ah-detail-swatch ${membership.colorId ?? membership.layer}`} aria-hidden="true"/><strong>{detailLayerLabel(membership)}</strong><span>{membership.interval}{membership.role === 'root' ? ' · root' : ''}</span></li>)}</ul></aside>}
+    {mode === 'layers' && <div className="ah-fretboard-controls">{showChordSelector && <label className="ah-fretboard-chord"><span>Active chord</span><select value={activeChordKey} onChange={event => { setActiveChordKey(event.target.value); setSelectedCellKey(null); }}>{chords.map(option => { const symbol = chordSymbol(option.chord); return <option key={symbol} value={symbol}>{symbol}</option>; })}</select></label>}{activeTriad && <label className="ah-fretboard-chord"><span>Triad inversion</span><select value={triadInversion} onChange={event => { setTriadInversion(Number(event.target.value) as TriadInversion); setSelectedCellKey(null); }}><option value={0}>Root position</option><option value={1}>1st inversion</option><option value={2}>2nd inversion</option></select></label>}<label className="ah-fretboard-chord"><span>Chord voicing</span><select value={voicingMode} onChange={event => { setVoicingMode(event.target.value as VoicingMode); setSelectedCellKey(null); }}><option value="off">Off</option><option value="shell">Shell</option><option value="drop2">Drop 2</option></select></label><div className="ah-fretboard-layers" aria-label="Fretboard layers">{LAYERS.map(layer => { const unavailable = layer.id === 'triad' && !activeTriad; return <button type="button" key={layer.id} className={`layer-${layer.id} ${enabled[layer.id] ? 'active' : ''}`} aria-pressed={enabled[layer.id]} disabled={unavailable} onClick={() => { setEnabled(previous => ({ ...previous, [layer.id]: !previous[layer.id] })); setSelectedCellKey(null); }}><i aria-hidden="true"/><span>{layer.label}</span><small>{layer.id === 'caged' ? cagedLabel : layer.id === 'pentatonic' ? pentatonicLabel : layer.detail}</small></button>; })}</div></div>}
+    <div className="ah-fretboard-legend">{mode === 'roots' ? <span><b className="root-key">1</b> Every highlighted note is the selected key’s root.</span> : <><span><b className="root-key">1</b> {focusLabel} controls the visible label when layers disagree.</span>{compact && <span>Focused range · frets {activeRange.start}–{activeRange.end}</span>}<span>Tap any marker to see what it means in plain English.</span></>}</div>
+    {selectedCell && selectedMembership && <aside className="ah-fretboard-detail" aria-live="polite"><div><span className="eyebrow">Fret detail</span><strong>Fret {selectedCell.fret} · {selectedString} string</strong><p>{englishDetail(selectedCell, selectedMembership, fretboardData.rootAnchors)}</p></div><button type="button" onClick={() => setSelectedCellKey(null)} aria-label="Close fret detail">×</button><ul>{selectedCell.memberships.map(membership => <li key={`${membership.layer}-${membership.variant ?? ''}-${membership.interval}`}><span className={`ah-detail-swatch ${membership.colorId ?? membership.layer}`} aria-hidden="true"/><strong>{detailLayerLabel(membership)}</strong><span>{membership.interval} · {noteToString(membership.note)}{membership.role === 'root' ? ' · root' : ''}</span></li>)}</ul></aside>}
     <div className="ah-full-neck-scroll" tabIndex={0} role="region" aria-label={`${compact ? `Focused fretboard from fret ${activeRange.start} to ${activeRange.end}` : 'Full fretboard'} with selectable study layers`}><div className="ah-full-neck" style={neckStyle}><div className="ah-full-neck-frets"><span></span>{fretNumbers.map(fret => <span key={fret}>{fret}</span>)}</div>{DISPLAY_STRINGS.map(string => <div className="ah-full-neck-string" key={string.source}><b>{string.label}</b>{fretNumbers.map(fret => { const key = cellKey(string.source, fret); const cell = cellsByPosition.get(key); return <span className="ah-full-neck-cell" key={fret}>{cell && <button type="button" className={`ah-layer-dot ${cell.primary.layer} ${visibleRoot(cell) ? 'root' : ''} ${cell.marker} ${cell.segments.length > 1 ? 'multi' : ''}`} style={markerStyle(cell)} title={markerTitle(cell)} aria-label={`${selectedCellKey === key ? 'Selected. ' : ''}${markerTitle(cell)}`} aria-pressed={selectedCellKey === key} onClick={() => setSelectedCellKey(key)}><small>{cell.primary.interval}</small></button>}</span>; })}</div>)}</div></div>
   </section>;
 }
