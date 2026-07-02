@@ -5,6 +5,8 @@ import { KeyArrangementReference, StandardFooter, StandardIntro, ThreeForHeadpho
 import type { FormSection } from './after-hours-types';
 import { buildChord, type Chord, type ChordQuality, type FunctionalChord } from './lib/music';
 
+type BuiltInChordQuality = Exclude<ChordQuality, 'custom'>;
+
 type BluesKey = {
   id: string;
   label: string;
@@ -21,7 +23,7 @@ type BluesKey = {
   referenceHref: string;
 };
 
-const chord = (root: string, quality: ChordQuality) => buildChord(root, quality);
+const chord = (root: string, quality: BuiltInChordQuality) => buildChord(root, quality);
 const KEYS: BluesKey[] = [
   {
     id:'g', label:'G blues shapes · G♭ concert', short:'G / G♭ concert', root:chord('G','dominant7'), IV:chord('C','dominant7'), V:chord('D','dominant7'), majorRoot:'G', minorRoot:'G',
@@ -42,7 +44,7 @@ const KEYS: BluesKey[] = [
     rationale:'A minor-key twelve-bar route built around B.B. King’s The Thrill Is Gone. It opens a different guitar vocabulary: long vocal phrases, B minor pentatonic, and a clear dominant pull from F♯7 back into B minor.',
     referenceTitle:'B.B. King · The Thrill Is Gone · Completely Well · 1969',
     referenceCopy:'Use this setting for slow minor blues. B.B. King makes the space between phrases part of the melody; the B minor pentatonic is only the beginning of the sound.',
-    referenceHref:'https://www.youtube.com/results?search_query=B.B.+King+The+Thrill+Is+Gone+official+audio'
+    referenceHref:'https://www.youtube.com/results?search_query=B.B.+King+The+Thrill+Is_Gone+official+audio'
   }
 ];
 
