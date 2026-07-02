@@ -50,17 +50,34 @@ jobs:
           import re
           from pathlib import Path
 
-          bundle = Path('_guide/assets/index-D0-FcZsw.js')
-          source = bundle.read_text()
-          cleaned, count = re.subn(
-              r'\$x=\{id:"aint-misbehavin".*?co=\[Fx,\$x,Vx\]',
-              'co=[Fx]',
-              source,
-              flags=re.S,
-          )
-          if count != 1:
-              raise RuntimeError(f'Expected one extra-standard bundle block, found {count}')
-          bundle.write_text(cleaned)
+          assets = Path('_guide/assets')
+          candidates = []
+          for bundle in assets.glob('index-*.js'):
+              source = bundle.read_text(errors='replace')
+              if 'aint-misbehavin' in source:
+                  candidates.append((bundle, source))
+
+          if len(candidates) > 1:
+              names = ', '.join(bundle.name for bundle, _ in candidates)
+              raise RuntimeError(f'Expected one guide bundle containing the optional standard, found: {names}')
+
+          if candidates:
+              bundle, source = candidates[0]
+              cleaned, count = re.subn(
+                  r'\$x=\{id:"aint-misbehavin".*?co=\[Fx,\$x,Vx\]',
+                  'co=[Fx]',
+                  source,
+                  flags=re.S,
+              )
+              if count > 1:
+                  raise RuntimeError(f'Expected at most one optional-standard bundle block in {bundle.name}, found {count}')
+              if count == 1:
+                  bundle.write_text(cleaned)
+                  print(f'Removed optional standard from {bundle.name}')
+              else:
+                  print(f'Optional-standard reference found in {bundle.name}, but no removable block matched; preserving original bundle')
+          else:
+              print('No optional-standard bundle found; preserving guide assets unchanged')
           PY
 
           mkdir -p dist/after-hours/autumn-leaves/guide/arpeggios
