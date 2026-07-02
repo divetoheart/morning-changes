@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { clampTempo } from './progress';
+
+function clampTempo(value: number) {
+  return Math.max(35, Math.min(240, Math.round(value)));
+}
 
 export function useMetronome(initialTempo: number, onTempoChange: (tempo: number) => void) {
   const [tempo, setTempoState] = useState(clampTempo(initialTempo));
@@ -75,7 +78,7 @@ export function useMetronome(initialTempo: number, onTempoChange: (tempo: number
   useEffect(() => {
     if (!playing) return;
     start();
-  }, [tempo]);
+  }, [playing, start, tempo]);
 
   return { tempo, playing, beat, setTempo, tapTempo, toggle, stop };
 }
