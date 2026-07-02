@@ -45,12 +45,15 @@ export type ChordQuality =
   | 'diminished7'
   | 'augmented'
   | 'sus2'
-  | 'sus4';
+  | 'sus4'
+  | 'custom';
 
 export type Chord = {
   root: SpelledNote;
   quality: ChordQuality;
   tones: Array<{ interval: IntervalName; note: SpelledNote }>;
+  /** Readable engine-generated label for a user-built chord. */
+  label?: string;
 };
 
 export type TriadQuality = 'major' | 'minor' | 'diminished' | 'augmented';
