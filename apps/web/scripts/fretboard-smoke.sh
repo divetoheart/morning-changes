@@ -18,11 +18,14 @@ if [ -z "$browser" ]; then
   exit 1
 fi
 
+"$browser" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'http://127.0.0.1:4173/#/' > "$RUNNER_TEMP/home.html"
 "$browser" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'http://127.0.0.1:4173/#/fretboard' > "$RUNNER_TEMP/fretboard.html"
 "$browser" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'http://127.0.0.1:4173/#/after-hours/autumn-leaves' > "$RUNNER_TEMP/autumn-leaves.html"
 
 fail() {
   echo "$1"
+  echo '--- Home DOM ---'
+  cat "$RUNNER_TEMP/home.html"
   echo '--- Fretboard DOM ---'
   cat "$RUNNER_TEMP/fretboard.html"
   echo '--- Autumn Leaves DOM ---'
@@ -32,6 +35,15 @@ fail() {
   exit 1
 }
 
+if ! grep -Fq 'Core spaces' "$RUNNER_TEMP/home.html"; then fail 'Core home screen did not render.'; fi
+if ! grep -Fq 'After Hours' "$RUNNER_TEMP/home.html"; then fail 'After Hours core entry did not render on Home.'; fi
+if grep -Fq 'Daily lick' "$RUNNER_TEMP/home.html"; then fail 'Legacy daily lick content remains on Home.'; fi
+if grep -Fq 'Daily exercise' "$RUNNER_TEMP/home.html"; then fail 'Legacy daily exercise content remains on Home.'; fi
+if grep -Fq 'Start session' "$RUNNER_TEMP/home.html"; then fail 'Legacy daily lesson content remains on Home.'; fi
+if grep -Fq 'Practice path' "$RUNNER_TEMP/home.html"; then fail 'Legacy learning-path content remains on Home.'; fi
+if ! grep -Fq 'Live build' "$RUNNER_TEMP/home.html"; then fail 'Home did not render the live build footer.'; fi
+if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/home.html"; then fail 'Home route reached the application error boundary.'; fi
+
 if ! grep -Fq 'Explore the neck.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard heading did not render.'; fi
 if ! grep -Fq 'ah-fretboard-customizer' "$RUNNER_TEMP/fretboard.html"; then fail 'Shared Fretboard renderer did not render.'; fi
 if ! grep -Fq '>Triads<' "$RUNNER_TEMP/fretboard.html"; then fail 'Triad layer control did not render.'; fi
@@ -39,10 +51,12 @@ if ! grep -Fq 'Triad inversion' "$RUNNER_TEMP/fretboard.html"; then fail 'Triad 
 if ! grep -Fq 'Chord voicing' "$RUNNER_TEMP/fretboard.html"; then fail 'Chord voicing selector did not render.'; fi
 if ! grep -Fq 'Drop 2' "$RUNNER_TEMP/fretboard.html"; then fail 'Drop 2 selector option did not render.'; fi
 if ! grep -Fq 'Live build' "$RUNNER_TEMP/fretboard.html"; then fail 'Visible live build footer did not render.'; fi
-if ! grep -Fq 'Check this commit after an update.' "$RUNNER_TEMP/fretboard.html"; then fail 'Live build footer verification copy did not render.'; fi
 if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard route reached the application error boundary.'; fi
 
 # Music typography transforms intervals and Roman numerals into notation markup after render.
+if ! grep -Fq 'After Hours' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'After Hours wordmark did not render.'; fi
+if ! grep -Fq 'Standards Library' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'After Hours wordmark subtitle did not render.'; fi
+if ! grep -Fq 'after-hours-wordmark-mark' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'After Hours flipped wordmark state did not render.'; fi
 if ! grep -Fq 'Apply this in Autumn Leaves' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused study eyebrow did not render.'; fi
 if ! grep -Fq 'at 8th position.' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused position title did not render.'; fi
 if ! grep -Fq 'Focused fretboard from fret 7 to 11' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused fret range did not render.'; fi
