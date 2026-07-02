@@ -1,4 +1,4 @@
-import { buildChord, buildScale, buildTriad, CAGED_MAJOR_FORM_ORDER, chordSymbol, createKey, displayStringOrder, findGuitarTriadVoicings, findGuitarVoicings, functionSymbol, generateCagedMajorCycle, generateCagedMajorForm, generateMinorPentatonicBox, generateMinorPentatonicCycle, generateTriadInversion, generateVoicing, MINOR_PENTATONIC_BOX_ORDER, noteToString, parseChordSymbol, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING, triadForChord } from './index';
+import { buildChord, buildCustomChord, buildScale, buildTriad, CAGED_MAJOR_FORM_ORDER, chordSymbol, createKey, displayStringOrder, findGuitarTriadVoicings, findGuitarVoicings, functionSymbol, generateCagedMajorCycle, generateCagedMajorForm, generateMinorPentatonicBox, generateMinorPentatonicCycle, generateTriadInversion, generateVoicing, MINOR_PENTATONIC_BOX_ORDER, noteToString, parseChordSymbol, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING, STUDY_KEY_SIGNATURES, triadForChord } from './index';
 
 export type MusicEngineContractCase = {
   id: string;
@@ -33,6 +33,7 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
 
   addCase(cases, 'B harmonic minor uses A sharp', 'B C♯ D E F♯ G A♯', buildScale(createKey('B', 'harmonicMinor')).map(item => noteToString(item.note)).join(' '));
   addCase(cases, 'B flat major uses E flat', 'B♭ C D E♭ F G A', buildScale(createKey('B♭', 'major')).map(item => noteToString(item.note)).join(' '));
+  addCase(cases, 'C flat major is correctly spelled', 'C♭ D♭ E♭ F♭ G♭ A♭ B♭', buildScale(createKey('C♭', 'major')).map(item => noteToString(item.note)).join(' '));
   addCase(cases, 'F sharp dominant seven spelling', 'F♯ A♯ C♯ E', buildChord('F♯', 'dominant7').tones.map(tone => noteToString(tone.note)).join(' '));
   addCase(cases, 'A half diminished seven spelling', 'A C E♭ G', buildChord('A', 'halfDiminished7').tones.map(tone => noteToString(tone.note)).join(' '));
   addCase(cases, 'C diminished seven preserves theoretical seventh spelling', 'C E♭ G♭ B♭♭', buildChord('C', 'diminished7').tones.map(tone => noteToString(tone.note)).join(' '));
@@ -41,7 +42,15 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
   addCase(cases, 'Half diminished function is one symbol', 'iiø7', functionSymbol({ degree: 'ii', quality: 'halfDiminished7', context: 'minor' }));
   addCase(cases, 'Minor tonic omits redundant m suffix', 'i', functionSymbol({ degree: 'i', quality: 'minor', context: 'minor' }));
   addCase(cases, 'Minor seventh function preserves seventh only', 'ii7', functionSymbol({ degree: 'ii', quality: 'minor7', context: 'major' }));
+  addCase(cases, 'Study key list exposes fifteen signatures', '15', String(STUDY_KEY_SIGNATURES.length));
+  addCase(cases, 'Study key list keeps both C sharp and C flat', 'true', String(STUDY_KEY_SIGNATURES.some(key => key.id === 'C#') && STUDY_KEY_SIGNATURES.some(key => key.id === 'Cb')));
   addCase(cases, 'Standard tuning display order', '5 4 3 2 1 0', displayStringOrder(STANDARD_TUNING).join(' '));
+
+  const customC7 = buildCustomChord('C', ['1', '3', '5', 'b7']);
+  addCase(cases, 'Custom chord spells selected intervals', 'C E G B♭', customC7.tones.map(tone => noteToString(tone.note)).join(' '));
+  addCase(cases, 'Custom chord receives readable interval label', 'C [1 3 5 b7]', chordSymbol(customC7));
+  addCase(cases, 'Custom chord exposes underlying major triad', 'C E G', (triadForChord(customC7)?.tones ?? []).map(tone => noteToString(tone.note)).join(' '));
+  addCase(cases, 'Custom chord rejects rootless input', 'true', String(doesThrow(() => buildCustomChord('C', ['3', '5']))));
 
   const cMajorTriad = buildTriad('C', 'major');
   const fSharpDiminishedTriad = buildTriad('F♯', 'diminished');
@@ -77,36 +86,37 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
   addCase(cases, 'Guitar candidates ascend in actual pitch', 'true', String(drop2Candidates.every(candidate => candidate.positions.every((position, index, all) => index === 0 || position.midi > all[index - 1].midi))));
 
   const collision = resolveLayerCells([
-    { stringIndex: 0, fret: 3, interval: '1', role: 'root', layer: 'pentatonic' },
-    { stringIndex: 0, fret: 3, interval: '5', role: 'chordTone', layer: 'arpeggio' }
+    { stringIndex: 0, fret: 3, interval: '1', note: parseNote('G'), role: 'root', layer: 'pentatonic' },
+    { stringIndex: 0, fret: 3, interval: '5', note: parseNote('D'), role: 'chordTone', layer: 'arpeggio' }
   ]);
   addCase(cases, 'Layer collision collapses to one visible cell', '1', String(collision.length));
   addCase(cases, 'Arpeggio focus wins collision label', '5', collision[0]?.primary.interval ?? '');
   addCase(cases, 'Disagreeing layers are marked as conflict', 'conflict', collision[0]?.marker ?? '');
   addCase(cases, 'Conflict retains both layers for detail treatment', 'arpeggio pentatonic', collision[0]?.segments.map(segment => segment.layer).join(' ') ?? '');
+  addCase(cases, 'Layer membership keeps note for detail copy', 'D', noteToString(collision[0]?.primary.note ?? parseNote('C')));
 
   const agreement = resolveLayerCells([
-    { stringIndex: 2, fret: 5, interval: '1', role: 'root', layer: 'pentatonic' },
-    { stringIndex: 2, fret: 5, interval: '1', role: 'root', layer: 'arpeggio' }
+    { stringIndex: 2, fret: 5, interval: '1', note: parseNote('C'), role: 'root', layer: 'pentatonic' },
+    { stringIndex: 2, fret: 5, interval: '1', note: parseNote('C'), role: 'root', layer: 'arpeggio' }
   ]);
   addCase(cases, 'Agreeing layers are marked as agreement', 'agreement', agreement[0]?.marker ?? '');
   const cagedCollision = resolveLayerCells([
-    { stringIndex: 4, fret: 5, interval: '1', role: 'root', layer: 'caged', variant: 'C-form', colorId: 'caged-c' },
-    { stringIndex: 4, fret: 5, interval: '3', role: 'shapeTone', layer: 'caged', variant: 'A-form', colorId: 'caged-a' }
+    { stringIndex: 4, fret: 5, interval: '1', note: parseNote('C'), role: 'root', layer: 'caged', variant: 'C-form', colorId: 'caged-c' },
+    { stringIndex: 4, fret: 5, interval: '3', note: parseNote('E'), role: 'shapeTone', layer: 'caged', variant: 'A-form', colorId: 'caged-a' }
   ], { focusLayer: 'caged' });
   addCase(cases, 'CAGED collision retains individual form colors', 'caged-c caged-a', cagedCollision[0]?.segments.map(segment => segment.colorId).join(' ') ?? '');
   const pentatonicCollision = resolveLayerCells([
-    { stringIndex: 5, fret: 3, interval: 'b3', role: 'shapeTone', layer: 'pentatonic', variant: 'Box 1', colorId: 'pentatonic-1' },
-    { stringIndex: 5, fret: 3, interval: 'b3', role: 'shapeTone', layer: 'pentatonic', variant: 'Box 2', colorId: 'pentatonic-2' }
+    { stringIndex: 5, fret: 3, interval: 'b3', note: parseNote('G'), role: 'shapeTone', layer: 'pentatonic', variant: 'Box 1', colorId: 'pentatonic-1' },
+    { stringIndex: 5, fret: 3, interval: 'b3', note: parseNote('G'), role: 'shapeTone', layer: 'pentatonic', variant: 'Box 2', colorId: 'pentatonic-2' }
   ], { focusLayer: 'pentatonic' });
   addCase(cases, 'Pentatonic boundary retains both box colors', 'pentatonic-1 pentatonic-2', pentatonicCollision[0]?.segments.map(segment => segment.colorId).join(' ') ?? '');
   const triadCollision = resolveLayerCells([
-    { stringIndex: 3, fret: 9, interval: '3', role: 'chordTone', layer: 'triad', variant: '1st inversion', colorId: 'triad' },
-    { stringIndex: 3, fret: 9, interval: '3', role: 'chordTone', layer: 'arpeggio', colorId: 'arpeggio' }
+    { stringIndex: 3, fret: 9, interval: '3', note: parseNote('E'), role: 'chordTone', layer: 'triad', variant: '1st inversion', colorId: 'triad' },
+    { stringIndex: 3, fret: 9, interval: '3', note: parseNote('E'), role: 'chordTone', layer: 'arpeggio', colorId: 'arpeggio' }
   ], { focusLayer: 'triad' });
   addCase(cases, 'Triad focus wins shared chord-tone label', 'triad', triadCollision[0]?.primary.layer ?? '');
   const sparseMemberships = [
-    { stringIndex: 0, fret: 0, interval: '1', role: 'root', layer: 'roots' },
+    { stringIndex: 0, fret: 0, interval: '1', note: parseNote('E'), role: 'root', layer: 'roots' },
     undefined
   ] as unknown as Parameters<typeof resolveLayerCells>[0];
   addCase(cases, 'Layer resolver rejects undefined membership slots', 'true', String(doesThrow(() => resolveLayerCells(sparseMemberships))));
