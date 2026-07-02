@@ -16,7 +16,7 @@ Last updated: 2026-07-02
 
 Navigation is intentionally limited to Home, Fretboard, After Hours, and Tools.
 
-- `/fretboard`: flexible shared-map workspace.
+- `/fretboard`: shared musician-facing full-neck workspace.
 - `/after-hours`: authored standards library.
 - `/after-hours/autumn-leaves`: whole-form Autumn Leaves study.
 - `/after-hours/12-bar-blues`: real 12-Bar Blues study.
@@ -33,7 +33,7 @@ The mark has the same 37px footprint as the normal wordmark mark and must remain
 
 The active standards are:
 
-- Autumn Leaves: whole-form focused application at frets 7–11. Its Fretboard selector is derived from the unique written chords in `study.form`; never replace it with a manually maintained ii–V–I subset.
+- Autumn Leaves: whole-form focused application at frets 7–11. The selector uses unique chord choices from `study.form`; the ordered events are separately supplied to the shared renderer as `progression` for target-tone guidance.
 - 12-Bar Blues: three authored variants—Texas Flood, Crossroads, and The Thrill Is Gone.
 
 After Hours is authored repertoire. Its active chord selector must stay limited to the real chords in the selected standard. Do not add the free-form Fretboard builder there.
@@ -42,39 +42,35 @@ After Hours is authored repertoire. Its active chord selector must stay limited 
 
 `AfterHoursFretboardCustomizer` is the one shared renderer for full-neck exploration and compact standard studies.
 
-The main `/fretboard` route is the free-form lab. It supports:
+The final musicianship foundation includes:
 
-- All 15 conventional key signatures, including C♯ and C♭.
-- Major and minor study context.
-- Typed engine-backed `9`, `11`, `13`, `maj9–13`, `m9–13`, `add9–13`, `sus`, `sus2`, and `sus4` chord symbols.
-- Engine-backed custom chords built from core and extension interval buttons, including ♭9, 9, ♯9, 11, ♯11, ♭13, and 13.
-- Suspended-chord presets for Sus2 and Sus4.
-- Plain-English detail text derived from layer membership note, interval, string/fret, shape identity, and nearest root.
+- 15 conventional key signatures with major/minor study context.
+- Practical chord parsing: 6, m6, 6/9, mMaj7, 7sus4, altered dominant extensions, standard extensions, adds, diminished, augmented, and suspended forms.
+- Engine-backed custom chords from interval buttons.
+- Primary visual controls: Pentatonic, Arpeggio, Chord.
+- More options: Targets, Triads, CAGED, Scale, scale context, marker labels, neck position, inversion, and voicing.
+- Scale contexts: diatonic modes, harmonic/melodic minor, Lydian dominant, Phrygian dominant, altered, and minor blues.
+- Interval/name labels and full, low, middle, or upper neck focus.
+- Canonical guide-tone motions and optional target overlays for ordered chord progressions.
 
-### Control hierarchy
+### Course and standard authoring contract
 
-The visible Study Key display belongs **inside** the shared `Shapes and Voicings` Fretboard surface. It must not appear as a separate standalone panel above the map.
-
-For the main Fretboard, use the shared renderer props:
+Course or standard material must consume the shared renderer. It provides:
 
 ```tsx
-studyKeyControls={<StudyKeyControls ... />}
-beforeControls={<FretboardChordBuilder ... />}
+<AfterHoursFretboardCustomizer
+  chords={uniqueChordChoices}
+  progression={orderedChordEvents}
+  fretRange={{ start: 7, end: 11 }}
+  compact
+/>
 ```
 
-The renderer owns the boxed mini-card: eyebrow, large key/mode label, and optional controls. It should read as a compact version of the same Study Key hierarchy—not a pill or unrelated badge.
+`chords` is the unique active-chord menu. `progression` preserves the actual event order and enables next-chord target tones. Do not create lesson-local fretboards, hard-code target notes, or manually duplicate voice-leading behavior.
 
-The primary control row is intentionally restricted to:
+`FretboardChordOption` may include an authored `scaleMode` and `functionLabel`. Music behavior belongs in `apps/web/src/lib/music`; visual components only consume structured data.
 
-1. Pentatonic — five connected boxes.
-2. Arpeggio — all active chord tones.
-3. Chord — one playable generated voicing; default voicing is Shell so extended chords remain usable.
-
-CAGED, Triads, Scale, Triad inversion, and Chord voicing belong under the native `More options` disclosure. Do not move them back into the primary row.
-
-Custom chord construction belongs in `lib/music` through `buildCustomChord`. Never add page-local note tables.
-
-Layer memberships must preserve the spelled note alongside interval, role, string/fret, layer, and variant. This is required for the detail panel.
+The primary control row stays intentionally restricted to Pentatonic, Arpeggio, and Chord. CAGED, Triads, Scale, Targets, inversion, voicing, label mode, and neck position belong under `More options`.
 
 ## Retired content
 
@@ -94,17 +90,16 @@ npm run build
 Browser smoke verifies:
 
 1. Home remains core-only.
-2. Fretboard has the unified in-surface Study Key controls, no standalone key panel, extension and Sus builder controls, the primary three-toggle row, More options, footer, and no error boundary.
-3. Autumn Leaves has the After Hours identity, whole-form focused selector, and no error boundary.
+2. Fretboard has the unified in-surface Study Key controls, practical builder, harmonic-motion selector, primary three-toggle row, More options, and no error boundary.
+3. Autumn Leaves has the After Hours identity, whole-form selector, and shared voice-leading surface.
 4. 12-Bar Blues exposes all three study variants and no error boundary.
 
 The live footer is the deployment source of truth. See `docs/RELEASE_VERIFICATION.md`.
 
 ## Next work
 
-1. Verify the deployed extension builder, primary control row, and whole-form Autumn selector manually on desktop and mobile.
+1. Build the first courses and additional standards on the shared progression contract.
 2. Add a true two-octave scale-path generator.
-3. Carry focused-map state into the full-neck link.
-4. Add ii–V–I voice-leading paths.
-5. Add another standard only with a concrete practice outcome.
-6. Rebuild Learn later from a fresh work order, not retired data.
+3. Carry focused-map state to the full-neck URL.
+4. Add rhythm comping and backing-track work only when it supports a concrete course outcome.
+5. Rebuild Learn later from a fresh work order, not retired data.
