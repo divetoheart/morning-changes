@@ -1,32 +1,26 @@
 # Morning Changes
 
-Morning Changes is a guitar practice workspace for visual, theory-grounded study. The current product centers on a preserved app shell with these live spaces:
+Morning Changes is a visual, theory-grounded guitar practice workspace. The live app keeps its existing shell and includes Home, Learn (intentional rebuild state), After Hours, Fretboard, Tools, and Profile.
 
-- Home
-- Learn, currently an intentional rebuild state
-- After Hours
-- Fretboard
-- Tools
-- Profile
+## Current architecture
 
-The project is deployed through GitHub Pages from `main`. This repository is a live test environment, so once checks are green, changes are normally merged and deployed unless explicitly held.
+- Vite + React app in `apps/web`.
+- GitHub Pages deploys from `main`.
+- `#/fretboard` is a native React route using the shared full-neck renderer and `lib/music` engine.
+- `#/paths` redirects to Fretboard; `#/progress` redirects to Profile.
 
-## Current status
+## Fretboard status
 
-The active app is a Vite + React application in `apps/web`.
+The shared music engine owns the theory and geometry behind every visible marker.
 
-The major recent stabilization work was the native Fretboard route:
+- CAGED, minor-pentatonic, chord-tone/arpeggio, scale, root, and triad layers use engine-derived note, interval, string/fret, role, and layer data.
+- The engine supports correctly spelled major, minor, diminished, and augmented triads; reduction from supported chord qualities; root/first/second inversion voice order; and playable closed-position candidates on contiguous three-string sets.
+- The shared Fretboard exposes Triads through its existing controls: layer toggle plus inversion selector.
+- A headless Chromium smoke test builds the app and opens `#/fretboard`; it requires the renderer, Triads controls, and no error-boundary fallback.
 
-- `/fretboard` is a real React route, not a DOM adapter or lesson bridge.
-- `/paths` redirects to `/fretboard`.
-- `/progress` redirects to `/profile`.
-- The shared music engine now validates fretboard-layer memberships before render.
-- The minor-pentatonic parent geometry was corrected for the standard-tuning G/B string offset.
-- CI now includes a headless Chromium smoke test that builds the app, opens `#/fretboard`, and fails if the full-neck renderer is missing or the app error boundary is reached.
+## Commands
 
-## Development commands
-
-From `apps/web`:
+Run from `apps/web`:
 
 ```bash
 npm install --no-audit --no-fund
@@ -37,47 +31,17 @@ npm run quality
 npm run preview
 ```
 
-`npm run quality` currently runs TypeScript, the music-engine contract, and the production build. The GitHub Actions quality workflow additionally runs the browser Fretboard route smoke test via `scripts/fretboard-smoke.sh`.
-
-## Repository layout
-
-```text
-apps/web/                    Vite + React app
-apps/web/src/App.tsx         Main app shell, navigation, and routes
-apps/web/src/lib/music/      Shared music theory, geometry, voicing, layer, and contract engine
-apps/web/src/AfterHours*     After Hours study surfaces and shared fretboard renderer usage
-apps/web/scripts/            CI/helper scripts, including music contract and Fretboard smoke
-.github/workflows/quality.yml Pull request and main quality gate
-.github/workflows/deploy.yml  GitHub Pages deployment
-standards/                   Static standard-specific companion material
-```
+GitHub Actions runs TypeScript, the music contract, production build, and the browser Fretboard smoke. It uploads diagnostics on TypeScript or browser failures.
 
 ## Engineering rules
 
-- Do not redesign the app shell, visual identity, navigation treatment, Home, After Hours, Tools, or existing content unless explicitly asked.
-- Do not implement temporary fixes, DOM patches, or adapter bridges when a source-level fix is required.
-- Do not hide route crashes as the only fix. The error boundary is permanent containment, not a substitute for repairing the broken data path.
-- Every fretboard marker must come from real engine data: note, interval, fret/string location, role, and layer membership.
-- Shape tables are authoritative only when backed by engine contract coverage and browser route coverage.
-- Significant app or engine changes should update `docs/WORK_ORDER.md` and `docs/AGENT_HANDOFF.md` in the same PR or immediately after.
-- Keep source, tests, and docs aligned before deployment.
+- Do not change design, product content, Home, After Hours, Tools, or the app shell unless explicitly asked.
+- Do not use DOM patches, temporary adapters, or UI-only fixes for engine problems.
+- An error boundary contains route crashes; it does not replace the source-level fix.
+- Keep music knowledge in `apps/web/src/lib/music`; Fretboard and After Hours consume it.
+- Update `docs/WORK_ORDER.md` and `docs/AGENT_HANDOFF.md` after significant changes.
+- Green checks normally mean merge and deploy unless explicitly held.
 
-## Deployment
+## Next direction
 
-Merging to `main` triggers GitHub Pages deployment. Treat this as the live test site, not a separate production release process.
-
-Default workflow for future agents:
-
-1. Make the smallest source-level change that satisfies the work order.
-2. Run or wait for TypeScript, music contract, production build, and relevant browser smoke checks.
-3. Merge and deploy when green unless the user says to hold.
-4. Update docs after significant changes.
-
-## Product direction
-
-Near-term direction is to make Fretboard useful as a serious practice surface without changing the site design:
-
-1. Stabilize the current Fretboard route and keep browser coverage green.
-2. Add focused Fretboard configurations one at a time.
-3. Start with triads, then chord tones/arpeggios, scale context, shell voicings, Drop 2, and voice-leading paths.
-4. Keep After Hours standards and Fretboard on the same shared music engine.
+Triads are complete. Next: focused chord-tone/arpeggio configurations, then scale context, shell voicings, Drop 2, and voice-leading paths.
