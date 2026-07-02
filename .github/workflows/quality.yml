@@ -27,5 +27,9 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Validate TypeScript, music contract, and production build
-        run: npm run quality
+      - name: TypeScript check
+        run: npm run check
+      - name: Music engine contract
+        run: npm run music:contract
+      - name: Production build
+        run: npm run build
