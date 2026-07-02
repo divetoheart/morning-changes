@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { findDailyExtra } from './lib/daily';
 import { lessonById } from './content/catalog';
@@ -7,7 +7,7 @@ import { useMetronome } from './lib/useMetronome';
 import { MusicText } from './MusicText';
 import { FullNeckDiagram } from './FullNeckDiagram';
 import { IntervalNotation, KeyNotation, NoteNotation } from './MusicNotation';
-import { buildScale, createKey, parseNote, positionsForIntervals, transposeNote, type IntervalName, type ScaleMode } from './lib/music';
+import { buildScale, createKey, positionsForIntervals, transposeNote, type IntervalName, type ScaleMode } from './lib/music';
 
 const ENGINE_MODE: Record<'major' | 'natural-minor' | 'harmonic-minor', ScaleMode> = {
   major: 'major',
@@ -28,10 +28,10 @@ export function PracticeExtraPage({ metronome, onOpenLesson }: Props) {
 
   const relatedLesson = extra.relatedLessonId ? lessonById(extra.relatedLessonId) : undefined;
   const intervalNames = extra.intervals as IntervalName[];
-  const keyContext = useMemo(() => createKey(key, ENGINE_MODE[extra.keyMode]), [key, extra.keyMode]);
-  const notes = useMemo(() => intervalNames.map(interval => ({ interval, note: transposeNote(keyContext.tonic, interval) })), [intervalNames, keyContext]);
-  const scale = useMemo(() => buildScale(keyContext), [keyContext]);
-  const neckTones = useMemo(() => positionsForIntervals(keyContext.tonic, intervalNames, 'scaleTone'), [keyContext, intervalNames]);
+  const keyContext = createKey(key, ENGINE_MODE[extra.keyMode]);
+  const notes = intervalNames.map(interval => ({ interval, note: transposeNote(keyContext.tonic, interval) }));
+  const scale = buildScale(keyContext);
+  const neckTones = positionsForIntervals(keyContext.tonic, intervalNames, 'scaleTone');
 
   return <article className="lesson-page extra-page">
     <nav className="lesson-breadcrumb"><button type="button" onClick={() => navigate('/')}>← Today</button><span>Daily {extra.kind}</span></nav>
