@@ -17,6 +17,8 @@ import type {
   VoicingVoice
 } from './types';
 
+type BuiltInChordQuality = Exclude<ChordQuality, 'custom'>;
+
 const DEFAULT_VOICING_RANGE: FretRange = { start: 0, end: 15 };
 export const STANDARD_TRIAD_STRING_SETS: readonly (readonly number[])[] = [
   [0, 1, 2],
@@ -85,7 +87,7 @@ export function generateVoicing(chord: Chord, recipe: VoicingRecipe): GeneratedV
   return { chord, recipe, voices };
 }
 
-export function generateVoicingFor(root: string, quality: ChordQuality, recipe: VoicingRecipe): GeneratedVoicing {
+export function generateVoicingFor(root: string, quality: BuiltInChordQuality, recipe: VoicingRecipe): GeneratedVoicing {
   return generateVoicing(buildChord(root, quality), recipe);
 }
 
