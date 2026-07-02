@@ -7,6 +7,7 @@ import { MusicTypography } from './MusicTypography';
 import { ThemeDock } from './ThemeDock';
 import { ThemeProvider } from './ThemeProvider';
 import './styles.css';
+import './build-footer.css';
 import './lesson-rendering.css';
 import './notation.css';
 import './themes.css';
