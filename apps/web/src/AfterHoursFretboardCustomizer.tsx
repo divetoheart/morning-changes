@@ -22,7 +22,6 @@ import {
   type ChordQuality,
   type FretboardLayerId,
   type FretRange,
-  type IntervalName,
   type LayerCell,
   type LayerMembership,
   type ScaleMode,
@@ -93,7 +92,7 @@ function voicingRecipe(mode: Exclude<VoicingMode, 'off'>): VoicingRecipe {
 
 function cellKey(source: number, fret: number) { return `${source}:${fret}`; }
 function membershipIdentity(membership: LayerMembership) { return `${membership.layer}:${membership.variant ?? ''}`; }
-function membershipMap(entries: Array<{ stringIndex: number; fret: number; interval: IntervalName; role: LayerMembership['role'] }>) { return new Map(entries.map(entry => [cellKey(entry.stringIndex, entry.fret), entry])); }
+function membershipMap(entries: Array<Pick<LayerMembership, 'stringIndex' | 'fret' | 'interval' | 'note' | 'role'>>) { return new Map(entries.map(entry => [cellKey(entry.stringIndex, entry.fret), entry])); }
 function membershipGroups(entries: readonly LayerMembership[]) {
   const groups = new Map<string, LayerMembership[]>();
   for (const entry of entries) {
