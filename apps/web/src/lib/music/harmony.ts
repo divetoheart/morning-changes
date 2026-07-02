@@ -8,18 +8,25 @@ const DEGREE_INDEX: Record<RomanDegree, number> = {
 };
 
 const QUALITY_SUFFIX: Record<ChordQuality, string> = {
-  major: '', minor: 'm', dominant7: '7', major7: 'maj7', minor7: 'm7', halfDiminished7: 'ø7', diminished: '°', diminished7: '°7', augmented: '+', sus2: 'sus2', sus4: 'sus4', custom: ''
+  major: '', minor: 'm', dominant7: '7', major7: 'maj7', minor7: 'm7', halfDiminished7: 'ø7', diminished: '°', diminished7: '°7', augmented: '+', sus2: 'sus2', sus4: 'sus4',
+  add9: 'add9', add11: 'add11', add13: 'add13', dominant9: '9', dominant11: '11', dominant13: '13', major9: 'maj9', major11: 'maj11', major13: 'maj13', minor9: 'm9', minor11: 'm11', minor13: 'm13', custom: ''
 };
 
 const QUALITY_FROM_SUFFIX: ReadonlyArray<readonly [string, BuiltInChordQuality]> = [
   ['m7♭5', 'halfDiminished7'], ['m7b5', 'halfDiminished7'], ['ø7', 'halfDiminished7'], ['ø', 'halfDiminished7'],
   ['dim7', 'diminished7'], ['°7', 'diminished7'], ['dim', 'diminished'], ['°', 'diminished'],
-  ['aug', 'augmented'], ['+', 'augmented'], ['sus4', 'sus4'], ['sus2', 'sus2'],
+  ['add13', 'add13'], ['add11', 'add11'], ['add9', 'add9'],
+  ['maj13', 'major13'], ['M13', 'major13'], ['maj11', 'major11'], ['M11', 'major11'], ['maj9', 'major9'], ['M9', 'major9'],
+  ['m13', 'minor13'], ['m11', 'minor11'], ['m9', 'minor9'],
+  ['13', 'dominant13'], ['11', 'dominant11'], ['9', 'dominant9'],
+  ['aug', 'augmented'], ['+', 'augmented'], ['sus4', 'sus4'], ['sus2', 'sus2'], ['sus', 'sus4'],
   ['maj7', 'major7'], ['M7', 'major7'], ['m7', 'minor7'], ['7', 'dominant7'], ['maj', 'major'], ['m', 'minor'], ['', 'major']
 ];
 
 const TRIAD_QUALITY_BY_CHORD: Readonly<Partial<Record<ChordQuality, TriadQuality>>> = {
-  major: 'major', major7: 'major', dominant7: 'major', minor: 'minor', minor7: 'minor', halfDiminished7: 'diminished', diminished: 'diminished', diminished7: 'diminished', augmented: 'augmented'
+  major: 'major', major7: 'major', dominant7: 'major', major9: 'major', major11: 'major', major13: 'major', dominant9: 'major', dominant11: 'major', dominant13: 'major', add9: 'major', add11: 'major', add13: 'major',
+  minor: 'minor', minor7: 'minor', minor9: 'minor', minor11: 'minor', minor13: 'minor',
+  halfDiminished7: 'diminished', diminished: 'diminished', diminished7: 'diminished', augmented: 'augmented'
 };
 const TRIAD_INTERVALS = new Set<TriadTone['interval']>(['1', 'b3', '3', 'b5', '5', '#5']);
 
