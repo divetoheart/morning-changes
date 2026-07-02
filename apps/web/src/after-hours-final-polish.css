@@ -118,6 +118,11 @@
 .ah-fretboard-detail li > span:last-child { color: var(--muted); white-space: nowrap; }
 .ah-detail-swatch { width: 9px; height: 9px; border-radius: 50%; background: #f5d46b; }
 .ah-detail-swatch.caged { background: #84bdff; }
+.ah-detail-swatch.caged-c { background: #72a7f4; }
+.ah-detail-swatch.caged-a { background: #ea8eb9; }
+.ah-detail-swatch.caged-g { background: #b899eb; }
+.ah-detail-swatch.caged-e { background: #67c7a2; }
+.ah-detail-swatch.caged-d { background: #f0b867; }
 .ah-detail-swatch.pentatonic { background: #f7bf65; }
 .ah-detail-swatch.arpeggio { background: #e69bc6; }
 .ah-detail-swatch.scale { background: #83d5b7; }
