@@ -64,4 +64,5 @@ jobs:
           path: |
             ${{ runner.temp }}/fretboard.html
             ${{ runner.temp }}/fretboard-preview.log
+            ${{ runner.temp }}/git-tree.sha
           if-no-files-found: warn
