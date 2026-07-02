@@ -7,3 +7,4 @@ export * from './shapes';
 export * from './layers';
 export * from './voicings';
 export * from './notation';
+export * from './study-keys';
