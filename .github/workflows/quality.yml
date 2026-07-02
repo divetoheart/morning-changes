@@ -1,0 +1,56 @@
+name: Web quality
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/quality.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/quality.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: TypeScript check
+        run: npm run check
+      - id: music_contract
+        name: Music engine contract
+        shell: bash
+        run: |
+          set +e
+          npm run music:contract > "$RUNNER_TEMP/music-contract.log" 2>&1
+          status=$?
+          cat "$RUNNER_TEMP/music-contract.log"
+          if [ "$status" -ne 0 ]; then
+            summary="$(grep '^FAIL ' "$RUNNER_TEMP/music-contract.log" | sed 's/^FAIL //' | paste -sd ';' - | cut -c1-240)"
+            echo "failure_summary=$summary" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+      - name: Upload music contract report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: music-contract-report
+          path: apps/web/.music-contract-report.json
+          if-no-files-found: warn
+      - name: Contract result — ${{ steps.music_contract.outputs.failure_summary || 'passed' }}
+        shell: bash
+        run: test -z "${{ steps.music_contract.outputs.failure_summary }}"
+      - name: Production build
+        run: npm run build

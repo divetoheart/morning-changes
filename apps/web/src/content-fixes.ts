@@ -1,4 +1,3 @@
-import './navigation-patch';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { lessons, standards } from './content/catalog';

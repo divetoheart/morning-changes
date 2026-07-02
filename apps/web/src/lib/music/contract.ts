@@ -83,6 +83,11 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
     { stringIndex: 5, fret: 3, interval: 'b3', role: 'shapeTone', layer: 'pentatonic', variant: 'Box 2', colorId: 'pentatonic-2' }
   ], { focusLayer: 'pentatonic' });
   addCase(cases, 'Pentatonic boundary retains both box colors', 'pentatonic-1 pentatonic-2', pentatonicCollision[0]?.segments.map(segment => segment.colorId).join(' ') ?? '');
+  const sparseMemberships = [
+    { stringIndex: 0, fret: 0, interval: '1', role: 'root', layer: 'roots' },
+    undefined
+  ] as unknown as Parameters<typeof resolveLayerCells>[0];
+  addCase(cases, 'Layer resolver rejects undefined membership slots', 'true', String(doesThrow(() => resolveLayerCells(sparseMemberships))));
 
   const cMajorCycle = generateCagedMajorCycle('C');
   addCase(cases, 'CAGED cycle uses C A G E D order', 'C A G E D', cMajorCycle.map(shape => shape.form).join(' '));
@@ -106,15 +111,19 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
 
     for (const form of CAGED_MAJOR_FORM_ORDER) {
       const shape = generateCagedMajorForm(form, root);
-      addCase(cases, `${root} ${form}-form uses only 1 3 5`, 'true', String(shape.positions.every(position => ['1', '3', '5'].includes(position.interval))));
-      addCase(cases, `${root} ${form}-form exposes the selected root`, 'true', String(shape.positions.some(position => position.interval === '1' && noteToString(position.note) === noteToString(parseNote(root)))));
+      const densePositions = Array.from(shape.positions);
+      addCase(cases, `${root} ${form}-form uses only 1 3 5`, 'true', String(densePositions.every(position => Boolean(position && ['1', '3', '5'].includes(position.interval)))));
+      addCase(cases, `${root} ${form}-form has complete memberships`, 'true', String(densePositions.every(position => Boolean(position && position.role && position.note))));
+      addCase(cases, `${root} ${form}-form exposes the selected root`, 'true', String(densePositions.some(position => position.interval === '1' && noteToString(position.note) === noteToString(parseNote(root)))));
     }
 
     for (const box of MINOR_PENTATONIC_BOX_ORDER) {
       const shape = generateMinorPentatonicBox(box, root, lowERootAnchor(root), STANDARD_TUNING, { start: 0, end: 24 });
-      addCase(cases, `${root} minor pentatonic box ${box} has twelve tones`, '12', String(shape.positions.length));
-      addCase(cases, `${root} minor pentatonic box ${box} uses only pentatonic intervals`, 'true', String(shape.positions.every(position => ['1', 'b3', '4', '5', 'b7'].includes(position.interval))));
-      addCase(cases, `${root} minor pentatonic box ${box} exposes the selected root`, 'true', String(shape.positions.some(position => position.interval === '1' && noteToString(position.note) === noteToString(parseNote(root)))));
+      const densePositions = Array.from(shape.positions);
+      addCase(cases, `${root} minor pentatonic box ${box} has twelve tones`, '12', String(densePositions.length));
+      addCase(cases, `${root} minor pentatonic box ${box} uses only pentatonic intervals`, 'true', String(densePositions.every(position => Boolean(position && ['1', 'b3', '4', '5', 'b7'].includes(position.interval)))));
+      addCase(cases, `${root} minor pentatonic box ${box} has complete memberships`, 'true', String(densePositions.every(position => Boolean(position && position.role && position.note))));
+      addCase(cases, `${root} minor pentatonic box ${box} exposes the selected root`, 'true', String(densePositions.some(position => position.interval === '1' && noteToString(position.note) === noteToString(parseNote(root)))));
     }
   }
 
