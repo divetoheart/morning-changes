@@ -36,41 +36,39 @@ Do not bring back the old Paths lesson flow as a primary navigation item unless 
 
 ### Native Fretboard route
 
-The Fretboard route has been moved away from the prior fragile lesson/DOM bridge path. The current route mounts the shared `AfterHoursFretboardCustomizer` directly through React with engine-derived data.
+The Fretboard route is a native React route and mounts the shared `AfterHoursFretboardCustomizer` directly with engine-derived data. It is not a lesson bridge or DOM adapter.
 
-The default route currently uses a selected study key and a major-7 chord context while exposing the shared layered map.
+### Runtime containment and browser gate
 
-### Runtime containment
+A permanent app-level error boundary exists so one failed route cannot black-screen the app. It is containment only, never the primary fix.
 
-A permanent app-level error boundary exists. Its job is containment only: one route should never black-screen the whole app. It is not a substitute for source-level fixes.
+The GitHub Actions quality workflow builds the app, opens `/#/fretboard` in headless Chromium, requires the shared renderer and controls to exist, and fails if the error boundary is reached. Runtime capture artifacts are uploaded on failure.
 
 ### Music-engine hardening
 
-The shared layer resolver now rejects undefined memberships before render. Renderer input must be complete enough to include location, interval, role, and layer.
+- The layer resolver rejects undefined memberships before render.
+- Minor-pentatonic parent geometry is corrected for standard tuning’s string offsets.
+- All fretboard markers must be engine-derived and complete enough to include note, interval, string/fret, role, and layer membership.
 
-### Pentatonic geometry fix
+### Triad engine and Fretboard layer
 
-The Fretboard blank-screen bug was traced to incorrect minor-pentatonic parent geometry in standard tuning:
+Triads are now a first-class shared music-engine capability, not a Fretboard-only note table.
 
-- Box 2: G-string fifth coordinate was one fret too high.
-- Box 5: A-string flat-third coordinate was one fret too low.
+The engine now provides:
 
-These are engine/table issues, not UI issues. Future fretboard failures should be treated as source/data/engine failures first, not as CSS or boundary problems.
+- Major, minor, diminished, and augmented three-note chord construction with correct spelling.
+- Chord-to-triad reduction for supported seventh chords.
+- Root-position, first-inversion, and second-inversion voice order.
+- Playable closed-position guitar candidates across contiguous three-string sets.
+- Typed layer membership for real string/fret/interval/role data.
 
-### Browser regression gate
+The shared Fretboard exposes this through:
 
-The GitHub Actions quality workflow now includes `apps/web/scripts/fretboard-smoke.sh`.
+- A `Triads` layer toggle.
+- Root position, first inversion, and second inversion selector.
+- Triad priority when it overlaps an active arpeggio or other layer.
 
-That script:
-
-1. Builds the production app.
-2. Starts Vite preview.
-3. Opens `/#/fretboard` in headless Chromium.
-4. Fails if the Fretboard heading is missing.
-5. Fails if the shared full-neck renderer is missing.
-6. Fails if the app error boundary is reached.
-
-This is the required gate for any future Fretboard change.
+Contract coverage includes triad spelling, chord reduction, inversion order, playable guitar placement, complete roles, and layer priority. The browser Fretboard smoke also requires the Triads toggle and inversion selector to render.
 
 ## Current quality gates
 
@@ -83,12 +81,11 @@ npm run music:contract
 npm run build
 ```
 
-In GitHub Actions, also rely on:
+In GitHub Actions, rely on:
 
-- Web quality
-- Fretboard route runtime smoke
-- Validate production app
-- Deploy Morning Changes after merge to `main`
+- Web quality: TypeScript, diagnostics artifact, music contract, production build, and Fretboard browser smoke.
+- Validate production app.
+- Deploy Morning Changes after merge to `main`.
 
 ## What not to do
 
@@ -100,21 +97,20 @@ Do not:
 - Hide crashes behind an error boundary and call that fixed.
 - Route through legacy lessons just to get something on screen.
 - Add lessons, marketing copy, dashboard cards, or filler content without instruction.
+- Duplicate music theory tables in Fretboard or After Hours when the engine should own them.
 - Delete source files simply because a feature is in rebuild unless the user explicitly asks.
 
 ## Next product work
 
-The next feature sequence should be incremental and engine-backed:
+The next work should stay incremental and engine-backed:
 
-1. Confirm deployed Fretboard behavior manually on desktop and mobile.
-2. Add a small Fretboard configuration selector without redesigning the page.
-3. Start with triads.
-4. Then add chord tones / arpeggios.
-5. Then add scale context.
-6. Then add shell voicings.
-7. Then add Drop 2 voicings.
-8. Then add voice-leading paths.
-9. Tie After Hours standards and Fretboard configurations to the same shared engine.
+1. Confirm the deployed Triads layer manually on desktop and mobile.
+2. Improve focused chord-tone/arpeggio configurations, using the same voice/position model where useful.
+3. Add scale context that explicitly relates the active chord to a selected scale.
+4. Add shell voicings.
+5. Add Drop 2 voicings.
+6. Add voice-leading paths.
+7. Tie After Hours standards and Fretboard configurations to the same shared engine.
 
 Each new map/configuration needs:
 
