@@ -124,6 +124,11 @@
 .ah-detail-swatch.caged-e { background: #67c7a2; }
 .ah-detail-swatch.caged-d { background: #f0b867; }
 .ah-detail-swatch.pentatonic { background: #f7bf65; }
+.ah-detail-swatch.pentatonic-1 { background: #f7bf65; }
+.ah-detail-swatch.pentatonic-2 { background: #efac62; }
+.ah-detail-swatch.pentatonic-3 { background: #e99b79; }
+.ah-detail-swatch.pentatonic-4 { background: #d993a3; }
+.ah-detail-swatch.pentatonic-5 { background: #bda3da; }
 .ah-detail-swatch.arpeggio { background: #e69bc6; }
 .ah-detail-swatch.scale { background: #83d5b7; }
 .ah-detail-swatch.roots { background: #f5d46b; }
