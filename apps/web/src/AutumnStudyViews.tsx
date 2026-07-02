@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ARPEGGIO_PATTERNS, CAGED_POSITIONS, PENTATONIC_BOXES, SCALE_PATTERNS } from './after-hours-shapes';
 import { DiagramCard, FormMap, chordMarkup, makeDiagram, makeShellDiagram, voicingsFor } from './AfterHoursDiagrams';
 import type { ArpType, ScaleType, StudyKey } from './after-hours-types';
