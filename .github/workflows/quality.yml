@@ -54,3 +54,5 @@ jobs:
         run: test -z "${{ steps.music_contract.outputs.failure_summary }}"
       - name: Production build
         run: npm run build
+      - name: Fretboard route runtime smoke
+        run: bash scripts/fretboard-smoke.sh
