@@ -62,13 +62,18 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
   addCase(cases, 'Layer collision collapses to one visible cell', '1', String(collision.length));
   addCase(cases, 'Arpeggio focus wins collision label', '5', collision[0]?.primary.interval ?? '');
   addCase(cases, 'Disagreeing layers are marked as conflict', 'conflict', collision[0]?.marker ?? '');
-  addCase(cases, 'Conflict retains both layers for detail treatment', 'arpeggio pentatonic', collision[0]?.segments.join(' ') ?? '');
+  addCase(cases, 'Conflict retains both layers for detail treatment', 'arpeggio pentatonic', collision[0]?.segments.map(segment => segment.layer).join(' ') ?? '');
 
   const agreement = resolveLayerCells([
     { stringIndex: 2, fret: 5, interval: '1', role: 'root', layer: 'pentatonic' },
     { stringIndex: 2, fret: 5, interval: '1', role: 'root', layer: 'arpeggio' }
   ]);
   addCase(cases, 'Agreeing layers are marked as agreement', 'agreement', agreement[0]?.marker ?? '');
+  const cagedCollision = resolveLayerCells([
+    { stringIndex: 4, fret: 5, interval: '1', role: 'root', layer: 'caged', variant: 'C-form', colorId: 'caged-c' },
+    { stringIndex: 4, fret: 5, interval: '3', role: 'shapeTone', layer: 'caged', variant: 'A-form', colorId: 'caged-a' }
+  ], { focusLayer: 'caged' });
+  addCase(cases, 'CAGED collision retains individual form colors', 'caged-c caged-a', cagedCollision[0]?.segments.map(segment => segment.colorId).join(' ') ?? '');
 
   const cMajorCycle = generateCagedMajorCycle('C');
   addCase(cases, 'CAGED cycle uses C A G E D order', 'C A G E D', cMajorCycle.map(shape => shape.form).join(' '));
