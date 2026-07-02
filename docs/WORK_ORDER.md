@@ -25,7 +25,7 @@ The intended active navigation is:
 
 Current route behavior:
 
-- `/fretboard` is a native React route using the shared full-neck fretboard renderer.
+- `/fretboard` is a native React route using the shared fretboard renderer.
 - `/paths` redirects to `/fretboard`.
 - `/progress` redirects to `/profile`.
 - Learn is intentionally in rebuild state.
@@ -34,41 +34,51 @@ Do not bring back the old Paths lesson flow as a primary navigation item unless 
 
 ## Current completed work
 
-### Native Fretboard route
+### Native shared Fretboard
 
-The Fretboard route is a native React route and mounts the shared `AfterHoursFretboardCustomizer` directly with engine-derived data. It is not a lesson bridge or DOM adapter.
+`AfterHoursFretboardCustomizer` is the only fretboard surface for both full-neck exploration and embedded study applications. It is native React with engine-derived data, not a lesson bridge, DOM adapter, or separate diagram system.
+
+The renderer accepts:
+
+- A full neck or a specified `fretRange`.
+- `compact` presentation for an embedded practice surface.
+- An optional `expandHref` for a small handoff to the full Fretboard route.
+- A typed active chord list, so the same view can follow a progression instead of a single harmony.
+
+### Focused progression application
+
+Autumn Leaves now demonstrates the intended reuse pattern:
+
+- Relative-major ii–V–I from the selected arrangement.
+- Focused frets 7–11, described as 8th position.
+- Active chord selector through ii, V, and I.
+- Same CAGED, pentatonic, Triads/inversions, arpeggio, scale, Shell, and Drop 2 controls as the full Fretboard.
+- Subtle `Open full neck` handoff.
+
+Future lessons and standards should compose this same component with range and chord props. Do not build special local chord-chart tables to replicate it.
+
+### Music-engine hardening and voicings
+
+- The layer resolver rejects undefined memberships before render.
+- Minor-pentatonic parent geometry is corrected for standard tuning’s string offsets.
+- All fretboard markers must be engine-derived and complete enough to include note, interval, string/fret, role, and layer membership.
+- Triads are typed, correctly spelled, reducible from supported chord qualities, and placeable as playable closed-position guitar candidates.
+- Shell and Drop 2 options use the existing shared voicing engine and select a playable candidate inside the current focused range.
 
 ### Runtime containment and browser gate
 
 A permanent app-level error boundary exists so one failed route cannot black-screen the app. It is containment only, never the primary fix.
 
-The GitHub Actions quality workflow builds the app, opens `/#/fretboard` in headless Chromium, requires the shared renderer and controls to exist, and fails if the error boundary is reached. Runtime capture artifacts are uploaded on failure.
+Browser smoke now validates both:
 
-### Music-engine hardening
+1. `/#/fretboard`: renderer, Triads, inversion selector, chord-voicing selector, Drop 2 option, and no error boundary.
+2. `/#/after-hours/autumn-leaves`: focused application eyebrow/title, focused neck range, full-neck handoff, shared voicing selector, and no error boundary.
 
-- The layer resolver rejects undefined memberships before render.
-- Minor-pentatonic parent geometry is corrected for standard tuning’s string offsets.
-- All fretboard markers must be engine-derived and complete enough to include note, interval, string/fret, role, and layer membership.
+Runtime capture uploads both rendered DOM pages and preview logs on failure.
 
-### Triad engine and Fretboard layer
+### CI consistency
 
-Triads are now a first-class shared music-engine capability, not a Fretboard-only note table.
-
-The engine now provides:
-
-- Major, minor, diminished, and augmented three-note chord construction with correct spelling.
-- Chord-to-triad reduction for supported seventh chords.
-- Root-position, first-inversion, and second-inversion voice order.
-- Playable closed-position guitar candidates across contiguous three-string sets.
-- Typed layer membership for real string/fret/interval/role data.
-
-The shared Fretboard exposes this through:
-
-- A `Triads` layer toggle.
-- Root position, first inversion, and second inversion selector.
-- Triad priority when it overlaps an active arpeggio or other layer.
-
-Contract coverage includes triad spelling, chord reduction, inversion order, playable guitar placement, complete roles, and layer priority. The browser Fretboard smoke also requires the Triads toggle and inversion selector to render.
+Both Web quality workflows use Node 22 and the same deterministic install path. Do not let the legacy verifier silently diverge from the maintained quality gate.
 
 ## Current quality gates
 
@@ -83,7 +93,8 @@ npm run build
 
 In GitHub Actions, rely on:
 
-- Web quality: TypeScript, diagnostics artifact, music contract, production build, and Fretboard browser smoke.
+- Maintained Web quality: TypeScript, diagnostics artifact, music contract, production build, and both-route browser smoke.
+- Web verifier: Node 22 install plus `npm run quality`.
 - Validate production app.
 - Deploy Morning Changes after merge to `main`.
 
@@ -98,19 +109,18 @@ Do not:
 - Route through legacy lessons just to get something on screen.
 - Add lessons, marketing copy, dashboard cards, or filler content without instruction.
 - Duplicate music theory tables in Fretboard or After Hours when the engine should own them.
+- Create a new diagram component for a compact study when `fretRange` and `compact` can express it.
 - Delete source files simply because a feature is in rebuild unless the user explicitly asks.
 
 ## Next product work
 
 The next work should stay incremental and engine-backed:
 
-1. Confirm the deployed Triads layer manually on desktop and mobile.
-2. Improve focused chord-tone/arpeggio configurations, using the same voice/position model where useful.
-3. Add scale context that explicitly relates the active chord to a selected scale.
-4. Add shell voicings.
-5. Add Drop 2 voicings.
-6. Add voice-leading paths.
-7. Tie After Hours standards and Fretboard configurations to the same shared engine.
+1. Confirm the deployed full and Autumn Leaves focused maps manually on desktop and mobile.
+2. Add a true two-octave scale-path generator; current Scale is context, not a specific two-octave route.
+3. Add configuration-carrying links so `Open full neck` preserves the compact study’s active chord, range, and active controls.
+4. Add voice-leading paths between selected ii–V–I voicings.
+5. Reuse focused maps in another standard or future Learn lesson only when the practice outcome calls for it.
 
 Each new map/configuration needs:
 

@@ -1,6 +1,6 @@
 import type { IntervalPosition } from './types';
 
-export type FretboardLayerId = 'caged' | 'pentatonic' | 'triad' | 'arpeggio' | 'scale' | 'roots';
+export type FretboardLayerId = 'caged' | 'pentatonic' | 'triad' | 'voicing' | 'arpeggio' | 'scale' | 'roots';
 
 /** The resolver needs semantic location/role data, not a duplicated note object. */
 export type LayerMembership = Pick<IntervalPosition, 'stringIndex' | 'fret' | 'interval' | 'role'> & {
@@ -34,7 +34,7 @@ export type LayerResolutionOptions = {
   priority?: readonly FretboardLayerId[];
 };
 
-const DEFAULT_PRIORITY: readonly FretboardLayerId[] = ['triad', 'arpeggio', 'pentatonic', 'scale', 'caged', 'roots'];
+const DEFAULT_PRIORITY: readonly FretboardLayerId[] = ['voicing', 'triad', 'arpeggio', 'pentatonic', 'scale', 'caged', 'roots'];
 
 function keyOf(position: Pick<LayerMembership, 'stringIndex' | 'fret'>) {
   return `${position.stringIndex}:${position.fret}`;

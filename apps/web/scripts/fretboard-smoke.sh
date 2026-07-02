@@ -19,11 +19,14 @@ if [ -z "$browser" ]; then
 fi
 
 "$browser" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'http://127.0.0.1:4173/#/fretboard' > "$RUNNER_TEMP/fretboard.html"
+"$browser" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'http://127.0.0.1:4173/#/after-hours/autumn-leaves' > "$RUNNER_TEMP/autumn-leaves.html"
 
 fail() {
   echo "$1"
   echo '--- Fretboard DOM ---'
   cat "$RUNNER_TEMP/fretboard.html"
+  echo '--- Autumn Leaves DOM ---'
+  cat "$RUNNER_TEMP/autumn-leaves.html"
   echo '--- Preview server log ---'
   cat "$RUNNER_TEMP/fretboard-preview.log"
   exit 1
@@ -33,4 +36,14 @@ if ! grep -Fq 'Explore the neck.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fret
 if ! grep -Fq 'ah-fretboard-customizer' "$RUNNER_TEMP/fretboard.html"; then fail 'Shared Fretboard renderer did not render.'; fi
 if ! grep -Fq '>Triads<' "$RUNNER_TEMP/fretboard.html"; then fail 'Triad layer control did not render.'; fi
 if ! grep -Fq 'Triad inversion' "$RUNNER_TEMP/fretboard.html"; then fail 'Triad inversion control did not render.'; fi
+if ! grep -Fq 'Chord voicing' "$RUNNER_TEMP/fretboard.html"; then fail 'Chord voicing selector did not render.'; fi
+if ! grep -Fq 'Drop 2' "$RUNNER_TEMP/fretboard.html"; then fail 'Drop 2 selector option did not render.'; fi
 if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard route reached the application error boundary.'; fi
+
+# Music typography transforms intervals and Roman numerals into notation markup after render.
+if ! grep -Fq 'Apply this in Autumn Leaves' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused study eyebrow did not render.'; fi
+if ! grep -Fq 'at 8th position.' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused position title did not render.'; fi
+if ! grep -Fq 'Focused fretboard from fret 7 to 11' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused fret range did not render.'; fi
+if ! grep -Fq 'Open full neck' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves full Fretboard expand link did not render.'; fi
+if ! grep -Fq 'Chord voicing' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves shared voicing selector did not render.'; fi
+if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves route reached the application error boundary.'; fi

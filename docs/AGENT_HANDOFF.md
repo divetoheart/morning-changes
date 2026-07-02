@@ -40,23 +40,27 @@ Key files:
 - `apps/web/src/App.tsx`
   - Main navigation, route shell, Home/Learn/Fretboard/After Hours/Tools/Profile screens.
 - `apps/web/src/AfterHoursFretboardCustomizer.tsx`
-  - Shared layered full-neck renderer used by After Hours and the native Fretboard route. It now exposes the engine-backed Triads layer and inversion selector.
+  - The one shared map renderer for the native Fretboard route and embedded standard/lesson applications. Supports full or focused ranges, compact surface, deep-link handoff, active chords, Triads, Shells, Drop 2, and the map layers.
+- `apps/web/src/AfterHoursAutumnPortBody.tsx`
+  - First focused-map composition: Autumn Leaves relative-major ii–V–I around 8th position (frets 7–11).
+- `apps/web/src/fretboard-focus.css`
+  - Focused-map layout and responsive grid overrides. Keep it additive; do not rework existing visual language.
 - `apps/web/src/lib/music/harmony.ts`
   - Chord construction, correctly spelled three-note chord construction, and chord-to-triad reduction.
 - `apps/web/src/lib/music/voicings.ts`
-  - Closed/drop-2/shell voice order plus triad inversions and real guitar placement across contiguous three-string sets.
+  - Closed/drop-2/shell voice order, triad inversions, and real guitar placement across requested strings/ranges.
 - `apps/web/src/lib/music/layers.ts`
-  - Layer membership resolution, including the `triad` layer. Renderer input must be complete.
+  - Layer membership resolution, including `triad` and `voicing`. Renderer input must be complete.
 - `apps/web/src/lib/music/shapes.ts`
   - Authoritative CAGED and minor-pentatonic parent geometry. Treat changes here as music-engine changes requiring contract/browser validation.
 - `apps/web/src/lib/music/contract.ts`
   - Dependency-free contract checks for spelling, geometry, voicing, triads, and layer behavior.
-- `apps/web/scripts/run-music-contract.mjs`
-  - Bundles and runs the music contract in CI.
 - `apps/web/scripts/fretboard-smoke.sh`
-  - Builds, previews, and opens `/#/fretboard` in headless Chromium. Requires the renderer, Triads control, inversion selector, and no error boundary.
+  - Builds, previews, and opens both `/#/fretboard` and `/#/after-hours/autumn-leaves` in headless Chromium.
 - `.github/workflows/quality.yml`
-  - Main pull request quality gate. Includes TypeScript diagnostics artifact, music contract, production build, and Fretboard smoke.
+  - Maintained quality gate: TypeScript diagnostics, contract, build, and browser smoke.
+- `.github/workflows/web-quality.yml`
+  - Legacy verifier aligned to Node 22 and the same install strategy; do not let it drift into an unrelated red check.
 - `.github/workflows/deploy.yml`
   - GitHub Pages deployment from `main`.
 
@@ -75,7 +79,33 @@ Redirects:
 - `#/paths` -> `#/fretboard`
 - `#/progress` -> `#/profile`
 
-## Engine architecture: three-note chords
+## Focused fretboard architecture
+
+Do not build a second “lesson fretboard” or hand-coded chord chart. Use `AfterHoursFretboardCustomizer`.
+
+Relevant renderer props:
+
+```ts
+fretRange={{ start: 7, end: 11 }}
+compact
+expandHref="#/fretboard"
+chords={[{ chord, scaleMode }]}
+defaultLayers={{ triad: true, arpeggio: true }}
+```
+
+The same component handles:
+
+- Active-chord selection for a progression.
+- CAGED, pentatonic, Triads/inversions, arpeggio, and scale context.
+- Chord voicing selector: Off, Shell, Drop 2.
+- Neck range filtering and responsive compact rendering.
+- Detail panels and collision priority through `resolveLayerCells`.
+
+At present `expandHref` moves the user to the full Fretboard route but does not preserve the compact configuration in URL state. Do not claim that it does. A configuration-carrying URL is a planned next step.
+
+Likewise, Scale is range-aware context, not a dedicated two-octave scale-path generator. Do not label it a two-octave path until the engine supports one explicitly.
+
+## Engine architecture: triads and voicings
 
 Three-note chord logic belongs in the main engine. Do not create Fretboard-local note arrays.
 
@@ -85,6 +115,7 @@ Current engine behavior:
 - `triadForChord(chord)` derives a tertian triad from supported major/minor/dominant/seventh/diminished/augmented chords; suspended chords intentionally do not reduce to a triad.
 - `generateTriadInversion(triad, 0 | 1 | 2)` returns root, first, or second inversion in low-to-high voice order.
 - `findGuitarTriadVoicings` finds playable closed-position shapes on standard contiguous three-string sets.
+- `generateVoicing` plus `selectGuitarVoicingCandidate` chooses Shell or Drop 2 candidates in the current focused range.
 - Fretboard uses those candidates as typed layer memberships, with real note/interval/string/fret/role data.
 
 When extending this surface, preserve that split: engine calculates; renderer chooses what to show.
@@ -108,35 +139,24 @@ Current browser smoke behavior:
 
 - Builds production app.
 - Serves it with Vite preview.
-- Uses headless Chromium to dump `/#/fretboard` DOM.
-- Requires `Explore the neck.`.
-- Requires `ah-fretboard-customizer`.
-- Requires `Triads` and `Triad inversion` controls.
-- Fails if `This screen could not load.` appears.
-- Uploads runtime capture artifacts on failure.
+- Uses headless Chromium to dump `/#/fretboard` and `/#/after-hours/autumn-leaves` DOM.
+- Requires full-map Triads, inversion, chord-voicing, and Drop 2 controls.
+- Requires the Autumn Leaves application eyebrow, 8th-position title, focused-range aria label, full-neck link, and chord-voicing control.
+- Fails if either route reaches `This screen could not load.`.
+- Uploads both DOM captures and preview logs on failure.
 
 TypeScript diagnostics are also uploaded as an artifact whenever the TypeScript step runs.
 
 ## How to approach the next feature
 
-Do the smallest useful engine-backed Fretboard feature next. Recommended next step: focused chord-tone/arpeggio configurations.
+Do the smallest useful engine-backed extension next.
 
-The existing arpeggio layer has chord tones across the neck. The next pass should make its practice value more intentional without duplicating triad or voicing logic:
+Recommended next work:
 
-- Keep data in `lib/music`.
-- Decide whether the user needs a voicing/path view, a narrower region view, or an interval emphasis mode before changing UI.
-- Reuse the same typed position model and layer resolver.
-- Add contract coverage for any new generator or selection rule.
-- Extend browser smoke when the route exposes new controls.
-
-Likely future sequence:
-
-1. Focused chord tones / arpeggios.
-2. Scale context.
-3. Shell voicings.
-4. Drop 2 voicings.
-5. Voice-leading paths.
-6. Standards-specific Fretboard configurations fed by the same engine.
+1. Add explicit two-octave scale-path generation and contract coverage.
+2. Encode focused-map settings in the full Fretboard URL so `Open full neck` preserves range, active chord, layers, inversion, and voicing setting.
+3. Add voice-leading paths between selectable ii–V–I voicings.
+4. Reuse focused map composition selectively in another standard or future Learn material.
 
 ## Common pitfalls
 
@@ -146,6 +166,7 @@ Likely future sequence:
 - Stale PWA caches can complicate live behavior, but do not assume cache is the root cause when engine/runtime tests fail.
 - Avoid adding visual or product complexity to compensate for missing engine capability.
 - Do not let Fretboard knowledge fork away from the engine; After Hours should be able to reuse it.
+- Do not describe a scale context overlay as a true two-octave path without explicit engine output.
 
 ## Documentation maintenance
 

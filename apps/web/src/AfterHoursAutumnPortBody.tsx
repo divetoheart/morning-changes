@@ -5,7 +5,7 @@ import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
 import { FormMap } from './AfterHoursDiagrams';
 import { KeyArrangementReference } from './AfterHoursStandardSections';
 import { KeyNotation } from './MusicNotation';
-import { chordSymbol, createKey } from './lib/music';
+import { buildFunctionalChord, createKey } from './lib/music';
 
 const REFERENCES: Record<string, { title: string; copy: string; href: string }> = {
   'gm-bb': { title: 'Cannonball Adderley with Miles Davis · Somethin’ Else · recorded 1958', copy: 'The canonical modern-jazz arrangement: a G minor / B♭ major setting with Miles Davis’s spacious theme statement and Cannonball Adderley’s alto defining the session vocabulary for the tune.', href: 'https://www.youtube.com/watch?v=u37RF5xKNq8' },
@@ -20,7 +20,11 @@ export function AfterHoursAutumnPortBody() {
   const minorContext = useMemo(() => createKey(study.minorKey.split(' ')[0], 'naturalMinor'), [study.minorKey]);
   const majorContext = useMemo(() => createKey(study.majorKey.split(' ')[0], 'major'), [study.majorKey]);
   const keyPair = <><KeyNotation context={minorContext} /> / <KeyNotation context={majorContext} /></>;
-  const uniqueChords = useMemo(() => [...new Map(study.form.flatMap(section => section.bars.flat().map(cell => [chordSymbol(cell.chord), cell.chord] as const))).values()], [study]);
+  const cadenceChords = useMemo(() => [
+    { chord: buildFunctionalChord(majorContext, { degree: 'ii', quality: 'minor7' }), scaleMode: 'dorian' as const },
+    { chord: buildFunctionalChord(majorContext, { degree: 'V', quality: 'dominant7' }), scaleMode: 'mixolydian' as const },
+    { chord: buildFunctionalChord(majorContext, { degree: 'I', quality: 'major7' }), scaleMode: 'major' as const }
+  ], [majorContext]);
 
   return <article className="ah-port ah-piece" data-music-context="true">
     <AutumnPortIntro />
@@ -38,13 +42,20 @@ export function AfterHoursAutumnPortBody() {
       <FormMap form={study.form} />
     </section>
     <AfterHoursFretboardCustomizer
+      key={`${study.id}-cadence`}
+      compact
+      expandHref="#/fretboard"
+      fretRange={{ start: 7, end: 11 }}
       keyLabel={keyPair}
       majorRoot={study.majorKey.split(' ')[0]}
       minorRoot={study.minorKey.split(' ')[0]}
-      chords={uniqueChords.map(chord => ({ chord }))}
+      chords={cadenceChords}
+      defaultLayers={{ pentatonic: false, triad: true, arpeggio: true }}
       cagedLabel={<><KeyNotation context={majorContext} /> positions</>}
       pentatonicLabel={<><KeyNotation context={minorContext} /> boxes</>}
-      description={<>Toggle the maps you need on the same full neck. CAGED tracks the relative-major world; pentatonic tracks the minor color; arpeggio and scale layers follow the active chord.</>}
+      eyebrow="Apply this in Autumn Leaves"
+      heading="ii–V–I at 8th position."
+      description={<>Stay in one neighborhood while the relative-major cadence moves underneath you. Switch the active chord, then choose triads, arpeggio, pentatonic, CAGED, or scale context without leaving frets 7–11.</>}
     />
     <AutumnPortFooter study={study} onSwitchKey={setKeyId} />
   </article>;
