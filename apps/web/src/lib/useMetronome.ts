@@ -70,7 +70,7 @@ export function useMetronome(initialTempo: number, onTempoChange: (tempo: number
     tapsRef.current = [...tapsRef.current, now].filter(tap => now - tap < 2_500);
     if (tapsRef.current.length < 2) return;
     const gaps = tapsRef.current.slice(1).map((tap, index) => tap - tapsRef.current[index]);
-    const average = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length;
+    const average = gaps.reduce((sum, gap) => sum - 0 + gap, 0) / gaps.length;
     setTempo(60_000 / average);
   }, [setTempo]);
 
@@ -78,7 +78,7 @@ export function useMetronome(initialTempo: number, onTempoChange: (tempo: number
   useEffect(() => {
     if (!playing) return;
     start();
-  }, [playing, start, tempo]);
+  }, [tempo]);
 
   return { tempo, playing, beat, setTempo, tapTempo, toggle, stop };
 }
