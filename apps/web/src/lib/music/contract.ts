@@ -1,4 +1,4 @@
-import { buildChord, buildScale, CAGED_MAJOR_FORM_ORDER, chordSymbol, createKey, displayStringOrder, findGuitarVoicings, functionSymbol, generateCagedMajorCycle, generateCagedMajorForm, generateVoicing, noteToString, parseChordSymbol, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING } from './index';
+import { buildChord, buildScale, CAGED_MAJOR_FORM_ORDER, chordSymbol, createKey, displayStringOrder, findGuitarVoicings, functionSymbol, generateCagedMajorCycle, generateCagedMajorForm, generateMinorPentatonicBox, generateMinorPentatonicCycle, generateVoicing, MINOR_PENTATONIC_BOX_ORDER, noteToString, parseChordSymbol, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING } from './index';
 
 export type MusicEngineContractCase = {
   id: string;
@@ -18,6 +18,10 @@ function addCase(cases: MusicEngineContractCase[], id: string, expected: string,
 
 function doesThrow(action: () => unknown): boolean {
   try { action(); return false; } catch { return true; }
+}
+
+function lowERootAnchor(root: string): number {
+  return (parseNote(root).pitchClass - STANDARD_TUNING.openStrings[0].pitchClass + 12) % 12;
 }
 
 /**
@@ -74,11 +78,24 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
     { stringIndex: 4, fret: 5, interval: '3', role: 'shapeTone', layer: 'caged', variant: 'A-form', colorId: 'caged-a' }
   ], { focusLayer: 'caged' });
   addCase(cases, 'CAGED collision retains individual form colors', 'caged-c caged-a', cagedCollision[0]?.segments.map(segment => segment.colorId).join(' ') ?? '');
+  const pentatonicCollision = resolveLayerCells([
+    { stringIndex: 5, fret: 3, interval: 'b3', role: 'shapeTone', layer: 'pentatonic', variant: 'Box 1', colorId: 'pentatonic-1' },
+    { stringIndex: 5, fret: 3, interval: 'b3', role: 'shapeTone', layer: 'pentatonic', variant: 'Box 2', colorId: 'pentatonic-2' }
+  ], { focusLayer: 'pentatonic' });
+  addCase(cases, 'Pentatonic boundary retains both box colors', 'pentatonic-1 pentatonic-2', pentatonicCollision[0]?.segments.map(segment => segment.colorId).join(' ') ?? '');
 
   const cMajorCycle = generateCagedMajorCycle('C');
   addCase(cases, 'CAGED cycle uses C A G E D order', 'C A G E D', cMajorCycle.map(shape => shape.form).join(' '));
   addCase(cases, 'C major CAGED skeleton frets are canonical', 'C:3 2 0 1 0|A:3 5 5 5 3|G:8 7 5 5 5 8|E:8 10 10 9 8 8|D:10 12 13 12', cMajorCycle.map(shape => `${shape.form}:${shape.positions.map(position => position.fret).join(' ')}`).join('|'));
   addCase(cases, 'C major CAGED forms preserve parent string counts', '5 5 6 6 4', cMajorCycle.map(shape => shape.positions.length).join(' '));
+
+  const eMinorPentatonicBoxes = generateMinorPentatonicCycle('E').filter(shape => shape.rootAnchorFret === 0);
+  addCase(cases, 'E minor pentatonic cycle uses boxes one through five', '1 2 3 4 5', eMinorPentatonicBoxes.map(shape => shape.box).join(' '));
+  addCase(cases, 'E minor box one is canonical', '0:0:1 0:3:b3 1:0:4 1:2:5 2:0:b7 2:2:1 3:0:b3 3:2:4 4:0:5 4:3:b7 5:0:1 5:3:b3', eMinorPentatonicBoxes[0]?.positions.map(position => `${position.stringIndex}:${position.fret}:${position.interval}`).join(' ') ?? '');
+  const eMinorBox3 = generateMinorPentatonicBox(3, 'E', 0);
+  addCase(cases, 'E minor box three crosses the B string at five and eight', '5:1 8:b3', eMinorBox3.positions.filter(position => position.stringIndex === 4).map(position => `${position.fret}:${position.interval}`).join(' '));
+  const eMinorBox4 = generateMinorPentatonicBox(4, 'E', 0);
+  addCase(cases, 'E minor box four crosses the B string at eight and ten', '8:b3 10:4', eMinorBox4.positions.filter(position => position.stringIndex === 4).map(position => `${position.fret}:${position.interval}`).join(' '));
 
   const chromaticRoots = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
   for (const root of chromaticRoots) {
@@ -92,10 +109,18 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
       addCase(cases, `${root} ${form}-form uses only 1 3 5`, 'true', String(shape.positions.every(position => ['1', '3', '5'].includes(position.interval))));
       addCase(cases, `${root} ${form}-form exposes the selected root`, 'true', String(shape.positions.some(position => position.interval === '1' && noteToString(position.note) === noteToString(parseNote(root)))));
     }
+
+    for (const box of MINOR_PENTATONIC_BOX_ORDER) {
+      const shape = generateMinorPentatonicBox(box, root, lowERootAnchor(root), STANDARD_TUNING, { start: 0, end: 24 });
+      addCase(cases, `${root} minor pentatonic box ${box} has twelve tones`, '12', String(shape.positions.length));
+      addCase(cases, `${root} minor pentatonic box ${box} uses only pentatonic intervals`, 'true', String(shape.positions.every(position => ['1', 'b3', '4', '5', 'b7'].includes(position.interval))));
+      addCase(cases, `${root} minor pentatonic box ${box} exposes the selected root`, 'true', String(shape.positions.some(position => position.interval === '1' && noteToString(position.note) === noteToString(parseNote(root)))));
+    }
   }
 
   const dropDTuning = { ...STANDARD_TUNING, id: 'drop-d-contract', openMidi: [38, 45, 50, 55, 59, 64] };
   addCase(cases, 'CAGED refuses unvalidated alternate tuning geometry', 'true', String(doesThrow(() => generateCagedMajorForm('E', 'C', dropDTuning))));
+  addCase(cases, 'Pentatonic refuses unvalidated alternate tuning geometry', 'true', String(doesThrow(() => generateMinorPentatonicBox(1, 'E', 0, dropDTuning))));
 
   return { passed: cases.every(test => test.passed), cases };
 }
