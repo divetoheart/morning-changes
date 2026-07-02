@@ -65,7 +65,7 @@ export function resolveLayerCells(memberships: readonly LayerMembership[], optio
     });
     const primary = ordered[0];
     const uniqueIntervals = new Set(group.map(item => item.interval));
-    const marker = group.length === 1 ? 'single' : uniqueIntervals.size === 1 ? 'agreement' : 'conflict';
+    const marker: LayerCell['marker'] = group.length === 1 ? 'single' : uniqueIntervals.size === 1 ? 'agreement' : 'conflict';
     const segments = ordered.reduce<LayerVisualSegment[]>((result, membership) => {
       const alreadyIncluded = result.some(segment => segment.layer === membership.layer && segment.colorId === membership.colorId);
       if (!alreadyIncluded) result.push({ layer: membership.layer, colorId: membership.colorId });
