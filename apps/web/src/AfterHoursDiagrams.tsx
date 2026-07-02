@@ -1,3 +1,4 @@
+import './diagram-engine.css';
 import type { FormSection } from './after-hours-types';
 import { GuitarDiagram } from './GuitarDiagram';
 import { ChordNotation, FunctionNotation } from './MusicNotation';
@@ -32,10 +33,7 @@ export function voicingsFor(form: FormSection[]): Voicing[] {
   return [...uniqueChords.values()].filter(chord => chord.tones.length === 4).map(chord => ({ chord }));
 }
 
-/**
- * Builds a real shell recipe, then finds one playable placement on a declared
- * string set. The renderer receives only the selected engine positions.
- */
+/** Builds a real shell recipe, then selects one playable placement. */
 export function makeShellDiagram({ chord, preferredFret }: Voicing): Diagram {
   const generated = generateVoicing(chord, { kind: 'shell', includeRoot: true, includeFifth: true, guideToneOrder: '7-3' });
   const candidate = selectGuitarVoicingCandidate(generated, {
