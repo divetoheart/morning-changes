@@ -9,6 +9,16 @@ Morning Changes is a visual, theory-grounded guitar practice workspace. The live
 - `#/fretboard` is a native React route using the shared full-neck renderer and `lib/music` engine.
 - `#/paths` redirects to Fretboard; `#/progress` redirects to Profile.
 
+## Release verification
+
+Every Pages build stamps the exact GitHub commit into a persistent footer:
+
+```text
+Live build · <short commit>
+```
+
+Use that footer as the source of truth for the site currently in your browser. It links to the full commit. Each release update should also name one concrete visual behavior to look for, not only a merge SHA. See `docs/RELEASE_VERIFICATION.md`.
+
 ## Fretboard status
 
 The shared music engine owns the theory and geometry behind every visible marker.
@@ -18,7 +28,7 @@ The shared music engine owns the theory and geometry behind every visible marker
 - The shared Fretboard is range-aware. A screen can render the complete neck or a compact playable window without maintaining a separate diagram system.
 - Compact maps can retain the same active-chord, Triads, inversion, CAGED, pentatonic, arpeggio, scale, Shell, and Drop 2 controls, with a small `Open full neck` handoff.
 - Autumn Leaves is the first applied configuration: a relative-major ii–V–I in frets 7–11, built from the same map and engine as the full Fretboard.
-- A headless Chromium smoke test opens both `#/fretboard` and `#/after-hours/autumn-leaves`; it requires the renderer, key controls, focused range, expand link, and no error-boundary fallback.
+- A headless Chromium smoke test opens both `#/fretboard` and `#/after-hours/autumn-leaves`; it requires the renderer, key controls, focused range, expand link, visible build footer, and no error-boundary fallback.
 
 A dedicated two-octave scale-path generator is not yet a separate map mode. The existing Scale layer is range-aware context; true two-octave routes are future engine work.
 
@@ -46,6 +56,7 @@ GitHub Actions runs TypeScript, the music contract, production build, and browse
 - Focused lesson/study maps must use `AfterHoursFretboardCustomizer` with structured props, not parallel local diagrams.
 - Update `docs/WORK_ORDER.md` and `docs/AGENT_HANDOFF.md` after significant changes.
 - Green checks normally mean merge and deploy unless explicitly held.
+- Release communication must include a concrete “Look for” cue and the visible footer SHA.
 
 ## Next direction
 
