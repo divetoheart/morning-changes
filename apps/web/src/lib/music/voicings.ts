@@ -64,16 +64,27 @@ function drop2Voicing(chord: Chord, inversion: 0 | 1 | 2 | 3): VoicingVoice[] {
   return voices.sort((left, right) => left.relativeSemitones - right.relativeSemitones);
 }
 
+/**
+ * A shell centers the chord's guide tones when they exist. For add/sus chords
+ * without a seventh, it still produces a useful playable skeleton: root plus
+ * the third or suspension and the fifth.
+ */
 function shellVoicing(chord: Chord, options: Extract<VoicingRecipe, { kind: 'shell' }>): VoicingVoice[] {
   const third = chord.tones.find(tone => tone.interval === '3' || tone.interval === 'b3');
+  const suspension = chord.tones.find(tone => tone.interval === '2' || tone.interval === '4');
+  const primaryTone = third ?? suspension;
   const seventh = chord.tones.find(tone => tone.interval === '7' || tone.interval === 'b7' || tone.interval === 'bb7');
-  if (!third || !seventh) throw new Error(`Shell voicings require a third and seventh; ${chord.quality} does not provide both.`);
   const fifth = chord.tones.find(tone => tone.interval === '5' || tone.interval === 'b5' || tone.interval === '#5');
-  const guideTones = options.guideToneOrder === '7-3' ? [seventh.interval, third.interval] : [third.interval, seventh.interval];
+  if (!primaryTone || (!seventh && !fifth)) {
+    throw new Error(`Shell voicings require a third or suspension plus a fifth or seventh; ${chord.quality} does not provide a playable shell.`);
+  }
+  const guideTones: IntervalName[] = seventh
+    ? options.guideToneOrder === '7-3' ? [seventh.interval, primaryTone.interval] : [primaryTone.interval, seventh.interval]
+    : [primaryTone.interval, fifth!.interval];
   const intervals: IntervalName[] = [];
   if (options.includeRoot !== false) intervals.push('1');
   intervals.push(...guideTones);
-  if (options.includeFifth && fifth) intervals.push(fifth.interval);
+  if (options.includeFifth && seventh && fifth) intervals.push(fifth.interval);
   return ascendingVoices(chord, intervals);
 }
 
