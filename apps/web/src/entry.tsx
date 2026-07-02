@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import WorkspaceApp from './WorkspaceApp';
+import WorkspaceRoot from './WorkspaceRoot';
 import { ThemeDock } from './ThemeDock';
 import { ThemeProvider } from './ThemeProvider';
 import './styles.css';
@@ -14,13 +14,14 @@ import './after-hours-port.css';
 import './after-hours-fixes.css';
 import './after-hours-final-polish.css';
 import './workspace.css';
+import './explorer-alias.css';
 
 const mountNode = document.querySelector('#root');
 
 if (mountNode) {
   createRoot(mountNode).render(
     <ThemeProvider>
-      <WorkspaceApp />
+      <WorkspaceRoot />
       <ThemeDock />
     </ThemeProvider>
   );
