@@ -5,13 +5,21 @@ import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
 import { FormMap } from './AfterHoursDiagrams';
 import { KeyArrangementReference } from './AfterHoursStandardSections';
 import { KeyNotation } from './MusicNotation';
-import { buildFunctionalChord, createKey } from './lib/music';
+import { chordSymbol, createKey, type ScaleMode } from './lib/music';
 
 const REFERENCES: Record<string, { title: string; copy: string; href: string }> = {
   'gm-bb': { title: 'Cannonball Adderley with Miles Davis · Somethin’ Else · recorded 1958', copy: 'The canonical modern-jazz arrangement: a G minor / B♭ major setting with Miles Davis’s spacious theme statement and Cannonball Adderley’s alto defining the session vocabulary for the tune.', href: 'https://www.youtube.com/watch?v=u37RF5xKNq8' },
   'em-g': { title: 'Bill Evans Trio · Portrait in Jazz · recorded 1959, released 1960', copy: 'A guitarist-friendly E minor / G major study setting paired with Evans’s trio version. The open-position landscape makes the changes easy to inspect while Evans, LaFaro, and Motian demonstrate why the form should never sound mechanical.', href: 'https://www.youtube.com/watch?v=r-Z8KuwI7Gc' },
   'bm-d': { title: 'Eric Clapton · Clapton · released 2010', copy: 'Use this B minor / D major setting as the dedicated guitar-focused study route: a lower minor center, familiar closed-position shapes, and the same major-to-minor functional movement.', href: 'https://www.youtube.com/results?search_query=Eric+Clapton+Autumn+Leaves+Clapton+2010' }
 };
+
+function scaleModeForAutumnCell(cell: { chord: { quality: string }; function?: { quality: string; context?: 'major' | 'minor'; degree: string } }): ScaleMode {
+  const quality = cell.function?.quality ?? cell.chord.quality;
+  if (quality === 'halfDiminished7' || quality === 'diminished' || quality === 'diminished7') return 'locrian';
+  if (quality === 'dominant7' || quality === 'dominant9' || quality === 'dominant11' || quality === 'dominant13') return 'mixolydian';
+  if (quality === 'minor' || quality === 'minor7' || quality === 'minor9' || quality === 'minor11' || quality === 'minor13') return cell.function?.context === 'minor' ? 'naturalMinor' : 'dorian';
+  return cell.function?.degree === 'IV' ? 'lydian' : 'major';
+}
 
 export function AfterHoursAutumnPortBody() {
   const [keyId, setKeyId] = useState('gm-bb');
@@ -20,11 +28,15 @@ export function AfterHoursAutumnPortBody() {
   const minorContext = useMemo(() => createKey(study.minorKey.split(' ')[0], 'naturalMinor'), [study.minorKey]);
   const majorContext = useMemo(() => createKey(study.majorKey.split(' ')[0], 'major'), [study.majorKey]);
   const keyPair = <><KeyNotation context={minorContext} /> / <KeyNotation context={majorContext} /></>;
-  const cadenceChords = useMemo(() => [
-    { chord: buildFunctionalChord(majorContext, { degree: 'ii', quality: 'minor7' }), scaleMode: 'dorian' as const },
-    { chord: buildFunctionalChord(majorContext, { degree: 'V', quality: 'dominant7' }), scaleMode: 'mixolydian' as const },
-    { chord: buildFunctionalChord(majorContext, { degree: 'I', quality: 'major7' }), scaleMode: 'major' as const }
-  ], [majorContext]);
+  const formChords = useMemo(() => {
+    const seen = new Set<string>();
+    return study.form.flatMap(section => section.bars).flatMap(bar => bar).flatMap(cell => {
+      const symbol = chordSymbol(cell.chord);
+      if (seen.has(symbol)) return [];
+      seen.add(symbol);
+      return [{ chord: cell.chord, scaleMode: scaleModeForAutumnCell(cell) }];
+    });
+  }, [study.form]);
 
   return <article className="ah-port ah-piece" data-music-context="true">
     <AutumnPortIntro />
@@ -42,20 +54,20 @@ export function AfterHoursAutumnPortBody() {
       <FormMap form={study.form} />
     </section>
     <AfterHoursFretboardCustomizer
-      key={`${study.id}-cadence`}
+      key={`${study.id}-whole-form`}
       compact
       expandHref="#/fretboard"
       fretRange={{ start: 7, end: 11 }}
       keyLabel={keyPair}
       majorRoot={study.majorKey.split(' ')[0]}
       minorRoot={study.minorKey.split(' ')[0]}
-      chords={cadenceChords}
-      defaultLayers={{ pentatonic: false, triad: true, arpeggio: true }}
+      chords={formChords}
+      defaultLayers={{ pentatonic: false, triad: false, arpeggio: true }}
       cagedLabel={<><KeyNotation context={majorContext} /> positions</>}
       pentatonicLabel={<><KeyNotation context={minorContext} /> boxes</>}
       eyebrow="Apply this in Autumn Leaves"
-      heading="ii–V–I at 8th position."
-      description={<>Stay in one neighborhood while the relative-major cadence moves underneath you. Switch the active chord, then choose triads, arpeggio, pentatonic, CAGED, or scale context without leaving frets 7–11.</>}
+      heading="Whole form at 8th position."
+      description={<>Stay in one neighborhood while the form moves underneath you. Switch through every chord printed above, then add triads, CAGED, scale context, inversions, or chord voicings only when you need them.</>}
     />
     <AutumnPortFooter study={study} onSwitchKey={setKeyId} />
   </article>;
