@@ -1,6 +1,5 @@
 import { type CSSProperties, type ReactNode, useEffect, useMemo, useState } from 'react';
 import type { ArpType } from './after-hours-types';
-import { PENTATONIC_BOXES } from './after-hours-shapes';
 import { assertMusicEngineContract } from './lib/music/contract';
 import {
   buildChord,
@@ -8,6 +7,7 @@ import {
   DEFAULT_FRET_RANGE,
   displayStringOrder,
   generateCagedMajorCycle,
+  generateMinorPentatonicCycle,
   noteToString,
   parseNote,
   positionsForChord,
@@ -61,6 +61,11 @@ const MARKER_COLORS: Record<string, string> = {
   'caged-e': '#67c7a2',
   'caged-d': '#f0b867',
   pentatonic: '#f7bf65',
+  'pentatonic-1': '#f7bf65',
+  'pentatonic-2': '#efac62',
+  'pentatonic-3': '#e99b79',
+  'pentatonic-4': '#d993a3',
+  'pentatonic-5': '#bda3da',
   arpeggio: '#e69bc6',
   scale: '#83d5b7',
   roots: '#f5d46b'
@@ -77,16 +82,6 @@ function qualityForLabel(label: string): ArpType {
 }
 function cellKey(source: number, fret: number) {
   return `${source}:${fret}`;
-}
-function buildPatternSet(patterns: ReadonlyArray<ReadonlyArray<readonly [number, number, string]>>, anchor: number) {
-  const set = new Map<string, IntervalName>();
-  for (const shift of [-24, -12, 0, 12, 24]) {
-    for (const pattern of patterns) for (const [source, offset, label] of pattern) {
-      const fret = anchor + offset + shift;
-      if (fret >= DEFAULT_FRET_RANGE.start && fret <= DEFAULT_FRET_RANGE.end) set.set(cellKey(source, fret), label as IntervalName);
-    }
-  }
-  return set;
 }
 function membershipMap(entries: Array<{ stringIndex: number; fret: number; interval: IntervalName; role: LayerMembership['role'] }>) {
   return new Map(entries.map(entry => [cellKey(entry.stringIndex, entry.fret), entry]));
@@ -114,8 +109,9 @@ function markerStyle(cell: LayerCell): CSSProperties {
   } as CSSProperties;
 }
 function detailLayerLabel(membership: LayerMembership): string {
-  if (membership.layer !== 'caged') return membership.layer[0].toUpperCase() + membership.layer.slice(1);
-  return `CAGED ${membership.variant ?? 'form'}`;
+  if (membership.layer === 'caged') return `CAGED ${membership.variant ?? 'form'}`;
+  if (membership.layer === 'pentatonic') return `Pentatonic ${membership.variant ?? 'box'}`;
+  return membership.layer[0].toUpperCase() + membership.layer.slice(1);
 }
 function markerTitle(cell: LayerCell): string {
   const memberships = cell.memberships.map(item => `${detailLayerLabel(item)}: ${item.interval}`).join(' · ');
@@ -123,9 +119,8 @@ function markerTitle(cell: LayerCell): string {
 }
 
 /**
- * Shared neck renderer. Roots, chord tones, scales, standard-tuning CAGED parent
- * forms, and collision resolution all come from lib/music. Pentatonic remains
- * the final legacy physical template family awaiting the same generator migration.
+ * Shared neck renderer. Roots, chord tones, scales, CAGED parent forms, and all
+ * five minor-pentatonic boxes now come from lib/music and share one collision model.
  */
 export function FretboardMap({ keyLabel, majorRoot, minorRoot, chords, description, cagedLabel, pentatonicLabel, defaultLayers, mode = 'layers', eyebrow = 'Shapes and voicings', heading = 'One neck. Every map you need.' }: FretboardMapProps) {
   const [enabled, setEnabled] = useState<Record<Layer, boolean>>({ ...DEFAULT_LAYERS, ...defaultLayers });
@@ -141,11 +136,11 @@ export function FretboardMap({ keyLabel, majorRoot, minorRoot, chords, descripti
   const minorRootNote = useMemo(() => parseNote(minorRoot), [minorRoot]);
   const activeRootNote = useMemo(() => parseNote(activeRootLabel), [activeRootLabel]);
 
-  const pentatonicAnchor = (minorRootNote.pitchClass - STANDARD_TUNING.openStrings[0].pitchClass + 12) % 12;
   const cagedGroups = useMemo(() => membershipGroups(generateCagedMajorCycle(majorRootNote).flatMap(shape => shape.positions
     .filter(position => position.fret >= DEFAULT_FRET_RANGE.start && position.fret <= DEFAULT_FRET_RANGE.end)
     .map(position => ({ ...position, layer: 'caged' as const, variant: `${shape.form}-form`, colorId: position.colorId })))), [majorRootNote]);
-  const pentatonicSet = useMemo(() => buildPatternSet(PENTATONIC_BOXES, pentatonicAnchor), [pentatonicAnchor]);
+  const pentatonicGroups = useMemo(() => membershipGroups(generateMinorPentatonicCycle(minorRootNote, STANDARD_TUNING, DEFAULT_FRET_RANGE).flatMap(shape => shape.positions
+    .map(position => ({ ...position, layer: 'pentatonic' as const, variant: `Box ${shape.box}`, colorId: position.colorId })))), [minorRootNote]);
   const arpeggioMap = useMemo(() => membershipMap(positionsForChord(buildChord(activeRootNote, ENGINE_CHORD_QUALITY[activeQuality]))), [activeRootNote, activeQuality]);
   const scaleMap = useMemo(() => membershipMap(positionsForScale(createKey(activeRootNote, ENGINE_SCALE_MODE[activeQuality]))), [activeRootNote, activeQuality]);
   const rootMap = useMemo(() => membershipMap(positionsForIntervals(activeRootNote, ['1'], 'root')), [activeRootNote]);
@@ -160,16 +155,16 @@ export function FretboardMap({ keyLabel, majorRoot, minorRoot, chords, descripti
         continue;
       }
       const caged = cagedGroups.get(key) ?? [];
-      const pentatonic = pentatonicSet.get(key);
+      const pentatonic = pentatonicGroups.get(key) ?? [];
       const arpeggio = arpeggioMap.get(key);
       const scale = scaleMap.get(key);
       if (enabled.caged) memberships.push(...caged);
-      if (enabled.pentatonic && pentatonic) memberships.push({ stringIndex: string.source, fret, interval: pentatonic, role: pentatonic === '1' ? 'root' : 'shapeTone', layer: 'pentatonic' });
+      if (enabled.pentatonic) memberships.push(...pentatonic);
       if (enabled.arpeggio && arpeggio) memberships.push({ ...arpeggio, layer: 'arpeggio' });
       if (enabled.scale && scale) memberships.push({ ...scale, layer: 'scale' });
     }
     return new Map(resolveLayerCells(memberships, { focusLayer: 'arpeggio' }).map(cell => [cellKey(cell.stringIndex, cell.fret), cell]));
-  }, [arpeggioMap, cagedGroups, enabled, mode, pentatonicSet, rootMap, scaleMap]);
+  }, [arpeggioMap, cagedGroups, enabled, mode, pentatonicGroups, rootMap, scaleMap]);
 
   useEffect(() => {
     if (selectedCellKey && !cellsByPosition.has(selectedCellKey)) setSelectedCellKey(null);
@@ -181,7 +176,7 @@ export function FretboardMap({ keyLabel, majorRoot, minorRoot, chords, descripti
   return <section className={`ah-fretboard-customizer ${mode === 'roots' ? 'ah-fretboard-roots' : ''}`}>
     <div className="ah-piece-section-head"><div><span className="eyebrow">{eyebrow}</span><h2>{heading}</h2><p>{description}</p></div><div className="ah-fretboard-key"><small>Study key</small><strong>{keyLabel}</strong></div></div>
     {mode === 'layers' && <div className="ah-fretboard-controls"><label className="ah-fretboard-chord"><span>Active chord</span><select value={activeChordLabel} onChange={event => { setActiveChordLabel(event.target.value); setSelectedCellKey(null); }}>{chords.map(chord => <option key={chord.label} value={chord.label}>{chord.label}</option>)}</select></label><div className="ah-fretboard-layers" aria-label="Fretboard layers">{LAYERS.map(layer => <button type="button" key={layer.id} className={`layer-${layer.id} ${enabled[layer.id] ? 'active' : ''}`} aria-pressed={enabled[layer.id]} onClick={() => { setEnabled(previous => ({ ...previous, [layer.id]: !previous[layer.id] })); setSelectedCellKey(null); }}><i aria-hidden="true"/><span>{layer.label}</span><small>{layer.id === 'caged' ? cagedLabel : layer.id === 'pentatonic' ? pentatonicLabel : layer.detail}</small></button>)}</div></div>}
-    <div className="ah-fretboard-legend">{mode === 'roots' ? <span><b className="root-key">1</b> Every highlighted note is the selected key’s root.</span> : <><span><b className="root-key">1</b> Arpeggio controls the visible label when layers disagree.</span><span>CAGED uses distinct C, A, G, E, and D-form colors.</span><span>Tap any marker for its complete role list.</span></>}</div>
+    <div className="ah-fretboard-legend">{mode === 'roots' ? <span><b className="root-key">1</b> Every highlighted note is the selected key’s root.</span> : <><span><b className="root-key">1</b> Arpeggio controls the visible label when layers disagree.</span><span>CAGED forms and Pentatonic boxes retain their own colors.</span><span>Tap any marker for its complete role list.</span></>}</div>
     {selectedCell && <aside className="ah-fretboard-detail" aria-live="polite"><div><span className="eyebrow">Fret detail</span><strong>String {selectedString} · fret {selectedCell.fret}</strong><p>{selectedCell.marker === 'conflict' ? 'The arpeggio label is shown because it is the focus layer. Other memberships remain listed here.' : 'This marker represents every active membership at this position.'}</p></div><button type="button" onClick={() => setSelectedCellKey(null)} aria-label="Close fret detail">×</button><ul>{selectedCell.memberships.map(membership => <li key={`${membership.layer}-${membership.variant ?? ''}-${membership.interval}`}><span className={`ah-detail-swatch ${membership.colorId ?? membership.layer}`} aria-hidden="true"/><strong>{detailLayerLabel(membership)}</strong><span>{membership.interval}{membership.role === 'root' ? ' · root' : ''}</span></li>)}</ul></aside>}
     <div className="ah-full-neck-scroll" tabIndex={0} role="region" aria-label="Full fretboard with selectable study layers"><div className="ah-full-neck"><div className="ah-full-neck-frets"><span></span>{FRET_NUMBERS.map(fret => <span key={fret}>{fret}</span>)}</div>{DISPLAY_STRINGS.map(string => <div className="ah-full-neck-string" key={string.source}><b>{string.label}</b>{FRET_NUMBERS.map(fret => { const key = cellKey(string.source, fret); const cell = cellsByPosition.get(key); return <span className="ah-full-neck-cell" key={fret}>{cell && <button type="button" className={`ah-layer-dot ${cell.primary.layer} ${visibleRoot(cell) ? 'root' : ''} ${cell.marker} ${cell.segments.length > 1 ? 'multi' : ''}`} style={markerStyle(cell)} title={markerTitle(cell)} aria-label={`${selectedCellKey === key ? 'Selected. ' : ''}${markerTitle(cell)}`} aria-pressed={selectedCellKey === key} onClick={() => setSelectedCellKey(key)}><small>{cell.primary.interval}</small></button>}</span>; })}</div>)}</div></div>
   </section>;
