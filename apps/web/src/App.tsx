@@ -1,91 +1,129 @@
-import { useEffect, useMemo, useState } from 'react';
-import { HashRouter, Navigate, NavLink, Route, Routes, useNavigate, useParams } from 'react-router-dom';
-import { getDailyExercise, getDailyLesson, getDailyLick, type DailyExtra } from './lib/daily';
-import { clampTempo, currentStreak, loadProgress, markCompleted, markStarted, nextStatus, saveProgress, type PracticeProgress } from './lib/progress';
-import { useMetronome } from './lib/useMetronome';
-import { lessonById, lessons, pathById, paths, standards } from './content/catalog';
-import { chordTones, KEYS, labelMode, modeNotes, randomKey, renderIntervals, transpose, type KeyName } from './lib/theory';
-import { PracticeExtraPage } from './PracticeExtraPage';
+import { useMemo, useState } from 'react';
+import { HashRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { AfterHoursAutumnLeavesApp } from './AfterHoursAutumnLeavesApp';
 import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
-import { ChangeStepper } from './ChangeStepper';
-import { ProgressDashboard } from './ProgressDashboard';
 import { buildChord } from './lib/music';
-import type { HarmonyExample, Lesson, LearningPath, MusicInterval, Standard } from './domain/content';
+import { KEYS, type KeyName } from './lib/theory';
+import { useMetronome } from './lib/useMetronome';
 
-type Overlay = { kind: 'path'; path: LearningPath } | { kind: 'premium'; title?: string } | null;
-type CompletionNotice = { minutes: number; progressLabel: string; nextTitle?: string } | null;
-type IconName = 'home' | 'learn' | 'paths' | 'after' | 'tools' | 'progress' | 'play' | 'tempo' | 'close' | 'arrow';
+type IconName = 'home' | 'paths' | 'after' | 'tools' | 'tempo' | 'arrow';
 type NavItem = { to: string; label: string; mobileLabel?: string; detail?: string; icon: IconName; end?: boolean };
+type StandardEntry = { title: string; subtitle: string; focus: string; href: string };
 
 const navItems: NavItem[] = [
   { to: '/', label: 'Home', icon: 'home', end: true },
-  { to: '/learn', label: 'Learn', icon: 'learn' },
   { to: '/fretboard', label: 'Fretboard', icon: 'paths' },
   { to: '/after-hours', label: 'After Hours', mobileLabel: 'After', detail: 'Standards Library', icon: 'after' },
-  { to: '/tools', label: 'Tools', icon: 'tools' },
-  { to: '/profile', label: 'Profile', icon: 'progress' }
+  { to: '/tools', label: 'Tools', icon: 'tools' }
 ];
-const NOTE_INDEX: Record<string, number> = { C: 0, Db: 1, D: 2, Eb: 3, E: 4, F: 5, Gb: 6, G: 7, Ab: 8, A: 9, Bb: 10, B: 11 };
-const NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-const TUNING = [{ label: 'e', note: 'E' }, { label: 'B', note: 'B' }, { label: 'G', note: 'G' }, { label: 'D', note: 'D' }, { label: 'A', note: 'A' }, { label: 'E', note: 'E' }];
-const MOVEMENT_LESSONS = new Set(['major-key-seventh-chords', 'guide-tones-major-ii-v-i', 'minor-ii-v-i-cadence', 'arpeggios-as-chord-tones', 'connect-arpeggios-through-changes', 'autumn-leaves-a-section-functions']);
+
+const standards: readonly StandardEntry[] = [
+  {
+    title: 'Autumn Leaves',
+    subtitle: 'Harmony map, focused ii–V–I studies, shell voicings, and an arpeggio play-along.',
+    focus: 'ii–V–I voice leading and minor cadences',
+    href: '#/after-hours/autumn-leaves'
+  }
+];
 
 function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   const common = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, 'aria-hidden': true };
   if (name === 'home') return <svg {...common}><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z" /></svg>;
-  if (name === 'learn') return <svg {...common}><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5Z" /><path d="M4 5.5V21.5" /><path d="M8 7h8M8 11h8" /></svg>;
   if (name === 'paths') return <svg {...common}><circle cx="12" cy="12" r="8" /><path d="m15.5 8.5-2.1 5-4.8 2.1 2.1-4.8Z" /></svg>;
   if (name === 'after') return <svg {...common}><path d="M9 18V5l10-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="16" cy="16" r="3" /></svg>;
   if (name === 'tools') return <svg {...common}><path d="M4 4v16M20 4v16M4 8h5M15 8h5M4 16h9M17 16h3" /><circle cx="11" cy="8" r="2" /><circle cx="15" cy="16" r="2" /></svg>;
-  if (name === 'progress') return <svg {...common}><path d="M4 19V5M4 19h16" /><path d="m7 15 4-4 3 2 5-6" /><path d="M16 7h3v3" /></svg>;
-  if (name === 'play') return <svg {...common}><path d="m8 5 11 7-11 7Z" /></svg>;
   if (name === 'tempo') return <svg {...common}><path d="M12 3v18" /><path d="M7 7h10M7 17h10" /><path d="M8 7 5 17h14l-3-10" /></svg>;
-  if (name === 'close') return <svg {...common}><path d="m6 6 12 12M18 6 6 18" /></svg>;
   return <svg {...common}><path d="M5 12h14M13 6l6 6-6 6" /></svg>;
 }
-function statusLabel(status: ReturnType<typeof nextStatus>) { return status === 'completed' ? 'Completed' : status === 'in-progress' ? 'In progress' : 'New'; }
-function accessLabel(access: Lesson['access']) { return access === 'premium' ? 'Premium' : 'Free'; }
-function standardHref(standard: Standard) { if (standard.id === 'autumn-leaves') return '#/after-hours/autumn-leaves'; if (standard.id === 'blues-lab-standard') return '#/after-hours/12-bar-blues'; return standard.href; }
 
 function AppLayout() {
-  const navigate = useNavigate();
-  const [progress, setProgress] = useState<PracticeProgress>(() => loadProgress());
-  const [overlay, setOverlay] = useState<Overlay>(null);
-  const [completionNotice, setCompletionNotice] = useState<CompletionNotice>(null);
-  const [selectedKey, setSelectedKey] = useState<KeyName>(() => randomKey());
-  const metronome = useMetronome(progress.tempo, tempo => setProgress(previous => ({ ...previous, tempo: clampTempo(tempo) })));
-  useEffect(() => saveProgress(progress), [progress]);
-  useEffect(() => { if (!completionNotice) return; const timeout = window.setTimeout(() => setCompletionNotice(null), 6000); return () => window.clearTimeout(timeout); }, [completionNotice]);
-  const dailyLesson = useMemo(() => getDailyLesson(), []);
-  const dailyLick = useMemo(() => getDailyLick(), []);
-  const dailyExercise = useMemo(() => getDailyExercise(), []);
-  const activeLesson = lessons.find(lesson => nextStatus(progress, lesson.id) === 'in-progress') ?? dailyLesson;
-  const openLesson = (lesson: Lesson) => { if (lesson.access === 'premium') return setOverlay({ kind: 'premium', title: lesson.title }); navigate(`/lesson/${lesson.id}`); };
-  const startLesson = (lesson: Lesson) => { setProgress(previous => markStarted(previous, lesson.id)); metronome.setTempo(lesson.metronome.bpm); };
-  const completeLesson = (lesson: Lesson, daily = false) => { const path = paths.find(candidate => candidate.lessonIds.includes(lesson.id)); const completedInPath = path ? path.lessonIds.filter(id => id === lesson.id || nextStatus(progress, id) === 'completed').length : 0; const index = path?.lessonIds.indexOf(lesson.id) ?? -1; const nextLesson = index >= 0 ? lessonById(path?.lessonIds[index + 1] ?? '') : undefined; setProgress(previous => markCompleted(previous, lesson, daily ? 'daily' : 'lesson')); setCompletionNotice({ minutes: lesson.durationMinutes, progressLabel: path ? `${path.title}: ${completedInPath}/${path.lessonIds.length} complete` : 'Practice saved', nextTitle: nextLesson?.title }); };
-  const openPath = (path: LearningPath) => path.access === 'premium' ? setOverlay({ kind: 'premium', title: path.title }) : setOverlay({ kind: 'path', path });
-  const openExtra = (extra: DailyExtra) => navigate(`/practice/${extra.kind.toLowerCase()}/${extra.id}`);
-  return <div className="app-shell"><header className="app-topbar"><NavLink className="wordmark" to="/"><span className="wordmark-mark">◒</span><span><strong>Morning Changes</strong><small>Daily guitar practice</small></span></NavLink><nav className="desktop-nav" aria-label="Primary navigation">{navItems.map(item => <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => isActive ? 'active' : ''}><span>{item.label}</span>{item.detail && <small>{item.detail}</small>}</NavLink>)}</nav><button className="tempo-button" type="button" onClick={metronome.toggle} aria-label={`${metronome.playing ? 'Stop' : 'Start'} metronome at ${metronome.tempo} BPM`}><Icon name="tempo" size={16} /> {metronome.tempo}</button></header><main className="screen"><Routes><Route path="/" element={<HomeScreen dailyLesson={dailyLesson} dailyLick={dailyLick} dailyExercise={dailyExercise} activeLesson={activeLesson} progress={progress} onOpenDaily={() => navigate(`/lesson/${dailyLesson.id}`)} onOpenLesson={openLesson} onOpenExtra={openExtra} />} /><Route path="/lesson/:lessonId" element={<LessonPage progress={progress} metronome={metronome} selectedKey={selectedKey} onKeyChange={setSelectedKey} onStart={startLesson} onComplete={completeLesson} onOpenPremium={title => setOverlay({ kind: 'premium', title })} />} /><Route path="/practice/:kind/:extraId" element={<PracticeExtraPage metronome={metronome} onOpenLesson={id => { const lesson = lessonById(id); if (lesson) openLesson(lesson); }} />} /><Route path="/learn" element={<LearnScreen />} /><Route path="/fretboard" element={<FretboardScreen />} /><Route path="/paths" element={<Navigate replace to="/fretboard" />} /><Route path="/after-hours/autumn-leaves" element={<AfterHoursAutumnLeavesApp />} /><Route path="/after-hours/12-bar-blues" element={<AfterHoursAutumnLeavesApp />} /><Route path="/after-hours" element={<AfterHoursScreen onOpenPremium={title => setOverlay({ kind: 'premium', title })} />} /><Route path="/tools" element={<ToolsScreen metronome={metronome} />} /><Route path="/profile" element={<ProfileScreen progress={progress} activeLesson={activeLesson} onOpenLesson={openLesson} />} /><Route path="/progress" element={<Navigate replace to="/profile" />} /><Route path="*" element={<Navigate replace to="/" />} /></Routes></main><nav className="bottom-nav" aria-label="Mobile navigation">{navItems.map(item => <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => isActive ? 'active' : ''} aria-label={item.label}><Icon name={item.icon} size={19} /><span>{item.mobileLabel ?? item.label}</span></NavLink>)}</nav>{overlay && <PracticeOverlay overlay={overlay} progress={progress} onClose={() => setOverlay(null)} onOpenLesson={openLesson} />}{completionNotice && <CompletionToast notice={completionNotice} onClose={() => setCompletionNotice(null)} />}</div>;
+  const location = useLocation();
+  const [tempo, setTempo] = useState(72);
+  const metronome = useMetronome(tempo, setTempo);
+  const isAfterHours = location.pathname.startsWith('/after-hours');
+  const wordmarkTitle = isAfterHours ? 'After Hours' : 'Morning Changes';
+  const wordmarkSubtitle = isAfterHours ? 'Standards Library' : 'Daily guitar practice';
+
+  return <div className="app-shell">
+    <header className={`app-topbar ${isAfterHours ? 'after-hours-topbar' : ''}`}>
+      <NavLink className="wordmark" to="/">
+        <span className={`wordmark-mark ${isAfterHours ? 'after-hours-wordmark-mark' : ''}`}>◒</span>
+        <span><strong>{wordmarkTitle}</strong><small>{wordmarkSubtitle}</small></span>
+      </NavLink>
+      <nav className="desktop-nav" aria-label="Primary navigation">
+        {navItems.map(item => <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => isActive ? 'active' : ''}><span>{item.label}</span>{item.detail && <small>{item.detail}</small>}</NavLink>)}
+      </nav>
+      <button className="tempo-button" type="button" onClick={metronome.toggle} aria-label={`${metronome.playing ? 'Stop' : 'Start'} metronome at ${metronome.tempo} BPM`}><Icon name="tempo" size={16} /> {metronome.tempo}</button>
+    </header>
+    <main className="screen">
+      <Routes>
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="/fretboard" element={<FretboardScreen />} />
+        <Route path="/after-hours" element={<AfterHoursScreen />} />
+        <Route path="/after-hours/autumn-leaves" element={<AfterHoursAutumnLeavesApp />} />
+        <Route path="/after-hours/12-bar-blues" element={<Navigate replace to="/after-hours" />} />
+        <Route path="/tools" element={<ToolsScreen metronome={metronome} />} />
+        <Route path="/learn" element={<Navigate replace to="/" />} />
+        <Route path="/lesson/:lessonId" element={<Navigate replace to="/" />} />
+        <Route path="/practice/:kind/:extraId" element={<Navigate replace to="/" />} />
+        <Route path="/paths" element={<Navigate replace to="/fretboard" />} />
+        <Route path="/profile" element={<Navigate replace to="/" />} />
+        <Route path="/progress" element={<Navigate replace to="/" />} />
+        <Route path="*" element={<Navigate replace to="/" />} />
+      </Routes>
+    </main>
+    <nav className="bottom-nav" aria-label="Mobile navigation">
+      {navItems.map(item => <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => isActive ? 'active' : ''} aria-label={item.label}><Icon name={item.icon} size={19} /><span>{item.mobileLabel ?? item.label}</span></NavLink>)}
+    </nav>
+  </div>;
 }
-function ScreenHeader({ eyebrow, title, copy }: { eyebrow: string; title: string; copy?: string }) { return <section className="screen-header"><span className="eyebrow">{eyebrow}</span><h1>{title}</h1>{copy && <p>{copy}</p>}</section>; }
-function HomeScreen({ dailyLesson, dailyLick, dailyExercise, activeLesson, progress, onOpenDaily, onOpenLesson, onOpenExtra }: { dailyLesson: Lesson; dailyLick: DailyExtra; dailyExercise: DailyExtra; activeLesson: Lesson; progress: PracticeProgress; onOpenDaily: () => void; onOpenLesson: (lesson: Lesson) => void; onOpenExtra: (extra: DailyExtra) => void }) { const activePath = paths.find(path => path.lessonIds.includes(activeLesson.id)); const done = activePath?.lessonIds.filter(id => nextStatus(progress, id) === 'completed').length ?? 0; return <><ScreenHeader eyebrow="Today" title="Ready when you are." /><section className="focus-session"><div><span className="eyebrow">Today’s practice · {dailyLesson.durationMinutes} min</span><h2>{dailyLesson.title}</h2><p>{dailyLesson.outcome}</p><div className="focus-meta"><span>{dailyLesson.durationMinutes} min</span><span>{statusLabel(nextStatus(progress, dailyLesson.id))}</span></div></div><button className="primary-button focus-action" type="button" onClick={onOpenDaily}><Icon name="play" size={16} /> Start session</button></section><section className="quiet-list"><span className="list-heading">Keep going</span><CompactRow icon="paths" label={`${activePath?.title ?? 'Practice path'} · ${done}/${activePath?.lessonIds.length ?? 0}`} title={activeLesson.title} detail="Continue where you left off." action="Open" onClick={() => onOpenLesson(activeLesson)} /><CompactRow icon="after" label={`Daily lick · ${dailyLick.durationMinutes} min`} title={dailyLick.title} detail={dailyLick.detail} action="Practice" onClick={() => onOpenExtra(dailyLick)} /><CompactRow icon="tools" label={`Daily exercise · ${dailyExercise.durationMinutes} min`} title={dailyExercise.title} detail={dailyExercise.detail} action="Practice" onClick={() => onOpenExtra(dailyExercise)} /><a className="compact-row row-link" href="#/after-hours/autumn-leaves"><span className="row-icon"><Icon name="after" /></span><span className="row-content"><span className="row-label">After Hours · Standards Library</span><strong>Autumn Leaves</strong><small>Apply today’s idea inside the tune study.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a></section></>; }
-function LearnScreen() { return <><ScreenHeader eyebrow="Learn" title="In rebuild." copy="The lesson library is out of the way while it is rebuilt around the finished tools and standards." /><section className="quiet-list"><span className="list-heading">What is available now</span><article className="coming-soon-tool"><span className="row-icon"><Icon name="learn" /></span><div><span className="row-label">Use the finished spaces</span><strong>After Hours and Fretboard</strong><small>Standards and the neck are still here. Structured lessons return after those pieces are finished.</small></div><span className="coming-soon-pill">Rebuild</span></article></section></>; }
-function FretboardScreen() { const [selectedKey, setSelectedKey] = useState<KeyName>('C'); const selectedChord = useMemo(() => buildChord(selectedKey, 'major7'), [selectedKey]); return <><ScreenHeader eyebrow="Fretboard" title="Explore the neck." copy="Choose a study key, then use the shared full-neck map to inspect shapes, chord tones, and overlaps." /><section className="interval-panel"><div className="interval-panel-head"><div><span className="eyebrow">Study key</span><h3>{selectedKey} major</h3></div><KeySelector selectedKey={selectedKey} onKeyChange={setSelectedKey} /></div></section><AfterHoursFretboardCustomizer key={selectedKey} keyLabel={`${selectedKey} major`} majorRoot={selectedKey} minorRoot={selectedKey} chords={[{ chord: selectedChord, scaleMode: 'major' }]} description={<>Default layers are Pentatonic and Arpeggio. Turn on CAGED or Scale only when you want that context.</>} cagedLabel={`${selectedKey} major forms`} pentatonicLabel={`${selectedKey} minor boxes`} /></>; }
-function PathsScreen({ progress, onOpenPath }: { progress: PracticeProgress; onOpenPath: (path: LearningPath) => void }) { const active = pathById('autumn-leaves-prep') ?? paths[0]; const completed = active.lessonIds.filter(id => nextStatus(progress, id) === 'completed').length; return <><ScreenHeader eyebrow="Paths" title="One direction at a time." copy="The first real path builds straight toward improvising over Autumn Leaves." /><section className="path-focus"><span className="eyebrow">Your path</span><h2>{active.title}</h2><p>{active.description}</p><div className="progress-line"><span style={{ width: `${Math.round((completed / active.lessonIds.length) * 100)}%` }} /></div><small>{completed}/{active.lessonIds.length} lessons completed</small><button className="primary-button" type="button" onClick={() => onOpenPath(active)}>Continue path</button></section><section className="quiet-list"><span className="list-heading">Explore paths</span>{paths.filter(path => path.id !== active.id).map(path => <CompactRow key={path.id} icon="paths" label={path.eyebrow} title={path.title} detail={`${path.estimatedMinutes} min · ${path.access === 'premium' ? 'Premium' : 'Free'}`} action={path.access === 'premium' ? 'Premium' : 'Open'} onClick={() => onOpenPath(path)} />)}</section></>; }
-function AfterHoursScreen({ onOpenPremium }: { onOpenPremium: (title: string) => void }) { return <><ScreenHeader eyebrow="After Hours · Standards Library" title="Standards, without the noise." copy="The lesson path brings you here when it is time to apply the concept to a real tune." /><section className="standard-shelf">{standards.map(standard => <article className="standard-row" key={standard.id}><div><span className="eyebrow">{standard.focus}</span><h2>{standard.title}</h2><p>{standard.subtitle}</p><small>{standard.status === 'available' ? 'Available now' : 'In development'}</small></div>{standard.status === 'available' ? <a className="secondary-button" href={standardHref(standard)}>Open <Icon name="arrow" size={16} /></a> : <button className="secondary-button" type="button" onClick={() => onOpenPremium(standard.title)}>Premium</button>}</article>)}</section></>; }
-function ToolsScreen({ metronome }: { metronome: ReturnType<typeof useMetronome> }) { return <><ScreenHeader eyebrow="Tools" title="Keep time. Tune up." /><section className="metronome-panel"><span className="eyebrow">Metronome</span><div className="tempo-number">{metronome.tempo}</div><span className="tempo-caption">beats per minute · 4/4</span><div className="beat-row">{[0, 1, 2, 3].map(index => <span className={metronome.playing && metronome.beat === index ? 'active' : ''} key={index} />)}</div><input aria-label="Tempo" type="range" min="35" max="240" value={metronome.tempo} onChange={event => metronome.setTempo(Number(event.target.value))} /><div className="metronome-controls"><button className="secondary-button" type="button" onClick={() => metronome.setTempo(metronome.tempo - 1)} aria-label="Decrease tempo">−</button><button className="primary-button" type="button" onClick={metronome.toggle}>{metronome.playing ? 'Stop' : 'Start'} · {metronome.tempo} BPM</button><button className="secondary-button" type="button" onClick={() => metronome.setTempo(metronome.tempo + 1)} aria-label="Increase tempo">+</button><button className="secondary-button" type="button" onClick={metronome.tapTempo}>Tap</button></div></section><section className="quiet-list"><span className="list-heading">Planned tools</span><article className="coming-soon-tool"><span className="row-icon"><Icon name="tools" /></span><div><span className="row-label">Coming soon</span><strong>Chromatic tuner</strong><small>Pitch detection is being built. It is not presented as a working tool yet.</small></div><span className="coming-soon-pill">Planned</span></article></section></>; }
-function ProfileScreen({ progress, activeLesson, onOpenLesson }: { progress: PracticeProgress; activeLesson: Lesson; onOpenLesson: (lesson: Lesson) => void }) { const complete = Object.values(progress.lessonStates).filter(status => status === 'completed').length; return <><ScreenHeader eyebrow="Profile" title="Your practice, kept simple." /><ProgressDashboard progress={progress} activeLesson={activeLesson} onOpenLesson={onOpenLesson} /><section className="progress-summary"><div><strong>{currentStreak(progress)}</strong><span>day streak</span></div><div><strong>{progress.history.length}</strong><span>sessions</span></div><div><strong>{complete}</strong><span>completed</span></div></section></>; }
-function LessonPage({ progress, metronome, selectedKey, onKeyChange, onStart, onComplete, onOpenPremium }: { progress: PracticeProgress; metronome: ReturnType<typeof useMetronome>; selectedKey: KeyName; onKeyChange: (key: KeyName) => void; onStart: (lesson: Lesson) => void; onComplete: (lesson: Lesson, daily?: boolean) => void; onOpenPremium: (title: string) => void }) { const { lessonId } = useParams(); const navigate = useNavigate(); const lesson = lessonById(lessonId ?? ''); useEffect(() => { if (lesson?.defaultKeyStrategy === 'random') onKeyChange(randomKey(`${lesson.id}-${new Date().toDateString()}`)); }, [lesson?.id]); if (!lesson) return <><ScreenHeader eyebrow="Lesson" title="Not found." copy="This lesson is not available." /><button className="secondary-button" onClick={() => navigate('/learn')}>Back to Learn</button></>; if (lesson.access === 'premium') return <><ScreenHeader eyebrow="Premium" title={lesson.title} copy="This lesson will unlock with Premium." /><button className="primary-button" onClick={() => onOpenPremium(lesson.title)}>Preview Premium</button></>; const status = nextStatus(progress, lesson.id); const firstStep = lesson.routine[0]; const start = () => { onStart(lesson); if (!metronome.playing) metronome.toggle(); }; return <article className="lesson-page"><nav className="lesson-breadcrumb"><button type="button" onClick={() => navigate('/learn')}>← Learn</button><span>{lesson.category}</span></nav><section className="play-now"><div><span className="eyebrow">Play now · {firstStep?.minutes ?? 2} min</span><h2>{firstStep?.instruction ?? lesson.outcome}</h2><p>Start with the sound. The explanation and fretboard are here when you need them.</p></div><button className="primary-button" type="button" onClick={start}><Icon name="play" size={16} /> Start at {lesson.metronome.bpm} BPM</button></section><section className="lesson-hero"><div><span className="eyebrow">{lesson.durationMinutes} min · {statusLabel(status)}</span><h1>{lesson.title}</h1><p>{lesson.outcome}</p></div><div className="lesson-actions"><KeySelector selectedKey={selectedKey} onKeyChange={onKeyChange} /><button className="secondary-button" type="button" onClick={start}>{status === 'not-started' ? 'Begin practice' : 'Continue'}</button><button className="secondary-button" type="button" onClick={() => onComplete(lesson)}>Mark complete</button></div></section><IntervalPanel lesson={lesson} selectedKey={selectedKey} onKeyChange={onKeyChange} />{MOVEMENT_LESSONS.has(lesson.id) && <ChangeStepper lessonId={lesson.id} selectedKey={selectedKey} />}<Fretboard lesson={lesson} selectedKey={selectedKey} /><section className="practice-plan"><div><span className="eyebrow">Practice plan</span><h2>Work the sound, not the shape.</h2></div><ol className="routine-list">{lesson.routine.map(step => <li key={step.instruction}><span>{step.minutes} min</span>{step.instruction}</li>)}</ol><div className="sheet-actions"><button className="secondary-button" type="button" onClick={() => { metronome.setTempo(lesson.metronome.bpm); if (!metronome.playing) metronome.toggle(); }}>{lesson.metronome.bpm} BPM</button>{lesson.concept?.afterHoursHref && <a className="after-hours-bridge" href="#/after-hours/autumn-leaves">{lesson.concept.afterHoursCta} <Icon name="arrow" size={16} /></a>}</div></section></article>; }
-function CompactRow({ icon, label, title, detail, action, onClick }: { icon: IconName; label: string; title: string; detail: string; action: string; onClick: () => void }) { return <button className="compact-row" type="button" onClick={onClick}><span className="row-icon"><Icon name={icon} /></span><span className="row-content"><span className="row-label">{label}</span><strong>{title}</strong><small>{detail}</small></span><span className="row-action">{action} <Icon name="arrow" size={16} /></span></button>; }
-function LessonCard({ lesson, status, onOpen }: { lesson: Lesson; status: ReturnType<typeof nextStatus>; onOpen: () => void }) { return <article className="lesson-card"><div><span className="eyebrow">{lesson.category}</span><h3>{lesson.title}</h3><p>{lesson.outcome}</p></div><div className="lesson-card-footer"><div><small>{lesson.durationMinutes} min · {statusLabel(status)}</small><span className={`access-pill ${lesson.access}`}>{accessLabel(lesson.access)}</span></div><button className="secondary-button" type="button" onClick={onOpen}>{status === 'completed' ? 'Review' : 'Open'} <Icon name="arrow" size={15} /></button></div></article>; }
-function KeySelector({ selectedKey, onKeyChange }: { selectedKey: KeyName; onKeyChange: (key: KeyName) => void }) { return <label className="key-selector"><span>Key</span><select value={selectedKey} onChange={event => onKeyChange(event.target.value as KeyName)}>{KEYS.map(key => <option key={key} value={key}>{key}</option>)}</select></label>; }
-function ChordSymbol({ root, quality }: { root: string; quality: HarmonyExample['quality'] }) { const suffix = quality === 'maj' ? '' : quality === 'm' ? 'm' : quality === 'm7b5' ? 'm7♭5' : quality; return <span className="chord-symbol"><span>{root}</span>{suffix && <sup>{suffix}</sup>}</span>; }
-function FunctionSymbol({ value }: { value: string }) { return <span className="function-symbol">{value.split(' ').map((token, index) => { const parts = token.match(/^([ivIV]+)(.*)$/); return <span key={`${token}-${index}`}>{index > 0 && ' '}<em>{parts?.[1] ?? token}</em>{parts?.[2] && <sup>{parts[2] === 'm7b5' ? 'm7♭5' : parts[2]}</sup>}</span>; })}</span>; }
-function IntervalPanel({ lesson, selectedKey, onKeyChange }: { lesson: Lesson; selectedKey: KeyName; onKeyChange: (key: KeyName) => void }) { if (!lesson.concept) return null; return <section className="interval-panel"><div className="interval-panel-head"><div><span className="eyebrow">Interval engine · {labelMode(lesson.keyMode)}</span><h3>{selectedKey} {labelMode(lesson.keyMode)}</h3></div><KeySelector selectedKey={selectedKey} onKeyChange={onKeyChange} /></div><p>{lesson.concept.summary}</p><div className="interval-grid">{renderIntervals(selectedKey, lesson.concept.intervals).map(item => <span key={`${item.interval}-${item.note}`}><strong>{item.interval}</strong><small>{item.note}</small></span>)}</div><div className="mode-notes">{modeNotes(selectedKey, lesson.keyMode).map(item => <span key={`${item.interval}-${item.note}`}>{item.interval}: {item.note}</span>)}</div>{lesson.concept.examples.length > 0 && <div className="chord-render-list">{lesson.concept.examples.map(example => <article key={`${example.function}-${example.label}`}><div><span className="eyebrow"><FunctionSymbol value={example.function} /></span><ChordSymbol root={transpose(selectedKey, example.rootDegree)} quality={example.quality} /><small>{example.label}</small></div><p>{chordTones(selectedKey, example).map(tone => <span className="tone-pair" key={`${tone.interval}-${tone.note}`}><b>{tone.interval}</b><i>{tone.note}</i></span>)}</p></article>)}</div>}</section>; }
-function Fretboard({ lesson, selectedKey }: { lesson: Lesson; selectedKey: KeyName }) { const intervals = lesson.concept?.intervals ?? ['1' as MusicInterval]; const targets = renderIntervals(selectedKey, intervals); const dotFor = (open: string, fret: number) => { const note = NOTES[(NOTE_INDEX[open] + fret) % 12]; return targets.find(target => target.note === note); }; return <section className="fretboard-card"><div><span className="eyebrow">Fretboard visual</span><h2>Intervals on the neck</h2><p>Dots show the lesson intervals in {selectedKey}. Change the key and the neck redraws.</p></div><div className="fretboard-scroll" tabIndex={0} role="region" aria-label="Horizontally scrollable guitar fretboard"><div className="fretboard"><div className="fret-row fret-numbers"><span></span>{Array.from({ length: 13 }, (_, fret) => <span key={fret}>{fret}</span>)}</div>{TUNING.map(string => <div className="fret-row" key={string.label + string.note}><b>{string.label}</b>{Array.from({ length: 13 }, (_, fret) => { const dot = dotFor(string.note, fret); return <span className={dot ? 'has-dot' : ''} key={fret}>{dot && <i><strong>{dot.interval}</strong><small>{dot.note}</small></i>}</span>; })}</div>)}</div></div></section>; }
-function PracticeOverlay({ overlay, progress, onClose, onOpenLesson }: { overlay: Exclude<Overlay, null>; progress: PracticeProgress; onClose: () => void; onOpenLesson: (lesson: Lesson) => void }) { const sheet = () => overlay.kind === 'premium' ? <><SheetHeader eyebrow="Morning Changes Premium" title={overlay.title ?? 'Go deeper when you are ready.'} onClose={onClose} /><p>Premium unlocks complete specialization paths, longer guided sessions, and the growing After Hours catalog.</p></> : <PathSheet path={overlay.path} progress={progress} onClose={onClose} onOpenLesson={onOpenLesson} />; return <div className="sheet-backdrop" onMouseDown={event => { if (event.currentTarget === event.target) onClose(); }}><section className="sheet" role="dialog" aria-modal="true">{sheet()}</section></div>; }
-function PathSheet({ path, progress, onClose, onOpenLesson }: { path: LearningPath; progress: PracticeProgress; onClose: () => void; onOpenLesson: (lesson: Lesson) => void }) { const completed = path.lessonIds.filter(id => nextStatus(progress, id) === 'completed').length; return <><SheetHeader eyebrow={path.eyebrow} title={path.title} onClose={onClose} /><p>{path.description}</p><div className="progress-line"><span style={{ width: `${Math.round((completed / path.lessonIds.length) * 100)}%` }} /></div><small className="path-sheet-progress">{completed}/{path.lessonIds.length} completed · {path.estimatedMinutes} min</small><div className="sheet-course-list">{path.lessonIds.map((id, index) => { const lesson = lessonById(id); return lesson ? <button key={id} type="button" onClick={() => onOpenLesson(lesson)}><span>{index + 1}</span><div><strong>{lesson.title}</strong><small>{lesson.access === 'premium' ? 'Premium' : statusLabel(nextStatus(progress, id))}</small></div><Icon name="arrow" size={16} /></button> : null; })}</div></>; }
-function SheetHeader({ eyebrow, title, onClose }: { eyebrow: string; title: string; onClose: () => void }) { return <div className="sheet-header"><div><span className="eyebrow">{eyebrow}</span><h2>{title}</h2></div><button className="close-button" type="button" onClick={onClose} aria-label="Close"><Icon name="close" /></button></div>; }
-function CompletionToast({ notice, onClose }: { notice: Exclude<CompletionNotice, null>; onClose: () => void }) { return <aside className="completion-toast" role="status"><button type="button" onClick={onClose} aria-label="Dismiss completion notice">×</button><span className="eyebrow">Practice saved</span><strong>Nice. {notice.minutes} minutes logged.</strong><small>{notice.progressLabel}{notice.nextTitle ? ` · Next: ${notice.nextTitle}` : ''}</small></aside>; }
-export default function App() { return <HashRouter><AppLayout /></HashRouter>; }
+
+function ScreenHeader({ eyebrow, title, copy }: { eyebrow: string; title: string; copy?: string }) {
+  return <section className="screen-header"><span className="eyebrow">{eyebrow}</span><h1>{title}</h1>{copy && <p>{copy}</p>}</section>;
+}
+
+function HomeScreen() {
+  return <>
+    <ScreenHeader eyebrow="Morning Changes" title="Keep the useful parts close." copy="After Hours, the fretboard workspace, and a metronome are the active core while the lesson library is rebuilt properly." />
+    <section className="quiet-list core-space-list">
+      <span className="list-heading">Core spaces</span>
+      <a className="compact-row row-link" href="#/after-hours"><span className="row-icon"><Icon name="after" /></span><span className="row-content"><span className="row-label">Standards library</span><strong>After Hours</strong><small>Apply the tools inside real music, starting with Autumn Leaves.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
+      <a className="compact-row row-link" href="#/fretboard"><span className="row-icon"><Icon name="paths" /></span><span className="row-content"><span className="row-label">Shared music engine</span><strong>Fretboard</strong><small>Shapes, chord tones, triads, voicings, and focused neck windows.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
+      <a className="compact-row row-link" href="#/tools"><span className="row-icon"><Icon name="tools" /></span><span className="row-content"><span className="row-label">Practice utility</span><strong>Tools</strong><small>Set a tempo and keep time without leaving the workspace.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
+    </section>
+  </>;
+}
+
+function FretboardScreen() {
+  const [selectedKey, setSelectedKey] = useState<KeyName>('C');
+  const selectedChord = useMemo(() => buildChord(selectedKey, 'major7'), [selectedKey]);
+  return <>
+    <ScreenHeader eyebrow="Fretboard" title="Explore the neck." copy="Choose a study key, then use the shared full-neck map to inspect shapes, chord tones, voicings, and overlaps." />
+    <section className="interval-panel"><div className="interval-panel-head"><div><span className="eyebrow">Study key</span><h3>{selectedKey} major</h3></div><KeySelector selectedKey={selectedKey} onKeyChange={setSelectedKey} /></div></section>
+    <AfterHoursFretboardCustomizer key={selectedKey} keyLabel={`${selectedKey} major`} majorRoot={selectedKey} minorRoot={selectedKey} chords={[{ chord: selectedChord, scaleMode: 'major' }]} description={<>Default layers are Pentatonic and Arpeggio. Turn on Triads, CAGED, Scale, Shell, or Drop 2 when you want that context.</>} cagedLabel={`${selectedKey} major forms`} pentatonicLabel={`${selectedKey} minor boxes`} />
+  </>;
+}
+
+function AfterHoursScreen() {
+  return <>
+    <ScreenHeader eyebrow="After Hours · Standards Library" title="Standards, without the noise." copy="Use real tunes as the place where the fretboard and theory tools become musical." />
+    <section className="standard-shelf">
+      {standards.map(standard => <article className="standard-row" key={standard.title}><div><span className="eyebrow">{standard.focus}</span><h2>{standard.title}</h2><p>{standard.subtitle}</p><small>Available now</small></div><a className="secondary-button" href={standard.href}>Open <Icon name="arrow" size={16} /></a></article>)}
+    </section>
+  </>;
+}
+
+function ToolsScreen({ metronome }: { metronome: ReturnType<typeof useMetronome> }) {
+  return <>
+    <ScreenHeader eyebrow="Tools" title="Keep time. Tune up." />
+    <section className="metronome-panel"><span className="eyebrow">Metronome</span><div className="tempo-number">{metronome.tempo}</div><span className="tempo-caption">beats per minute · 4/4</span><div className="beat-row">{[0, 1, 2, 3].map(index => <span className={metronome.playing && metronome.beat === index ? 'active' : ''} key={index} />)}</div><input aria-label="Tempo" type="range" min="35" max="240" value={metronome.tempo} onChange={event => metronome.setTempo(Number(event.target.value))} /><div className="metronome-controls"><button className="secondary-button" type="button" onClick={() => metronome.setTempo(metronome.tempo - 1)} aria-label="Decrease tempo">−</button><button className="primary-button" type="button" onClick={metronome.toggle}>{metronome.playing ? 'Stop' : 'Start'} · {metronome.tempo} BPM</button><button className="secondary-button" type="button" onClick={() => metronome.setTempo(metronome.tempo + 1)} aria-label="Increase tempo">+</button><button className="secondary-button" type="button" onClick={metronome.tapTempo}>Tap</button></div></section>
+  </>;
+}
+
+function KeySelector({ selectedKey, onKeyChange }: { selectedKey: KeyName; onKeyChange: (key: KeyName) => void }) {
+  return <label className="key-selector"><span>Key</span><select value={selectedKey} onChange={event => onKeyChange(event.target.value as KeyName)}>{KEYS.map(key => <option key={key} value={key}>{key}</option>)}</select></label>;
+}
+
+export default function App() {
+  return <HashRouter><AppLayout /></HashRouter>;
+}
