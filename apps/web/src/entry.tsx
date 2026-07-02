@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client';
 import './content-fixes';
 import App from './App';
 import { AppErrorBoundary } from './AppErrorBoundary';
+import { BuildFooter } from './BuildFooter';
 import { MusicTypography } from './MusicTypography';
 import { ThemeDock } from './ThemeDock';
 import { ThemeProvider } from './ThemeProvider';
@@ -30,6 +31,7 @@ if (mountNode) {
       <ThemeProvider>
         <MusicTypography>
           <App />
+          <BuildFooter />
           <ThemeDock />
         </MusicTypography>
       </ThemeProvider>
