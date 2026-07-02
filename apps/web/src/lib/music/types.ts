@@ -53,6 +53,15 @@ export type Chord = {
   tones: Array<{ interval: IntervalName; note: SpelledNote }>;
 };
 
+export type TriadQuality = 'major' | 'minor' | 'diminished' | 'augmented';
+export type TriadInversion = 0 | 1 | 2;
+export type TriadTone = { interval: '1' | 'b3' | '3' | 'b5' | '5' | '#5'; note: SpelledNote };
+export type Triad = {
+  root: SpelledNote;
+  quality: TriadQuality;
+  tones: readonly [TriadTone, TriadTone, TriadTone];
+};
+
 export type RomanDegree = 'I' | 'II' | 'III' | 'IV' | 'V' | 'VI' | 'VII' | 'i' | 'ii' | 'iii' | 'iv' | 'v' | 'vi' | 'vii';
 
 export type FunctionalChord = {
@@ -132,6 +141,12 @@ export type GeneratedVoicing = {
   chord: Chord;
   recipe: VoicingRecipe;
   /** Low-to-high theoretical voice order after inversion/drop treatment. */
+  voices: readonly VoicingVoice[];
+};
+
+export type GeneratedTriadInversion = {
+  triad: Triad;
+  inversion: TriadInversion;
   voices: readonly VoicingVoice[];
 };
 
