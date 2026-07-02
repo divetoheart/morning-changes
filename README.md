@@ -7,13 +7,13 @@ Morning Changes is a deliberately small guitar workspace centered on real standa
 The Vite + React app in `apps/web` has four core spaces:
 
 - Home: gateway to the active workspace.
-- Fretboard: free-form full-neck inspection and voicing surface.
+- Fretboard: free-form full-neck inspection, position, and harmonic-motion surface.
 - After Hours: authored standards library.
 - Tools: metronome.
 
 After Hours currently contains two standards:
 
-- Autumn Leaves: whole-form study in frets 7–11, with every written chord available to the focused Fretboard selector.
+- Autumn Leaves: whole-form study in frets 7–11, with every written chord available to the focused Fretboard selector and next-chord guide-tone targets derived from the actual form.
 - 12-Bar Blues: three study variants—Texas Flood, Crossroads, and The Thrill Is Gone.
 
 The old lesson library, learning paths, daily lesson rotation, licks, exercises, practice extras, and lesson-progress profile remain retired. Retired routes redirect Home until a new Learn rebuild is explicitly scoped.
@@ -29,20 +29,24 @@ Every After Hours route uses the same route-level wordmark state:
 
 The mark is a solid black circle with a white ring, keeps the normal mark footprint, and remains dark in every theme. It is not a semi-circle glyph or a separate app shell.
 
-## Fretboard builder and keys
+## Fretboard musicianship foundation
 
 The main Fretboard is the free-form workspace. It supports:
 
 - All 15 conventional key signatures: C, seven sharp signatures through C♯, and seven flat signatures through C♭.
 - Major or minor study context.
-- Typed engine-backed symbols including `9`, `11`, `13`, `maj9–13`, `m9–13`, `add9–13`, `sus`, `sus2`, and `sus4` alongside the foundational chord qualities.
+- Typed engine-backed symbols including `6`, `m6`, `6/9`, `mMaj7`, `7sus4`, `7♭9`, `7♯9`, `7♯11`, `7♭13`, `9`, `11`, `13`, `maj9–13`, `m9–13`, `add9–13`, `sus`, `sus2`, and `sus4` alongside foundational qualities.
 - A tone-builder path with chord tones, extensions (♭9, 9, ♯9, 11, ♯11, ♭13, 13), and Sus2/Sus4 presets.
-- A deliberately short primary row: **Pentatonic**, **Arpeggio**, and **Chord**. Chord shows one playable voicing; CAGED, Triads, Scale, inversions, and voicing choice live under **More options**.
+- A deliberately short primary row: **Pentatonic**, **Arpeggio**, and **Chord**. Chord shows one playable voicing; CAGED, Triads, Scale, targets, inversion, label mode, position, and voicing choice live under **More options**.
+- Explicit scale context: diatonic modes plus Lydian dominant, Phrygian dominant, altered, and minor blues.
+- Interval or note-name marker labels, along with full-neck, low, middle, and upper-position focus.
+- Harmonic-motion studies for major ii–V–I, minor iiø–V–i, and a dominant blues skeleton.
+- A shared guide-tone engine that produces next-chord motions and an optional **Targets** overlay directly on the neck.
 - Plain-English fret details using the engine’s spelled note, location, shape identity, and nearest root marker.
 
 The visible Study Key belongs inside the **Shapes and Voicings** Fretboard surface. It is one compact boxed hierarchy—eyebrow, large key/mode label, and key/mode controls—not a standalone panel above the map or a separate badge.
 
-After Hours does **not** use the free-form builder. Its active-chord selection stays limited to the authored chords in the selected standard.
+After Hours does **not** use the free-form builder. Its active-chord selection stays limited to the authored chords in the selected standard, while authored standards may pass their ordered chord events to the shared renderer for target-tone guidance.
 
 ## Release verification
 
@@ -58,6 +62,7 @@ Use this footer as the source of truth for what is actually deployed in the brow
 
 - Keep music logic in `apps/web/src/lib/music`; UI consumes structured engine data.
 - Custom chords use `buildCustomChord`; do not create Fretboard-local note arrays.
+- Voice leading belongs in `lib/music/voice-leading.ts`; do not hard-code target-note lists in standards or courses.
 - `LayerMembership` includes note, interval, string/fret, role, layer, and optional shape identity so detail copy is engine-derived.
 - Compact standard studies reuse `AfterHoursFretboardCustomizer`; do not create parallel chord-chart components.
 - A dedicated two-octave scale-path generator is not yet implemented. The existing Scale layer is range-aware context, not a named two-octave route.
