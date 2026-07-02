@@ -22,7 +22,7 @@ addCase('B flat add nine preserves added ninth spelling', 'B♭ D F C', parseCho
 addCase('D minor eleven keeps third seventh ninth and eleventh', 'D F A C E G', parseChordSymbol('Dm11').tones.map(tone => noteToString(tone.note)).join(' '));
 addCase('Generic sus resolves to sus4', 'Dsus4', chordSymbol(parseChordSymbol('Dsus')));
 addCase('Sus four uses no third', 'D G A', dSus4.tones.map(tone => noteToString(tone.note)).join(' '));
-addCase('Major six slash nine parses as a practical five-tone chord', 'C D E G A', parseChordSymbol('C6/9').tones.map(tone => noteToString(tone.note)).join(' '));
+addCase('Major six slash nine parses as a practical five-tone chord', 'C E G A D', parseChordSymbol('C6/9').tones.map(tone => noteToString(tone.note)).join(' '));
 addCase('Minor major seven preserves its major seventh', 'C E♭ G B', parseChordSymbol('CmMaj7').tones.map(tone => noteToString(tone.note)).join(' '));
 addCase('Dominant flat nine spells its altered color correctly', 'C E G B♭ D♭', parseChordSymbol('C7b9').tones.map(tone => noteToString(tone.note)).join(' '));
 addCase('Dominant sharp eleven spells its raised fourth correctly', 'C E G B♭ F♯', parseChordSymbol('C7#11').tones.map(tone => noteToString(tone.note)).join(' '));
