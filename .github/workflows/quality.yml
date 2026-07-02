@@ -76,6 +76,7 @@ jobs:
           name: fretboard-runtime-capture
           path: |
             ${{ runner.temp }}/fretboard.html
+            ${{ runner.temp }}/autumn-leaves.html
             ${{ runner.temp }}/fretboard-preview.log
             ${{ runner.temp }}/git-tree.sha
           if-no-files-found: warn
