@@ -2,7 +2,7 @@
 set -euo pipefail
 
 git rev-parse HEAD^{tree} > "$RUNNER_TEMP/git-tree.sha"
-npm run build
+VITE_APP_COMMIT_SHA="${VITE_APP_COMMIT_SHA:-${GITHUB_SHA:-local}}" npm run build
 npm run preview -- --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/fretboard-preview.log" 2>&1 &
 server_pid=$!
 trap 'kill "$server_pid" 2>/dev/null || true' EXIT
@@ -38,6 +38,8 @@ if ! grep -Fq '>Triads<' "$RUNNER_TEMP/fretboard.html"; then fail 'Triad layer c
 if ! grep -Fq 'Triad inversion' "$RUNNER_TEMP/fretboard.html"; then fail 'Triad inversion control did not render.'; fi
 if ! grep -Fq 'Chord voicing' "$RUNNER_TEMP/fretboard.html"; then fail 'Chord voicing selector did not render.'; fi
 if ! grep -Fq 'Drop 2' "$RUNNER_TEMP/fretboard.html"; then fail 'Drop 2 selector option did not render.'; fi
+if ! grep -Fq 'Live build' "$RUNNER_TEMP/fretboard.html"; then fail 'Visible live build footer did not render.'; fi
+if ! grep -Fq 'Check this commit after an update.' "$RUNNER_TEMP/fretboard.html"; then fail 'Live build footer verification copy did not render.'; fi
 if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard route reached the application error boundary.'; fi
 
 # Music typography transforms intervals and Roman numerals into notation markup after render.
@@ -46,4 +48,5 @@ if ! grep -Fq 'at 8th position.' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'A
 if ! grep -Fq 'Focused fretboard from fret 7 to 11' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused fret range did not render.'; fi
 if ! grep -Fq 'Open full neck' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves full Fretboard expand link did not render.'; fi
 if ! grep -Fq 'Chord voicing' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves shared voicing selector did not render.'; fi
+if ! grep -Fq 'Live build' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves did not render the live build footer.'; fi
 if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves route reached the application error boundary.'; fi
