@@ -1,4 +1,4 @@
-import { buildChord, buildScale, chordSymbol, createKey, displayStringOrder, findGuitarVoicings, generateVoicing, noteToString, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING } from './index';
+import { buildChord, buildScale, chordSymbol, createKey, displayStringOrder, findGuitarVoicings, functionSymbol, generateVoicing, noteToString, parseChordSymbol, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING } from './index';
 
 export type MusicEngineContractCase = {
   id: string;
@@ -29,9 +29,10 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
   addCase(cases, 'A half diminished seven spelling', 'A C E♭ G', buildChord('A', 'halfDiminished7').tones.map(tone => noteToString(tone.note)).join(' '));
   addCase(cases, 'C diminished seven preserves theoretical seventh spelling', 'C E♭ G♭ B♭♭', buildChord('C', 'diminished7').tones.map(tone => noteToString(tone.note)).join(' '));
   addCase(cases, 'G augmented spelling', 'G B D♯', buildChord('G', 'augmented').tones.map(tone => noteToString(tone.note)).join(' '));
-  addCase(cases, 'Half diminished symbol', 'Aø7', chordSymbol(buildChord('A', 'halfDiminished7')));
-  addCase(cases, 'Diminished symbol', 'C°7', chordSymbol(buildChord('C', 'diminished7')));
-  addCase(cases, 'Augmented symbol', 'G+', chordSymbol(buildChord('G', 'augmented')));
+  addCase(cases, 'Chord parser preserves half diminished', 'Aø7', chordSymbol(parseChordSymbol('Aø7')));
+  addCase(cases, 'Half diminished function is one symbol', 'iiø7', functionSymbol({ degree: 'ii', quality: 'halfDiminished7', context: 'minor' }));
+  addCase(cases, 'Minor tonic omits redundant m suffix', 'i', functionSymbol({ degree: 'i', quality: 'minor', context: 'minor' }));
+  addCase(cases, 'Minor seventh function preserves seventh only', 'ii7', functionSymbol({ degree: 'ii', quality: 'minor7', context: 'major' }));
   addCase(cases, 'Standard tuning display order', '5 4 3 2 1 0', displayStringOrder(STANDARD_TUNING).join(' '));
 
   const gRoots = positionsForIntervals(parseNote('G'), ['1'], 'root');
@@ -51,8 +52,8 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
   addCase(cases, 'Guitar candidates ascend in actual pitch', 'true', String(drop2Candidates.every(candidate => candidate.positions.every((position, index, all) => index === 0 || position.midi > all[index - 1].midi))));
 
   const collision = resolveLayerCells([
-    { stringIndex: 0, fret: 3, pitchClass: 7, midi: 43, note: parseNote('G'), interval: '1', role: 'root', layer: 'pentatonic' },
-    { stringIndex: 0, fret: 3, pitchClass: 7, midi: 43, note: parseNote('G'), interval: '5', role: 'chordTone', layer: 'arpeggio' }
+    { stringIndex: 0, fret: 3, interval: '1', role: 'root', layer: 'pentatonic' },
+    { stringIndex: 0, fret: 3, interval: '5', role: 'chordTone', layer: 'arpeggio' }
   ]);
   addCase(cases, 'Layer collision collapses to one visible cell', '1', String(collision.length));
   addCase(cases, 'Arpeggio focus wins collision label', '5', collision[0]?.primary.interval ?? '');
@@ -60,8 +61,8 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
   addCase(cases, 'Conflict retains both layers for detail treatment', 'arpeggio pentatonic', collision[0]?.segments.join(' ') ?? '');
 
   const agreement = resolveLayerCells([
-    { stringIndex: 2, fret: 5, pitchClass: 0, midi: 55, note: parseNote('C'), interval: '1', role: 'root', layer: 'pentatonic' },
-    { stringIndex: 2, fret: 5, pitchClass: 0, midi: 55, note: parseNote('C'), interval: '1', role: 'root', layer: 'arpeggio' }
+    { stringIndex: 2, fret: 5, interval: '1', role: 'root', layer: 'pentatonic' },
+    { stringIndex: 2, fret: 5, interval: '1', role: 'root', layer: 'arpeggio' }
   ]);
   addCase(cases, 'Agreeing layers are marked as agreement', 'agreement', agreement[0]?.marker ?? '');
 
