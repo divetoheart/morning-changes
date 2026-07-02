@@ -56,3 +56,12 @@ jobs:
         run: npm run build
       - name: Fretboard route runtime smoke
         run: bash scripts/fretboard-smoke.sh
+      - name: Upload Fretboard runtime capture
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fretboard-runtime-capture
+          path: |
+            ${{ runner.temp }}/fretboard.html
+            ${{ runner.temp }}/fretboard-preview.log
+          if-no-files-found: warn
