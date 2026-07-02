@@ -3,7 +3,7 @@ import { HashRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react
 import { AfterHoursAutumnLeavesApp } from './AfterHoursAutumnLeavesApp';
 import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
 import { FretboardChordBuilder } from './FretboardChordBuilder';
-import { chordSymbol, createKey, noteToString, relativeMajorKey, STUDY_KEY_SIGNATURES, type Chord, type ScaleMode, type StudyKeyId, type StudyMode } from './lib/music';
+import { buildChord, createKey, noteToString, relativeMajorKey, STUDY_KEY_SIGNATURES, type Chord, type ScaleMode, type StudyKeyId, type StudyMode } from './lib/music';
 import { useMetronome } from './lib/useMetronome';
 
 type IconName = 'home' | 'paths' | 'after' | 'tools' | 'tempo' | 'arrow';
@@ -93,7 +93,7 @@ function HomeScreen() {
 function FretboardScreen() {
   const [selectedKey, setSelectedKey] = useState<StudyKeyId>('C');
   const [studyMode, setStudyMode] = useState<StudyMode>('major');
-  const [activeChord, setActiveChord] = useState<Chord>(() => ({ root: createKey('C', 'major').tonic, quality: 'major7', tones: [] }));
+  const [activeChord, setActiveChord] = useState<Chord>(() => buildChord('C', 'major7'));
   const scaleMode: ScaleMode = studyMode === 'major' ? 'major' : 'naturalMinor';
   const cagedContext = useMemo(() => studyMode === 'major' ? createKey(selectedKey, 'major') : relativeMajorKey(createKey(selectedKey, 'naturalMinor')), [selectedKey, studyMode]);
   const cagedRoot = noteToString(cagedContext.tonic);
