@@ -42,10 +42,7 @@ type FretboardMapProps = {
 };
 
 const FRET_NUMBERS = Array.from({ length: DEFAULT_FRET_RANGE.end - DEFAULT_FRET_RANGE.start + 1 }, (_, index) => DEFAULT_FRET_RANGE.start + index);
-const DISPLAY_STRINGS = displayStringOrder(STANDARD_TUNING).map(source => ({
-  source,
-  label: source === STANDARD_TUNING.openStrings.length - 1 ? 'e' : noteToString(STANDARD_TUNING.openStrings[source])
-}));
+const DISPLAY_STRINGS = displayStringOrder(STANDARD_TUNING).map(source => ({ source, label: source === STANDARD_TUNING.openStrings.length - 1 ? 'e' : noteToString(STANDARD_TUNING.openStrings[source]) }));
 const LAYERS: Array<{ id: Layer; label: string; detail: string }> = [
   { id: 'caged', label: 'CAGED', detail: 'five major chord forms' },
   { id: 'pentatonic', label: 'Pentatonic', detail: 'five connected boxes' },
@@ -68,17 +65,10 @@ function defaultScaleMode(quality: ChordQuality): ScaleMode {
   return 'lydian';
 }
 function cellKey(source: number, fret: number) { return `${source}:${fret}`; }
-function membershipMap(entries: Array<{ stringIndex: number; fret: number; interval: IntervalName; role: LayerMembership['role'] }>) {
-  return new Map(entries.map(entry => [cellKey(entry.stringIndex, entry.fret), entry]));
-}
+function membershipMap(entries: Array<{ stringIndex: number; fret: number; interval: IntervalName; role: LayerMembership['role'] }>) { return new Map(entries.map(entry => [cellKey(entry.stringIndex, entry.fret), entry])); }
 function membershipGroups(entries: readonly LayerMembership[]) {
   const groups = new Map<string, LayerMembership[]>();
-  for (const entry of entries) {
-    const key = cellKey(entry.stringIndex, entry.fret);
-    const existing = groups.get(key) ?? [];
-    existing.push(entry);
-    groups.set(key, existing);
-  }
+  for (const entry of entries) { const key = cellKey(entry.stringIndex, entry.fret); const existing = groups.get(key) ?? []; existing.push(entry); groups.set(key, existing); }
   return groups;
 }
 function visibleRoot(cell: LayerCell): boolean { return cell.primary.interval === '1'; }
@@ -93,46 +83,31 @@ function detailLayerLabel(membership: LayerMembership): string {
   if (membership.layer === 'pentatonic') return `Pentatonic ${membership.variant ?? 'box'}`;
   return membership.layer[0].toUpperCase() + membership.layer.slice(1);
 }
-function markerTitle(cell: LayerCell): string {
-  const memberships = cell.memberships.map(item => `${detailLayerLabel(item)}: ${item.interval}`).join(' · ');
-  return `${cell.marker === 'conflict' ? 'Focus label shown first. ' : ''}${memberships}`;
-}
+function markerTitle(cell: LayerCell): string { return `${cell.marker === 'conflict' ? 'Focus label shown first. ' : ''}${cell.memberships.map(item => `${detailLayerLabel(item)}: ${item.interval}`).join(' · ')}`; }
 
 /** Shared full-neck renderer. All active chord maps are typed Chord data. */
 export function FretboardMap({ keyLabel, majorRoot, minorRoot, chords, description, cagedLabel, pentatonicLabel, defaultLayers, mode = 'layers', eyebrow = 'Shapes and voicings', heading = 'One neck. Every map you need.' }: FretboardMapProps) {
   const [enabled, setEnabled] = useState<Record<Layer, boolean>>({ ...DEFAULT_LAYERS, ...defaultLayers });
-  const [activeChordKey, setActiveChordKey] = useState(() => chords[0] ? chordSymbol(chords[0].chord) : 'C');
-  const [selectedCellKey, setSelectedCellKey] = useState<string | null>(null);
   const chordSignature = chords.map(option => chordSymbol(option.chord)).join('|');
-  useEffect(() => { setActiveChordKey(chords[0] ? chordSymbol(chords[0].chord) : 'C'); setSelectedCellKey(null); }, [chordSignature, chords]);
+  const [activeChordKey, setActiveChordKey] = useState(() => chordSignature.split('|')[0] ?? 'C');
+  const [selectedCellKey, setSelectedCellKey] = useState<string | null>(null);
+  useEffect(() => { setActiveChordKey(chordSignature.split('|')[0] ?? 'C'); setSelectedCellKey(null); }, [chordSignature]);
 
   const activeOption = chords.find(option => chordSymbol(option.chord) === activeChordKey) ?? chords[0];
   const activeChord = activeOption?.chord;
   const majorRootNote = useMemo(() => parseNote(majorRoot), [majorRoot]);
   const minorRootNote = useMemo(() => parseNote(minorRoot), [minorRoot]);
-
-  const cagedGroups = useMemo(() => membershipGroups(generateCagedMajorCycle(majorRootNote).flatMap(shape => shape.positions
-    .filter(position => position.fret >= DEFAULT_FRET_RANGE.start && position.fret <= DEFAULT_FRET_RANGE.end)
-    .map(position => ({ ...position, layer: 'caged' as const, variant: `${shape.form}-form`, colorId: position.colorId })))), [majorRootNote]);
-  const pentatonicGroups = useMemo(() => membershipGroups(generateMinorPentatonicCycle(minorRootNote, STANDARD_TUNING, DEFAULT_FRET_RANGE).flatMap(shape => shape.positions
-    .map(position => ({ ...position, layer: 'pentatonic' as const, variant: `Box ${shape.box}`, colorId: position.colorId })))), [minorRootNote]);
+  const cagedGroups = useMemo(() => membershipGroups(generateCagedMajorCycle(majorRootNote).flatMap(shape => shape.positions.filter(position => position.fret >= DEFAULT_FRET_RANGE.start && position.fret <= DEFAULT_FRET_RANGE.end).map(position => ({ ...position, layer: 'caged' as const, variant: `${shape.form}-form`, colorId: position.colorId })))), [majorRootNote]);
+  const pentatonicGroups = useMemo(() => membershipGroups(generateMinorPentatonicCycle(minorRootNote, STANDARD_TUNING, DEFAULT_FRET_RANGE).flatMap(shape => shape.positions.map(position => ({ ...position, layer: 'pentatonic' as const, variant: `Box ${shape.box}`, colorId: position.colorId })))), [minorRootNote]);
   const arpeggioMap = useMemo(() => activeChord ? membershipMap(positionsForChord(activeChord)) : new Map(), [activeChord]);
   const scaleMap = useMemo(() => activeChord ? membershipMap(positionsForScale(createKey(activeChord.root, activeOption?.scaleMode ?? defaultScaleMode(activeChord.quality)))) : new Map(), [activeChord, activeOption?.scaleMode]);
   const rootMap = useMemo(() => activeChord ? membershipMap(positionsForIntervals(activeChord.root, ['1'], 'root')) : new Map(), [activeChord]);
-
   const cellsByPosition = useMemo(() => {
     const memberships: LayerMembership[] = [];
     for (const string of DISPLAY_STRINGS) for (const fret of FRET_NUMBERS) {
       const key = cellKey(string.source, fret);
-      if (mode === 'roots') {
-        const root = rootMap.get(key);
-        if (root) memberships.push({ ...root, layer: 'roots' });
-        continue;
-      }
-      const caged = cagedGroups.get(key) ?? [];
-      const pentatonic = pentatonicGroups.get(key) ?? [];
-      const arpeggio = arpeggioMap.get(key);
-      const scale = scaleMap.get(key);
+      if (mode === 'roots') { const root = rootMap.get(key); if (root) memberships.push({ ...root, layer: 'roots' }); continue; }
+      const caged = cagedGroups.get(key) ?? []; const pentatonic = pentatonicGroups.get(key) ?? []; const arpeggio = arpeggioMap.get(key); const scale = scaleMap.get(key);
       if (enabled.caged) memberships.push(...caged);
       if (enabled.pentatonic) memberships.push(...pentatonic);
       if (enabled.arpeggio && arpeggio) memberships.push({ ...arpeggio, layer: 'arpeggio' });
@@ -140,7 +115,6 @@ export function FretboardMap({ keyLabel, majorRoot, minorRoot, chords, descripti
     }
     return new Map(resolveLayerCells(memberships, { focusLayer: 'arpeggio' }).map(cell => [cellKey(cell.stringIndex, cell.fret), cell]));
   }, [arpeggioMap, cagedGroups, enabled, mode, pentatonicGroups, rootMap, scaleMap]);
-
   useEffect(() => { if (selectedCellKey && !cellsByPosition.has(selectedCellKey)) setSelectedCellKey(null); }, [cellsByPosition, selectedCellKey]);
   const selectedCell = selectedCellKey ? cellsByPosition.get(selectedCellKey) ?? null : null;
   const selectedString = selectedCell ? DISPLAY_STRINGS.find(string => string.source === selectedCell.stringIndex)?.label : '';
