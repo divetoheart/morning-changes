@@ -1,6 +1,8 @@
 import type { ArpType, FormSection, ScaleType, StudyKey } from './after-hours-types';
 import { buildChord, type Chord, type ChordQuality, type FunctionalChord } from './lib/music';
 
+type BuiltInChordQuality = Exclude<ChordQuality, 'custom'>;
+
 const MAJOR_II = { degree: 'ii', quality: 'minor7', context: 'major' } satisfies FunctionalChord;
 const MAJOR_V = { degree: 'V', quality: 'dominant7', context: 'major' } satisfies FunctionalChord;
 const MAJOR_I = { degree: 'I', quality: 'major7', context: 'major' } satisfies FunctionalChord;
@@ -10,7 +12,7 @@ const MINOR_V = { degree: 'V', quality: 'dominant7', context: 'minor' } satisfie
 const MINOR_I = { degree: 'i', quality: 'minor', context: 'minor' } satisfies FunctionalChord;
 const MINOR_I7 = { degree: 'i', quality: 'minor7', context: 'minor' } satisfies FunctionalChord;
 
-const chord = (root: string, quality: ChordQuality) => buildChord(root, quality);
+const chord = (root: string, quality: BuiltInChordQuality) => buildChord(root, quality);
 const cell = (chordValue: Chord, functional?: FunctionalChord) => ({ chord: chordValue, function: functional });
 const bars = (chords: Chord[], functions: readonly FunctionalChord[]) => chords.map((chordValue, index) => [cell(chordValue, functions[index])]);
 
