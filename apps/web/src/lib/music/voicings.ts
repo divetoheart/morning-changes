@@ -105,9 +105,9 @@ export function findGuitarVoicings(voicing: GeneratedVoicing, options: GuitarVoi
   const maxResults = options.maxResults ?? 40;
   assertStringSet(options.stringSet, voicing.voices.length, tuning);
 
-  const choices = voicing.voices.map((voice, index) => positionsForPitchClass(voice.note.pitchClass, tuning, fretRange)
+  const choices: IntervalPosition[][] = voicing.voices.map((voice, index) => positionsForPitchClass(voice.note.pitchClass, tuning, fretRange)
     .filter(position => position.stringIndex === options.stringSet[index])
-    .map(position => ({ ...position, interval: voice.interval, note: voice.note, role: voice.interval === '1' ? 'root' : 'chordTone' as const })));
+    .map(position => ({ ...position, interval: voice.interval, note: voice.note, role: voice.interval === '1' ? ('root' as const) : ('chordTone' as const) })));
 
   const results: GuitarVoicingCandidate[] = [];
   const visit = (voiceIndex: number, selected: IntervalPosition[]) => {
