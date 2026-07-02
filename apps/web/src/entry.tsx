@@ -25,11 +25,13 @@ const mountNode = document.querySelector('#root');
 
 if (mountNode) {
   createRoot(mountNode).render(
-    <ThemeProvider>
-      <MusicTypography>
-        <App />
-        <ThemeDock />
-      </MusicTypography>
-    </ThemeProvider>
+    <AppErrorBoundary>
+      <ThemeProvider>
+        <MusicTypography>
+          <App />
+          <ThemeDock />
+        </MusicTypography>
+      </ThemeProvider>
+    </AppErrorBoundary>
   );
 }
