@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react';
+import { MusicTokenList } from './MusicNotation';
+import type { MusicToken } from './lib/music';
 
-// MusicTypography transforms this text after render so prose, chord symbols,
-// functions, and interval degrees all share one visual language.
-export function MusicText({ children }: { children: string }): ReactNode {
-  return <>{children}</>;
+/**
+ * String content remains transitional. New content can pass an explicit token
+ * list and bypass the legacy typography scanner entirely.
+ */
+export function MusicText({ children }: { children: string | readonly MusicToken[] }): ReactNode {
+  return Array.isArray(children) ? <MusicTokenList tokens={children} /> : <>{children}</>;
 }
