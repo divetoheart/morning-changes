@@ -41,6 +41,9 @@ fail() {
 if ! grep -Fq ':root[data-theme] .after-hours-topbar .wordmark-mark.after-hours-wordmark-mark' src/after-hours-wordmark.css; then fail 'After Hours mark is not protected from theme overrides.'; fi
 if ! grep -Fq 'background:#050505' src/after-hours-wordmark.css; then fail 'After Hours mark no longer has a fixed dark background.'; fi
 if ! grep -Fq 'border:2px solid #fff' src/after-hours-wordmark.css; then fail 'After Hours mark no longer has a fixed white ring.'; fi
+if ! grep -Fq 'const EXTENSION_INTERVALS' src/FretboardChordBuilder.tsx; then fail 'Chord extension engine controls are missing.'; fi
+if ! grep -Fq "'b9', '9', '#9', '11', '#11', 'b13', '13'" src/FretboardChordBuilder.tsx; then fail 'Complete extension interval set is missing.'; fi
+if ! grep -Fq 'Sus2' src/FretboardChordBuilder.tsx || ! grep -Fq 'Sus4' src/FretboardChordBuilder.tsx; then fail 'Suspended chord presets are missing.'; fi
 
 if ! grep -Fq 'Core spaces' "$RUNNER_TEMP/home.html"; then fail 'Core home screen did not render.'; fi
 if ! grep -Fq '12-Bar Blues' "$RUNNER_TEMP/home.html"; then fail 'Restored Blues language did not render on Home.'; fi
@@ -63,9 +66,6 @@ if ! grep -Fq '>Minor<' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard mino
 if ! grep -Fq 'Build what you want to inspect.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard chord builder did not render.'; fi
 if ! grep -Fq 'Type a symbol' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard chord symbol builder did not render.'; fi
 if ! grep -Fq 'Build from tones' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard tone builder did not render.'; fi
-if ! grep -Fq 'Extensions' "$RUNNER_TEMP/fretboard.html"; then fail 'Chord extensions section did not render.'; fi
-if ! grep -Fq 'Sus2' "$RUNNER_TEMP/fretboard.html"; then fail 'Sus2 preset did not render.'; fi
-if ! grep -Fq 'Sus4' "$RUNNER_TEMP/fretboard.html"; then fail 'Sus4 preset did not render.'; fi
 if ! grep -Fq 'C9, F13, B♭add9, Dm11' "$RUNNER_TEMP/fretboard.html"; then fail 'Extended chord symbol examples did not render.'; fi
 if ! grep -Fq 'Primary fretboard layers' "$RUNNER_TEMP/fretboard.html"; then fail 'Primary fretboard controls did not render.'; fi
 if ! grep -Fq 'More options' "$RUNNER_TEMP/fretboard.html"; then fail 'More options disclosure did not render.'; fi
