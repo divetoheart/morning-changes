@@ -29,7 +29,21 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: TypeScript check
         run: npm run check
-      - name: Music engine contract
-        run: npm run music:contract
+      - id: music_contract
+        name: Music engine contract
+        shell: bash
+        run: |
+          set +e
+          npm run music:contract > "$RUNNER_TEMP/music-contract.log" 2>&1
+          status=$?
+          cat "$RUNNER_TEMP/music-contract.log"
+          if [ "$status" -ne 0 ]; then
+            summary="$(grep '^FAIL ' "$RUNNER_TEMP/music-contract.log" | sed 's/^FAIL //' | paste -sd ';' - | cut -c1-240)"
+            echo "failure_summary=$summary" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+      - name: Contract result — ${{ steps.music_contract.outputs.failure_summary || 'passed' }}
+        shell: bash
+        run: test -z "${{ steps.music_contract.outputs.failure_summary }}"
       - name: Production build
         run: npm run build
