@@ -3,15 +3,15 @@ import { FormMap } from './AfterHoursDiagrams';
 import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
 import { KeyArrangementReference, StandardFooter, StandardIntro, ThreeForHeadphones } from './AfterHoursStandardSections';
 import type { FormSection } from './after-hours-types';
-import type { FunctionalChord } from './lib/music';
+import { buildChord, type Chord, type ChordQuality, type FunctionalChord } from './lib/music';
 
 type BluesKey = {
   id: string;
   label: string;
   short: string;
-  root: string;
-  IV: string;
-  V: string;
+  root: Chord;
+  IV: Chord;
+  V: Chord;
   majorRoot: string;
   minorRoot: string;
   minor?: boolean;
@@ -20,23 +20,25 @@ type BluesKey = {
   referenceCopy: string;
   referenceHref: string;
 };
+
+const chord = (root: string, quality: ChordQuality) => buildChord(root, quality);
 const KEYS: BluesKey[] = [
   {
-    id:'g', label:'G blues shapes · G♭ concert', short:'G / G♭ concert', root:'G7', IV:'C7', V:'D7', majorRoot:'G', minorRoot:'G',
+    id:'g', label:'G blues shapes · G♭ concert', short:'G / G♭ concert', root:chord('G','dominant7'), IV:chord('C','dominant7'), V:chord('D','dominant7'), majorRoot:'G', minorRoot:'G',
     rationale:'The slow-blues language associated with Stevie Ray Vaughan’s Texas Flood: you finger G shapes with the guitar tuned down a half-step, while the band sounds in G♭ concert pitch.',
     referenceTitle:'Stevie Ray Vaughan & Double Trouble · Texas Flood · 1983',
     referenceCopy:'Start here for the default study setting. The recording’s slow space makes the twelve-bar cycle obvious: a phrase, an answer, then room before the next change.',
     referenceHref:'https://www.youtube.com/results?search_query=Stevie+Ray+Vaughan+Texas+Flood+official+audio'
   },
   {
-    id:'a', label:'A blues', short:'A blues', root:'A7', IV:'D7', V:'E7', majorRoot:'A', minorRoot:'A',
+    id:'a', label:'A blues', short:'A blues', root:chord('A','dominant7'), IV:chord('D','dominant7'), V:chord('E','dominant7'), majorRoot:'A', minorRoot:'A',
     rationale:'A practical guitar key for higher-energy blues vocabulary: double stops, call-and-response, and compact dominant shapes all sit naturally on the neck.',
     referenceTitle:'Cream · Crossroads · Wheels of Fire · 1968',
     referenceCopy:'Use this setting for a faster live-blues reference. The trio moves quickly, but the I–IV–V architecture remains clear underneath the intensity.',
     referenceHref:'https://www.youtube.com/results?search_query=Cream+Crossroads+Wheels+of+Fire+official+audio'
   },
   {
-    id:'bm', label:'B minor blues', short:'B minor', root:'Bm7', IV:'Em7', V:'F♯7', majorRoot:'D', minorRoot:'B', minor:true,
+    id:'bm', label:'B minor blues', short:'B minor', root:chord('B','minor7'), IV:chord('E','minor7'), V:chord('F♯','dominant7'), majorRoot:'D', minorRoot:'B', minor:true,
     rationale:'A minor-key twelve-bar route built around B.B. King’s The Thrill Is Gone. It opens a different guitar vocabulary: long vocal phrases, B minor pentatonic, and a clear dominant pull from F♯7 back into B minor.',
     referenceTitle:'B.B. King · The Thrill Is Gone · Completely Well · 1969',
     referenceCopy:'Use this setting for slow minor blues. B.B. King makes the space between phrases part of the melody; the B minor pentatonic is only the beginning of the sound.',
@@ -52,7 +54,7 @@ const minorIV = { degree: 'iv', quality: 'minor7', context: 'minor' } satisfies 
 const minorV = { degree: 'V', quality: 'dominant7', context: 'minor' } satisfies FunctionalChord;
 
 function makeForm(key: BluesKey): FormSection[] {
-  const bar = (label: string, functional: FunctionalChord) => [{ label, function: functional }];
+  const bar = (chordValue: Chord, functional: FunctionalChord) => [{ chord: chordValue, function: functional }];
   if (key.minor) return [{ name:'12-bar minor blues', bars:[bar(key.root, minorI),bar(key.root, minorI),bar(key.root, minorI),bar(key.root, minorI),bar(key.IV, minorIV),bar(key.IV, minorIV),bar(key.root, minorI),bar(key.root, minorI),bar(key.V, minorV),bar(key.IV, minorIV),bar(key.root, minorI),bar(key.V, minorV)] }];
   return [{ name:'12-bar chorus', bars:[bar(key.root, majorI),bar(key.root, majorI),bar(key.root, majorI),bar(key.root, majorI),bar(key.IV, majorIV),bar(key.IV, majorIV),bar(key.root, majorI),bar(key.root, majorI),bar(key.V, majorV),bar(key.IV, majorIV),bar(key.root, majorI),bar(key.V, majorV)] }];
 }
@@ -61,7 +63,6 @@ export function AfterHoursBluesApp() {
   const [keyId, setKeyId] = useState('g');
   const key = useMemo(() => KEYS.find(item => item.id === keyId) ?? KEYS[0], [keyId]);
   const form = useMemo(() => makeForm(key), [key]);
-  const chords = [key.root, key.IV, key.V].map(label => ({ label }));
 
   return <article className="ah-port ah-piece ah-blues-port" data-music-context="true">
     <StandardIntro
@@ -91,7 +92,7 @@ export function AfterHoursBluesApp() {
       keyLabel={key.short}
       majorRoot={key.majorRoot}
       minorRoot={key.minorRoot}
-      chords={chords}
+      chords={[key.root, key.IV, key.V].map(chordValue => ({ chord: chordValue }))}
       cagedLabel={`${key.majorRoot} major positions`}
       pentatonicLabel={`${key.minorRoot} minor boxes`}
       description="Use the same full neck for every blues layer. CAGED shows the home framework; pentatonic gives the familiar vocabulary; arpeggio and scale layers follow the active I, IV, or V chord."
