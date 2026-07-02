@@ -38,6 +38,10 @@ fail() {
   exit 1
 }
 
+if ! grep -Fq ':root[data-theme] .after-hours-topbar .wordmark-mark.after-hours-wordmark-mark' src/after-hours-wordmark.css; then fail 'After Hours mark is not protected from theme overrides.'; fi
+if ! grep -Fq 'background:#050505' src/after-hours-wordmark.css; then fail 'After Hours mark no longer has a fixed dark background.'; fi
+if ! grep -Fq 'border:2px solid #fff' src/after-hours-wordmark.css; then fail 'After Hours mark no longer has a fixed white ring.'; fi
+
 if ! grep -Fq 'Core spaces' "$RUNNER_TEMP/home.html"; then fail 'Core home screen did not render.'; fi
 if ! grep -Fq '12-Bar Blues' "$RUNNER_TEMP/home.html"; then fail 'Restored Blues language did not render on Home.'; fi
 if grep -Fq 'Daily lick' "$RUNNER_TEMP/home.html"; then fail 'Legacy daily lick content remains on Home.'; fi
