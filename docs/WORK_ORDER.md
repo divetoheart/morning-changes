@@ -19,7 +19,7 @@ Navigation is intentionally limited to Home, Fretboard, After Hours, and Tools.
 - `/fretboard`: flexible shared-map workspace.
 - `/after-hours`: authored standards library.
 - `/after-hours/autumn-leaves`: Autumn Leaves study.
-- `/after-hours/12-bar-blues`: 12-Bar Blues study.
+- `/after-hours/12-bar-blues`: real 12-Bar Blues study.
 - `/tools`: metronome.
 - Retired lesson/profile/daily routes redirect Home.
 
@@ -27,13 +27,9 @@ Home remains a core-space gateway, not a daily lesson dashboard.
 
 ## After Hours identity and standards
 
-Every `/after-hours` route shows:
+Every `/after-hours` route shows a black circular mark with a white ring, `After Hours`, and `Standards Library`.
 
-- A solid black circular mark with a white ring.
-- `After Hours`.
-- `Standards Library`.
-
-Do not bring back the old semi-circle glyph for this route state.
+The mark has the same 37px footprint as the normal wordmark mark and must remain black with a white ring in every theme, including Light and Student. Do not restore the old semi-circle glyph.
 
 The active standards are:
 
@@ -54,6 +50,19 @@ The main `/fretboard` route is the free-form lab. It supports:
 - Engine-backed custom chords built from interval buttons.
 - CAGED, pentatonic, arpeggio, scale, Triads/inversions, Shell, and Drop 2.
 - Plain-English detail text derived from layer membership note, interval, string/fret, shape identity, and nearest root.
+
+### Study Key hierarchy
+
+The visible Study Key display belongs **inside** the shared `Shapes and Voicings` Fretboard surface. It must not appear as a separate standalone panel above the map.
+
+For the main Fretboard, use the shared renderer props:
+
+```tsx
+studyKeyControls={<StudyKeyControls ... />}
+beforeControls={<FretboardChordBuilder ... />}
+```
+
+The renderer owns the boxed mini-card: eyebrow, large key/mode label, and optional controls. It should read as a compact version of the same Study Key hierarchy—not a pill or unrelated badge.
 
 Custom chord construction belongs in `lib/music` through `buildCustomChord`. Never add page-local note tables.
 
@@ -77,7 +86,7 @@ npm run build
 Browser smoke verifies:
 
 1. Home remains core-only.
-2. Fretboard has 15-key controls, major/minor mode, chord builder, renderer, voicing controls, footer, and no error boundary.
+2. Fretboard has the unified in-surface Study Key controls, no standalone key panel, chord builder, renderer, voicing controls, footer, and no error boundary.
 3. Autumn Leaves has the After Hours identity and focused map.
 4. 12-Bar Blues exposes all three study variants and no error boundary.
 
@@ -85,7 +94,7 @@ The live footer is the deployment source of truth. See `docs/RELEASE_VERIFICATIO
 
 ## Next work
 
-1. Verify the deployed builder and After Hours mark manually on desktop and mobile.
+1. Verify the deployed in-surface Study Key and After Hours mark manually on desktop and mobile.
 2. Add a true two-octave scale-path generator.
 3. Carry focused-map state into the full-neck link.
 4. Add ii–V–I voice-leading paths.
