@@ -40,6 +40,11 @@ function keyOf(position: Pick<LayerMembership, 'stringIndex' | 'fret'>) {
   return `${position.stringIndex}:${position.fret}`;
 }
 
+function requireMembership(value: LayerMembership | undefined, index: number): LayerMembership {
+  if (!value) throw new Error(`Fretboard membership ${index} is undefined.`);
+  return value;
+}
+
 /**
  * Collapses active layer memberships into one visible fret marker per position.
  * The renderer can use `segments` for a ring/tick treatment and open a detail
@@ -50,7 +55,8 @@ export function resolveLayerCells(memberships: readonly LayerMembership[], optio
   const priority = options.priority ?? DEFAULT_PRIORITY;
   const grouped = new Map<string, LayerMembership[]>();
 
-  for (const membership of memberships) {
+  for (const [index, rawMembership] of memberships.entries()) {
+    const membership = requireMembership(rawMembership, index);
     const key = keyOf(membership);
     const group = grouped.get(key) ?? [];
     group.push(membership);
