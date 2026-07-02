@@ -28,6 +28,8 @@ jobs:
 
       - name: Build production React application
         working-directory: apps/web
+        env:
+          VITE_APP_COMMIT_SHA: ${{ github.sha }}
         run: |
           npm install --no-audit --no-fund
           npm run build
