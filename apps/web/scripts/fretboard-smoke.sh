@@ -63,9 +63,18 @@ if ! grep -Fq '>Minor<' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard mino
 if ! grep -Fq 'Build what you want to inspect.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard chord builder did not render.'; fi
 if ! grep -Fq 'Type a symbol' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard chord symbol builder did not render.'; fi
 if ! grep -Fq 'Build from tones' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard tone builder did not render.'; fi
+if ! grep -Fq 'Extensions' "$RUNNER_TEMP/fretboard.html"; then fail 'Chord extensions section did not render.'; fi
+if ! grep -Fq 'Sus2' "$RUNNER_TEMP/fretboard.html"; then fail 'Sus2 preset did not render.'; fi
+if ! grep -Fq 'Sus4' "$RUNNER_TEMP/fretboard.html"; then fail 'Sus4 preset did not render.'; fi
+if ! grep -Fq 'C9, F13, B♭add9, Dm11' "$RUNNER_TEMP/fretboard.html"; then fail 'Extended chord symbol examples did not render.'; fi
+if ! grep -Fq 'Primary fretboard layers' "$RUNNER_TEMP/fretboard.html"; then fail 'Primary fretboard controls did not render.'; fi
+if ! grep -Fq 'More options' "$RUNNER_TEMP/fretboard.html"; then fail 'More options disclosure did not render.'; fi
+if ! grep -Fq '>Pentatonic<' "$RUNNER_TEMP/fretboard.html"; then fail 'Primary Pentatonic toggle did not render.'; fi
+if ! grep -Fq '>Arpeggio<' "$RUNNER_TEMP/fretboard.html"; then fail 'Primary Arpeggio toggle did not render.'; fi
+if ! grep -Fq '>Chord<' "$RUNNER_TEMP/fretboard.html"; then fail 'Primary Chord toggle did not render.'; fi
 if ! grep -Fq 'Tap any marker to see what it means in plain English.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard English detail guidance did not render.'; fi
 if ! grep -Fq 'ah-fretboard-customizer' "$RUNNER_TEMP/fretboard.html"; then fail 'Shared Fretboard renderer did not render.'; fi
-if ! grep -Fq '>Triads<' "$RUNNER_TEMP/fretboard.html"; then fail 'Triad layer control did not render.'; fi
+if ! grep -Fq '>Triads<' "$RUNNER_TEMP/fretboard.html"; then fail 'Triad more-option did not render.'; fi
 if ! grep -Fq 'Triad inversion' "$RUNNER_TEMP/fretboard.html"; then fail 'Triad inversion control did not render.'; fi
 if ! grep -Fq 'Chord voicing' "$RUNNER_TEMP/fretboard.html"; then fail 'Chord voicing selector did not render.'; fi
 if ! grep -Fq 'Drop 2' "$RUNNER_TEMP/fretboard.html"; then fail 'Drop 2 selector option did not render.'; fi
@@ -76,10 +85,13 @@ if ! grep -Fq 'After Hours' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'After 
 if ! grep -Fq 'Standards Library' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'After Hours wordmark subtitle did not render.'; fi
 if ! grep -Fq 'after-hours-wordmark-mark' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'After Hours circular wordmark state did not render.'; fi
 if ! grep -Fq 'Apply this in Autumn Leaves' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused study eyebrow did not render.'; fi
-if ! grep -Fq 'at 8th position.' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused position title did not render.'; fi
+if ! grep -Fq 'Whole form at 8th position.' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves full-form study title did not render.'; fi
+if ! grep -Fq 'Aø7' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves half-diminished chord did not reach the focused selector.'; fi
+if ! grep -Fq 'E♭7' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves borrowed dominant did not reach the focused selector.'; fi
+if ! grep -Fq 'Gm7' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves minor seventh did not reach the focused selector.'; fi
 if ! grep -Fq 'Focused fretboard from fret 7 to 11' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves focused fret range did not render.'; fi
 if ! grep -Fq 'Open full neck' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves full Fretboard expand link did not render.'; fi
-if ! grep -Fq 'Chord voicing' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves shared voicing selector did not render.'; fi
+if ! grep -Fq 'More options' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves shared more-options control did not render.'; fi
 if ! grep -Fq 'Live build' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves did not render the live build footer.'; fi
 if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/autumn-leaves.html"; then fail 'Autumn Leaves route reached the application error boundary.'; fi
 
