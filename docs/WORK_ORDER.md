@@ -2,87 +2,63 @@
 
 Last updated: 2026-07-02
 
-## Non-negotiable product constraints
+## Rules
 
 1. Do not redesign Morning Changes unless explicitly asked.
-2. Do not change app content unless explicitly asked.
-3. Do not take shortcuts, use DOM adapters, or ship temporary wrappers as fixes.
-4. Preserve the existing visual identity, layout language, and product feel.
-5. Always fix the actual source path that is broken.
-6. Always update repo documentation after significant app, engine, workflow, or deployment changes when warranted.
-7. This repo is a live test environment. When checks are green, merge and deploy by default unless the user explicitly asks to hold.
+2. Do not change product content unless explicitly asked.
+3. Do not use DOM patches, temporary adapters, or error-boundary-only fixes.
+4. Preserve the current visual identity and layout language.
+5. Update README, this work order, and agent handoff after significant work.
+6. Green checks normally mean merge and deploy unless explicitly held.
+7. Every release message must include a visible `Look for:` cue and expected `Live build · <commit>` footer.
 
-## Current navigation / product shell
+## Active core
 
-The intended active navigation is:
+Navigation is intentionally limited to:
 
 - Home
-- Learn
-- After Hours
 - Fretboard
+- After Hours
 - Tools
-- Profile
 
-Current route behavior:
+Home is a core-space gateway, not a daily lesson dashboard.
 
-- `/fretboard` is a native React route using the shared fretboard renderer.
-- `/paths` redirects to `/fretboard`.
-- `/progress` redirects to `/profile`.
-- Learn is intentionally in rebuild state.
+Routes:
 
-Do not bring back the old Paths lesson flow as a primary navigation item unless the user explicitly asks.
+- `/fretboard`: native shared fretboard workspace.
+- `/after-hours`: standards library.
+- `/after-hours/autumn-leaves`: active standard app.
+- `/tools`: metronome.
+- `/paths`: redirects to Fretboard for existing links.
+- `/learn`, `/lesson/*`, `/practice/*`, `/profile`, and `/progress`: redirect to Home because those systems are retired.
 
-## Current completed work
+## After Hours wordmark
 
-### Native shared Fretboard
+On any `/after-hours` route:
 
-`AfterHoursFretboardCustomizer` is the only fretboard surface for both full-neck exploration and embedded study applications. It is native React with engine-derived data, not a lesson bridge, DOM adapter, or separate diagram system.
+- Rotate the existing mark 180 degrees.
+- Change `Morning Changes` to `After Hours`.
+- Change the subtitle to `Standards Library`.
 
-The renderer accepts:
+Keep this as a route state, not a separate visual redesign.
 
-- A full neck or a specified `fretRange`.
-- `compact` presentation for an embedded practice surface.
-- An optional `expandHref` for a small handoff to the full Fretboard route.
-- A typed active chord list, so the same view can follow a progression instead of a single harmony.
+## Retired content
 
-### Focused progression application
+The old lesson library, paths, daily lesson rotation, daily licks, daily exercises, practice-extra pages, lesson progress dashboard, and progress persistence are removed.
 
-Autumn Leaves now demonstrates the intended reuse pattern:
+Do not restore them, add placeholder cards, or recreate the old daily/practice flow unless the user explicitly starts a new rebuild work order.
 
-- Relative-major ii–V–I from the selected arrangement.
-- Focused frets 7–11, described as 8th position.
-- Active chord selector through ii, V, and I.
-- Same CAGED, pentatonic, Triads/inversions, arpeggio, scale, Shell, and Drop 2 controls as the full Fretboard.
-- Subtle `Open full neck` handoff.
+## Fretboard architecture
 
-Future lessons and standards should compose this same component with range and chord props. Do not build special local chord-chart tables to replicate it.
+`AfterHoursFretboardCustomizer` is the one shared fretboard renderer for full-neck exploration and compact standard/lesson applications.
 
-### Music-engine hardening and voicings
+It supports full or focused ranges, active chords, Triads/inversions, CAGED, pentatonic, arpeggio, scale context, Shell, Drop 2, and the small full-neck handoff.
 
-- The layer resolver rejects undefined memberships before render.
-- Minor-pentatonic parent geometry is corrected for standard tuning’s string offsets.
-- All fretboard markers must be engine-derived and complete enough to include note, interval, string/fret, role, and layer membership.
-- Triads are typed, correctly spelled, reducible from supported chord qualities, and placeable as playable closed-position guitar candidates.
-- Shell and Drop 2 options use the existing shared voicing engine and select a playable candidate inside the current focused range.
+Autumn Leaves is the first embedded use: relative-major ii–V–I in frets 7–11.
 
-### Runtime containment and browser gate
+## Quality and release proof
 
-A permanent app-level error boundary exists so one failed route cannot black-screen the app. It is containment only, never the primary fix.
-
-Browser smoke now validates both:
-
-1. `/#/fretboard`: renderer, Triads, inversion selector, chord-voicing selector, Drop 2 option, and no error boundary.
-2. `/#/after-hours/autumn-leaves`: focused application eyebrow/title, focused neck range, full-neck handoff, shared voicing selector, and no error boundary.
-
-Runtime capture uploads both rendered DOM pages and preview logs on failure.
-
-### CI consistency
-
-Both Web quality workflows use Node 22 and the same deterministic install path. Do not let the legacy verifier silently diverge from the maintained quality gate.
-
-## Current quality gates
-
-Before merging meaningful app/engine changes, verify:
+Run:
 
 ```bash
 cd apps/web
@@ -91,50 +67,19 @@ npm run music:contract
 npm run build
 ```
 
-In GitHub Actions, rely on:
+Browser smoke verifies:
 
-- Maintained Web quality: TypeScript, diagnostics artifact, music contract, production build, and both-route browser smoke.
-- Web verifier: Node 22 install plus `npm run quality`.
-- Validate production app.
-- Deploy Morning Changes after merge to `main`.
+1. Home has the core spaces and no legacy daily/lesson/path content.
+2. Fretboard has its renderer, Triads, voicing controls, footer, and no error boundary.
+3. Autumn Leaves has the After Hours wordmark state, focused map, footer, and no error boundary.
 
-## What not to do
+The live footer is the deployment source of truth. See `docs/RELEASE_VERIFICATION.md`.
 
-Do not:
+## Next work
 
-- Rebuild the whole app shell.
-- Introduce a new visual system.
-- Replace the Fretboard with a fake static fretboard.
-- Hide crashes behind an error boundary and call that fixed.
-- Route through legacy lessons just to get something on screen.
-- Add lessons, marketing copy, dashboard cards, or filler content without instruction.
-- Duplicate music theory tables in Fretboard or After Hours when the engine should own them.
-- Create a new diagram component for a compact study when `fretRange` and `compact` can express it.
-- Delete source files simply because a feature is in rebuild unless the user explicitly asks.
-
-## Next product work
-
-The next work should stay incremental and engine-backed:
-
-1. Confirm the deployed full and Autumn Leaves focused maps manually on desktop and mobile.
-2. Add a true two-octave scale-path generator; current Scale is context, not a specific two-octave route.
-3. Add configuration-carrying links so `Open full neck` preserves the compact study’s active chord, range, and active controls.
-4. Add voice-leading paths between selected ii–V–I voicings.
-5. Reuse focused maps in another standard or future Learn lesson only when the practice outcome calls for it.
-
-Each new map/configuration needs:
-
-- Engine-derived notes and intervals.
-- Contract coverage for music correctness.
-- Browser smoke coverage when route behavior changes.
-- No visual redesign unless requested.
-
-## Documentation policy
-
-After significant changes, update:
-
-- `README.md` for project-level truth.
-- `docs/WORK_ORDER.md` for current product/engineering direction.
-- `docs/AGENT_HANDOFF.md` for transition-ready implementation context.
-
-Documentation changes should not alter the app unless explicitly requested.
+1. Verify the deployed core shell and After Hours wordmark manually.
+2. Add a true two-octave scale-path generator.
+3. Carry focused-map state into the full-neck link.
+4. Add ii–V–I voice-leading paths.
+5. Add another standard only with a concrete practice outcome.
+6. Rebuild Learn later from a fresh work order, not retired data.
