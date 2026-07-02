@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+git rev-parse HEAD^{tree} > "$RUNNER_TEMP/git-tree.sha"
 npm run build
 npm run preview -- --host 127.0.0.1 --port 4173 > "$RUNNER_TEMP/fretboard-preview.log" 2>&1 &
 server_pid=$!
