@@ -1,5 +1,4 @@
 import { createRoot } from 'react-dom/client';
-import './content-fixes';
 import App from './App';
 import { AppErrorBoundary } from './AppErrorBoundary';
 import { BuildFooter } from './BuildFooter';
@@ -13,6 +12,7 @@ import './notation.css';
 import './themes.css';
 import './theme-clarity.css';
 import './after-hours.css';
+import './after-hours-wordmark.css';
 import './p1-practice.css';
 import './qa-polish.css';
 import './after-hours-theme-audit.css';

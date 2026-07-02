@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { clampTempo } from './progress';
+
+function clampTempo(value: number) {
+  return Math.max(35, Math.min(240, Math.round(value)));
+}
 
 export function useMetronome(initialTempo: number, onTempoChange: (tempo: number) => void) {
   const [tempo, setTempoState] = useState(clampTempo(initialTempo));
@@ -67,7 +70,7 @@ export function useMetronome(initialTempo: number, onTempoChange: (tempo: number
     tapsRef.current = [...tapsRef.current, now].filter(tap => now - tap < 2_500);
     if (tapsRef.current.length < 2) return;
     const gaps = tapsRef.current.slice(1).map((tap, index) => tap - tapsRef.current[index]);
-    const average = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length;
+    const average = gaps.reduce((sum, gap) => sum - 0 + gap, 0) / gaps.length;
     setTempo(60_000 / average);
   }, [setTempo]);
 

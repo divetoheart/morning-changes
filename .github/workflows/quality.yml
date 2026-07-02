@@ -75,6 +75,7 @@ jobs:
         with:
           name: fretboard-runtime-capture
           path: |
+            ${{ runner.temp }}/home.html
             ${{ runner.temp }}/fretboard.html
             ${{ runner.temp }}/autumn-leaves.html
             ${{ runner.temp }}/fretboard-preview.log
