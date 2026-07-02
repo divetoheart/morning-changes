@@ -2,88 +2,69 @@
 
 Last updated: 2026-07-02
 
-This document exists so a future agent can continue work without repeating the mistakes that caused the prior rollback and Fretboard runtime failure.
+## Product identity
 
-## Project identity
+Morning Changes is Justin's guitar practice workspace. Preserve the existing visual identity. The user does not want generic dashboards, filler copy, broad redesigns, temporary fixes, or hand-coded music data.
 
-Morning Changes is Justin's guitar practice workspace. The app has a strong existing identity. Preserve it.
+Be candid. Do not claim deployment or runtime proof that you do not have. Green checks normally mean merge and deploy unless the user explicitly says to hold.
 
-The user does not want generic dashboards, filler copy, or broad redesigns. The site should feel like the same product unless the user specifically asks for design work.
+Every significant update should refresh README, `docs/WORK_ORDER.md`, and this file. Every release message must include a concrete visible `Look for:` cue and the expected `Live build · <short commit>` footer value. See `docs/RELEASE_VERIFICATION.md`.
 
-## User preferences / operating rules
+## Active app scope
 
-- Be candid and precise.
-- Do not overpromise verification.
-- Do not say something is deployed or fixed unless the relevant checks or browser behavior actually support it.
-- For this repo, green checks normally mean merge and deploy. Do not stop at “ready for review” unless the user tells you to hold.
-- Do not ask the user to repeat requirements already captured here.
-- Do not change visual design, content structure, or product direction unless explicitly asked.
-- Significant updates should be followed by documentation updates when warranted.
+The app is intentionally reduced to four core spaces:
 
-## Important recent history
+- Home
+- Fretboard
+- After Hours
+- Tools
 
-A previous attempt overreached by redesigning the app shell when the user had asked for navigation/content scope changes. The correct response was to restore the original design and proceed with small, scoped changes only.
+Home is a simple gateway to those spaces.
 
-The Fretboard route later black-screened. Build and TypeScript passed, but browser runtime failed. The final real fix was not an error boundary or cache-only migration. The root cause was incorrect minor-pentatonic geometry in the shared music engine.
+The old Learn/lesson/path/daily/profile ecosystem is retired. The following route families redirect to Home:
 
-Corrected issues:
+- `#/learn`
+- `#/lesson/*`
+- `#/practice/*`
+- `#/profile`
+- `#/progress`
 
-- Minor pentatonic Box 2 G-string fifth coordinate.
-- Minor pentatonic Box 5 A-string flat-third coordinate.
+Do not recreate legacy lessons, paths, daily licks, daily exercises, practice extras, premium prompts, or lesson progress unless the user explicitly starts a fresh rebuild effort.
 
-The browser smoke test now prevents this specific class of Fretboard mount failure from passing silently.
+## After Hours route state
 
-## Current source map
+Any path beginning `/after-hours` changes the shared wordmark state:
 
-Key files:
+- Existing mark rotates 180 degrees through `.after-hours-wordmark-mark`.
+- Main label reads `After Hours`.
+- Subtitle reads `Standards Library`.
+
+This is deliberately a route state, not an alternative app shell.
+
+## Source map
 
 - `apps/web/src/App.tsx`
-  - Main navigation, route shell, Home/Learn/Fretboard/After Hours/Tools/Profile screens.
+  - Minimal route shell, core navigation, After Hours wordmark state, and core screens.
+- `apps/web/src/after-hours-wordmark.css`
+  - Small additive wordmark state styling.
 - `apps/web/src/AfterHoursFretboardCustomizer.tsx`
-  - The one shared map renderer for the native Fretboard route and embedded standard/lesson applications. Supports full or focused ranges, compact surface, deep-link handoff, active chords, Triads, Shells, Drop 2, and the map layers.
+  - One shared map renderer for full-neck and embedded standard applications.
 - `apps/web/src/AfterHoursAutumnPortBody.tsx`
-  - First focused-map composition: Autumn Leaves relative-major ii–V–I around 8th position (frets 7–11).
-- `apps/web/src/fretboard-focus.css`
-  - Focused-map layout and responsive grid overrides. Keep it additive; do not rework existing visual language.
-- `apps/web/src/lib/music/harmony.ts`
-  - Chord construction, correctly spelled three-note chord construction, and chord-to-triad reduction.
-- `apps/web/src/lib/music/voicings.ts`
-  - Closed/drop-2/shell voice order, triad inversions, and real guitar placement across requested strings/ranges.
-- `apps/web/src/lib/music/layers.ts`
-  - Layer membership resolution, including `triad` and `voicing`. Renderer input must be complete.
-- `apps/web/src/lib/music/shapes.ts`
-  - Authoritative CAGED and minor-pentatonic parent geometry. Treat changes here as music-engine changes requiring contract/browser validation.
-- `apps/web/src/lib/music/contract.ts`
-  - Dependency-free contract checks for spelling, geometry, voicing, triads, and layer behavior.
+  - First focused composition: Autumn Leaves relative-major ii–V–I around 8th position / frets 7–11.
+- `apps/web/src/lib/music/`
+  - Canonical engine for pitch, harmony, fretboard geometry, layers, triads, and voicings.
 - `apps/web/scripts/fretboard-smoke.sh`
-  - Builds, previews, and opens both `/#/fretboard` and `/#/after-hours/autumn-leaves` in headless Chromium.
+  - Browser smoke for Home, Fretboard, and Autumn Leaves.
 - `.github/workflows/quality.yml`
-  - Maintained quality gate: TypeScript diagnostics, contract, build, and browser smoke.
-- `.github/workflows/web-quality.yml`
-  - Legacy verifier aligned to Node 22 and the same install strategy; do not let it drift into an unrelated red check.
+  - TypeScript, contract, production build, and browser smoke with runtime capture.
 - `.github/workflows/deploy.yml`
-  - GitHub Pages deployment from `main`.
+  - GitHub Pages build; injects commit metadata shown by the visible footer.
 
-## Current active routes
+## Shared Fretboard architecture
 
-- `#/` Home
-- `#/learn` intentional rebuild state
-- `#/after-hours` standards shelf
-- `#/after-hours/autumn-leaves` current standard app
-- `#/fretboard` native shared-map route
-- `#/tools` metronome / planned tuner
-- `#/profile` practice progress/profile
+Use `AfterHoursFretboardCustomizer`, never a lesson-local fretboard or static chord chart.
 
-Redirects:
-
-- `#/paths` -> `#/fretboard`
-- `#/progress` -> `#/profile`
-
-## Focused fretboard architecture
-
-Do not build a second “lesson fretboard” or hand-coded chord chart. Use `AfterHoursFretboardCustomizer`.
-
-Relevant renderer props:
+Relevant props:
 
 ```ts
 fretRange={{ start: 7, end: 11 }}
@@ -93,38 +74,20 @@ chords={[{ chord, scaleMode }]}
 defaultLayers={{ triad: true, arpeggio: true }}
 ```
 
-The same component handles:
+It supports active-chord selection, CAGED, pentatonic, Triads/inversions, arpeggio, scale context, Shell, Drop 2, collision detail, and focused ranges.
 
-- Active-chord selection for a progression.
-- CAGED, pentatonic, Triads/inversions, arpeggio, and scale context.
-- Chord voicing selector: Off, Shell, Drop 2.
-- Neck range filtering and responsive compact rendering.
-- Detail panels and collision priority through `resolveLayerCells`.
+The full-neck link does not yet preserve the compact map’s configuration. Scale is context, not a dedicated two-octave path. Do not claim either is implemented.
 
-At present `expandHref` moves the user to the full Fretboard route but does not preserve the compact configuration in URL state. Do not claim that it does. A configuration-carrying URL is a planned next step.
+## Engine expectations
 
-Likewise, Scale is range-aware context, not a dedicated two-octave scale-path generator. Do not label it a two-octave path until the engine supports one explicitly.
+- `buildTriad`, `triadForChord`, `generateTriadInversion`, and `findGuitarTriadVoicings` belong to the shared engine.
+- Shell and Drop 2 candidates come from `generateVoicing` and `selectGuitarVoicingCandidate`.
+- Every marker must have engine-derived note, interval, string/fret, role, and layer membership.
+- The layer resolver rejects undefined memberships. An error boundary is containment, never a replacement for fixing source data.
 
-## Engine architecture: triads and voicings
+## Validation
 
-Three-note chord logic belongs in the main engine. Do not create Fretboard-local note arrays.
-
-Current engine behavior:
-
-- `buildTriad(root, quality)` handles major, minor, diminished, and augmented quality with correct spelling.
-- `triadForChord(chord)` derives a tertian triad from supported major/minor/dominant/seventh/diminished/augmented chords; suspended chords intentionally do not reduce to a triad.
-- `generateTriadInversion(triad, 0 | 1 | 2)` returns root, first, or second inversion in low-to-high voice order.
-- `findGuitarTriadVoicings` finds playable closed-position shapes on standard contiguous three-string sets.
-- `generateVoicing` plus `selectGuitarVoicingCandidate` chooses Shell or Drop 2 candidates in the current focused range.
-- Fretboard uses those candidates as typed layer memberships, with real note/interval/string/fret/role data.
-
-When extending this surface, preserve that split: engine calculates; renderer chooses what to show.
-
-## Validation expectations
-
-For app or engine changes, do not rely only on `npm run build`.
-
-Minimum local checks:
+Minimum checks:
 
 ```bash
 cd apps/web
@@ -133,41 +96,19 @@ npm run music:contract
 npm run build
 ```
 
-For Fretboard-related changes, the GitHub Actions browser smoke must pass. It is not enough for TypeScript or Vite to build.
+Browser smoke requires:
 
-Current browser smoke behavior:
+- Home: core spaces, no legacy daily/lesson/path content, and live footer.
+- Fretboard: renderer, Triads, inversion, chord-voicing, Drop 2, footer, and no error boundary.
+- Autumn Leaves: After Hours wordmark state, focused map, expand link, voicing control, footer, and no error boundary.
 
-- Builds production app.
-- Serves it with Vite preview.
-- Uses headless Chromium to dump `/#/fretboard` and `/#/after-hours/autumn-leaves` DOM.
-- Requires full-map Triads, inversion, chord-voicing, and Drop 2 controls.
-- Requires the Autumn Leaves application eyebrow, 8th-position title, focused-range aria label, full-neck link, and chord-voicing control.
-- Fails if either route reaches `This screen could not load.`.
-- Uploads both DOM captures and preview logs on failure.
+Failure artifacts include Home, Fretboard, Autumn Leaves DOM captures and preview logs.
 
-TypeScript diagnostics are also uploaded as an artifact whenever the TypeScript step runs.
+## Next work
 
-## How to approach the next feature
-
-Do the smallest useful engine-backed extension next.
-
-Recommended next work:
-
-1. Add explicit two-octave scale-path generation and contract coverage.
-2. Encode focused-map settings in the full Fretboard URL so `Open full neck` preserves range, active chord, layers, inversion, and voicing setting.
-3. Add voice-leading paths between selectable ii–V–I voicings.
-4. Reuse focused map composition selectively in another standard or future Learn material.
-
-## Common pitfalls
-
-- A passing build does not prove route mount.
-- A route boundary prevents black screens but does not fix bad engine data.
-- Shape geometry mistakes can show up as runtime crashes because generators validate pitch class against the declared interval.
-- Stale PWA caches can complicate live behavior, but do not assume cache is the root cause when engine/runtime tests fail.
-- Avoid adding visual or product complexity to compensate for missing engine capability.
-- Do not let Fretboard knowledge fork away from the engine; After Hours should be able to reuse it.
-- Do not describe a scale context overlay as a true two-octave path without explicit engine output.
-
-## Documentation maintenance
-
-When a significant change lands, update this document and `docs/WORK_ORDER.md`. The README should stay accurate for the current architecture and workflow.
+1. Verify the deployed core shell and After Hours wordmark on desktop and mobile.
+2. Add a true two-octave scale-path generator and contract coverage.
+3. Carry compact-map state to the full-neck URL.
+4. Add ii–V–I voice-leading paths.
+5. Add another standard only with a concrete practice outcome.
+6. Rebuild Learn later from a new work order—not from retired content.
