@@ -20,7 +20,7 @@ export function AfterHoursAutumnPortBody() {
   const minorContext = useMemo(() => createKey(study.minorKey.split(' ')[0], 'naturalMinor'), [study.minorKey]);
   const majorContext = useMemo(() => createKey(study.majorKey.split(' ')[0], 'major'), [study.majorKey]);
   const keyPair = <><KeyNotation context={minorContext} /> / <KeyNotation context={majorContext} /></>;
-  const uniqueChords = useMemo(() => [...new Map(study.form.flatMap(section => section.bars.flat().map(cell => [chordSymbol(cell.chord), cell.chord]))).values()], [study]);
+  const uniqueChords = useMemo(() => [...new Map(study.form.flatMap(section => section.bars.flat().map(cell => [chordSymbol(cell.chord), cell.chord] as const))).values()], [study]);
 
   return <article className="ah-port ah-piece" data-music-context="true">
     <AutumnPortIntro />
