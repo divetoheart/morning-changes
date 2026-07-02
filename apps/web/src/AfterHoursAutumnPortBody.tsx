@@ -5,24 +5,12 @@ import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
 import { FormMap } from './AfterHoursDiagrams';
 import { KeyArrangementReference } from './AfterHoursStandardSections';
 import { KeyNotation } from './MusicNotation';
-import { createKey } from './lib/music';
+import { chordSymbol, createKey } from './lib/music';
 
 const REFERENCES: Record<string, { title: string; copy: string; href: string }> = {
-  'gm-bb': {
-    title: 'Cannonball Adderley with Miles Davis · Somethin’ Else · recorded 1958',
-    copy: 'The canonical modern-jazz arrangement: a G minor / B♭ major setting with Miles Davis’s spacious theme statement and Cannonball Adderley’s alto defining the session vocabulary for the tune.',
-    href: 'https://www.youtube.com/watch?v=u37RF5xKNq8'
-  },
-  'em-g': {
-    title: 'Bill Evans Trio · Portrait in Jazz · recorded 1959, released 1960',
-    copy: 'A guitarist-friendly E minor / G major study setting paired with Evans’s trio version. The open-position landscape makes the changes easy to inspect while Evans, LaFaro, and Motian demonstrate why the form should never sound mechanical.',
-    href: 'https://www.youtube.com/watch?v=r-Z8KuwI7Gc'
-  },
-  'bm-d': {
-    title: 'Eric Clapton · Clapton · released 2010',
-    copy: 'Use this B minor / D major setting as the dedicated guitar-focused study route: a lower minor center, familiar closed-position shapes, and the same major-to-minor functional movement.',
-    href: 'https://www.youtube.com/results?search_query=Eric+Clapton+Autumn+Leaves+Clapton+2010'
-  }
+  'gm-bb': { title: 'Cannonball Adderley with Miles Davis · Somethin’ Else · recorded 1958', copy: 'The canonical modern-jazz arrangement: a G minor / B♭ major setting with Miles Davis’s spacious theme statement and Cannonball Adderley’s alto defining the session vocabulary for the tune.', href: 'https://www.youtube.com/watch?v=u37RF5xKNq8' },
+  'em-g': { title: 'Bill Evans Trio · Portrait in Jazz · recorded 1959, released 1960', copy: 'A guitarist-friendly E minor / G major study setting paired with Evans’s trio version. The open-position landscape makes the changes easy to inspect while Evans, LaFaro, and Motian demonstrate why the form should never sound mechanical.', href: 'https://www.youtube.com/watch?v=r-Z8KuwI7Gc' },
+  'bm-d': { title: 'Eric Clapton · Clapton · released 2010', copy: 'Use this B minor / D major setting as the dedicated guitar-focused study route: a lower minor center, familiar closed-position shapes, and the same major-to-minor functional movement.', href: 'https://www.youtube.com/results?search_query=Eric+Clapton+Autumn+Leaves+Clapton+2010' }
 };
 
 export function AfterHoursAutumnPortBody() {
@@ -32,7 +20,7 @@ export function AfterHoursAutumnPortBody() {
   const minorContext = useMemo(() => createKey(study.minorKey.split(' ')[0], 'naturalMinor'), [study.minorKey]);
   const majorContext = useMemo(() => createKey(study.majorKey.split(' ')[0], 'major'), [study.majorKey]);
   const keyPair = <><KeyNotation context={minorContext} /> / <KeyNotation context={majorContext} /></>;
-  const uniqueChords = [...new Set(study.form.flatMap(section => section.bars.flat().map(cell => cell.label)))].filter(label => !label.includes('/'));
+  const uniqueChords = useMemo(() => [...new Map(study.form.flatMap(section => section.bars.flat().map(cell => [chordSymbol(cell.chord), cell.chord]))).values()], [study]);
 
   return <article className="ah-port ah-piece" data-music-context="true">
     <AutumnPortIntro />
@@ -53,7 +41,7 @@ export function AfterHoursAutumnPortBody() {
       keyLabel={keyPair}
       majorRoot={study.majorKey.split(' ')[0]}
       minorRoot={study.minorKey.split(' ')[0]}
-      chords={uniqueChords.map(label => ({ label }))}
+      chords={uniqueChords.map(chord => ({ chord }))}
       cagedLabel={<><KeyNotation context={majorContext} /> positions</>}
       pentatonicLabel={<><KeyNotation context={minorContext} /> boxes</>}
       description={<>Toggle the maps you need on the same full neck. CAGED tracks the relative-major world; pentatonic tracks the minor color; arpeggio and scale layers follow the active chord.</>}
