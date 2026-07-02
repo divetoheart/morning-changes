@@ -40,21 +40,23 @@ Key files:
 - `apps/web/src/App.tsx`
   - Main navigation, route shell, Home/Learn/Fretboard/After Hours/Tools/Profile screens.
 - `apps/web/src/AfterHoursFretboardCustomizer.tsx`
-  - Shared layered full-neck renderer used by After Hours and the native Fretboard route.
-- `apps/web/src/lib/music/`
-  - Music engine: pitch, harmony, fretboard geometry, shape generation, voicings, layers, and contract tests.
+  - Shared layered full-neck renderer used by After Hours and the native Fretboard route. It now exposes the engine-backed Triads layer and inversion selector.
+- `apps/web/src/lib/music/harmony.ts`
+  - Chord construction, correctly spelled three-note chord construction, and chord-to-triad reduction.
+- `apps/web/src/lib/music/voicings.ts`
+  - Closed/drop-2/shell voice order plus triad inversions and real guitar placement across contiguous three-string sets.
+- `apps/web/src/lib/music/layers.ts`
+  - Layer membership resolution, including the `triad` layer. Renderer input must be complete.
 - `apps/web/src/lib/music/shapes.ts`
   - Authoritative CAGED and minor-pentatonic parent geometry. Treat changes here as music-engine changes requiring contract/browser validation.
-- `apps/web/src/lib/music/layers.ts`
-  - Layer membership resolution and collision handling. Renderer input must be complete.
 - `apps/web/src/lib/music/contract.ts`
-  - Dependency-free contract checks for spelling, geometry, voicing, and layer behavior.
+  - Dependency-free contract checks for spelling, geometry, voicing, triads, and layer behavior.
 - `apps/web/scripts/run-music-contract.mjs`
   - Bundles and runs the music contract in CI.
 - `apps/web/scripts/fretboard-smoke.sh`
-  - Builds, previews, and opens `/#/fretboard` in headless Chromium.
+  - Builds, previews, and opens `/#/fretboard` in headless Chromium. Requires the renderer, Triads control, inversion selector, and no error boundary.
 - `.github/workflows/quality.yml`
-  - Main pull request quality gate. Includes TypeScript, music contract, production build, and Fretboard smoke.
+  - Main pull request quality gate. Includes TypeScript diagnostics artifact, music contract, production build, and Fretboard smoke.
 - `.github/workflows/deploy.yml`
   - GitHub Pages deployment from `main`.
 
@@ -72,6 +74,20 @@ Redirects:
 
 - `#/paths` -> `#/fretboard`
 - `#/progress` -> `#/profile`
+
+## Engine architecture: three-note chords
+
+Three-note chord logic belongs in the main engine. Do not create Fretboard-local note arrays.
+
+Current engine behavior:
+
+- `buildTriad(root, quality)` handles major, minor, diminished, and augmented quality with correct spelling.
+- `triadForChord(chord)` derives a tertian triad from supported major/minor/dominant/seventh/diminished/augmented chords; suspended chords intentionally do not reduce to a triad.
+- `generateTriadInversion(triad, 0 | 1 | 2)` returns root, first, or second inversion in low-to-high voice order.
+- `findGuitarTriadVoicings` finds playable closed-position shapes on standard contiguous three-string sets.
+- Fretboard uses those candidates as typed layer memberships, with real note/interval/string/fret/role data.
+
+When extending this surface, preserve that split: engine calculates; renderer chooses what to show.
 
 ## Validation expectations
 
@@ -95,30 +111,32 @@ Current browser smoke behavior:
 - Uses headless Chromium to dump `/#/fretboard` DOM.
 - Requires `Explore the neck.`.
 - Requires `ah-fretboard-customizer`.
+- Requires `Triads` and `Triad inversion` controls.
 - Fails if `This screen could not load.` appears.
 - Uploads runtime capture artifacts on failure.
 
+TypeScript diagnostics are also uploaded as an artifact whenever the TypeScript step runs.
+
 ## How to approach the next feature
 
-Do the smallest useful Fretboard feature next. Recommended next step: triads.
+Do the smallest useful engine-backed Fretboard feature next. Recommended next step: focused chord-tone/arpeggio configurations.
 
-A good first triad pass should:
+The existing arpeggio layer has chord tones across the neck. The next pass should make its practice value more intentional without duplicating triad or voicing logic:
 
-- Add a real configuration/state control to Fretboard without changing the page design language.
-- Use shared engine data, not hand-coded page-local note arrays.
-- Keep marker semantics explicit: note, interval, string/fret, role, layer.
-- Add contract coverage for any new generator logic.
-- Extend browser smoke only if new route behavior needs proof.
+- Keep data in `lib/music`.
+- Decide whether the user needs a voicing/path view, a narrower region view, or an interval emphasis mode before changing UI.
+- Reuse the same typed position model and layer resolver.
+- Add contract coverage for any new generator or selection rule.
+- Extend browser smoke when the route exposes new controls.
 
 Likely future sequence:
 
-1. Triads.
-2. Chord tones / arpeggios.
-3. Scale context.
-4. Shell voicings.
-5. Drop 2 voicings.
-6. Voice-leading paths.
-7. Standards-specific Fretboard configurations fed by the same engine.
+1. Focused chord tones / arpeggios.
+2. Scale context.
+3. Shell voicings.
+4. Drop 2 voicings.
+5. Voice-leading paths.
+6. Standards-specific Fretboard configurations fed by the same engine.
 
 ## Common pitfalls
 
@@ -127,6 +145,7 @@ Likely future sequence:
 - Shape geometry mistakes can show up as runtime crashes because generators validate pitch class against the declared interval.
 - Stale PWA caches can complicate live behavior, but do not assume cache is the root cause when engine/runtime tests fail.
 - Avoid adding visual or product complexity to compensate for missing engine capability.
+- Do not let Fretboard knowledge fork away from the engine; After Hours should be able to reuse it.
 
 ## Documentation maintenance
 

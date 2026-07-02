@@ -1,4 +1,4 @@
-import { buildChord, buildScale, CAGED_MAJOR_FORM_ORDER, chordSymbol, createKey, displayStringOrder, findGuitarVoicings, functionSymbol, generateCagedMajorCycle, generateCagedMajorForm, generateMinorPentatonicBox, generateMinorPentatonicCycle, generateVoicing, MINOR_PENTATONIC_BOX_ORDER, noteToString, parseChordSymbol, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING } from './index';
+import { buildChord, buildScale, buildTriad, CAGED_MAJOR_FORM_ORDER, chordSymbol, createKey, displayStringOrder, findGuitarTriadVoicings, findGuitarVoicings, functionSymbol, generateCagedMajorCycle, generateCagedMajorForm, generateMinorPentatonicBox, generateMinorPentatonicCycle, generateTriadInversion, generateVoicing, MINOR_PENTATONIC_BOX_ORDER, noteToString, parseChordSymbol, parseNote, positionsForIntervals, resolveLayerCells, STANDARD_TUNING, triadForChord } from './index';
 
 export type MusicEngineContractCase = {
   id: string;
@@ -43,6 +43,23 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
   addCase(cases, 'Minor seventh function preserves seventh only', 'ii7', functionSymbol({ degree: 'ii', quality: 'minor7', context: 'major' }));
   addCase(cases, 'Standard tuning display order', '5 4 3 2 1 0', displayStringOrder(STANDARD_TUNING).join(' '));
 
+  const cMajorTriad = buildTriad('C', 'major');
+  const fSharpDiminishedTriad = buildTriad('F♯', 'diminished');
+  const aFlatAugmentedTriad = buildTriad('A♭', 'augmented');
+  addCase(cases, 'C major triad is correctly spelled', 'C E G', cMajorTriad.tones.map(tone => noteToString(tone.note)).join(' '));
+  addCase(cases, 'F sharp diminished triad is correctly spelled', 'F♯ A C', fSharpDiminishedTriad.tones.map(tone => noteToString(tone.note)).join(' '));
+  addCase(cases, 'A flat augmented triad is correctly spelled', 'A♭ C E', aFlatAugmentedTriad.tones.map(tone => noteToString(tone.note)).join(' '));
+  addCase(cases, 'Minor seven reduces to its minor triad', 'D F A', (triadForChord(buildChord('D', 'minor7'))?.tones ?? []).map(tone => noteToString(tone.note)).join(' '));
+  addCase(cases, 'Half diminished reduces to its diminished triad', 'A C E♭', (triadForChord(buildChord('A', 'halfDiminished7'))?.tones ?? []).map(tone => noteToString(tone.note)).join(' '));
+  addCase(cases, 'Sus chord has no tertian triad reduction', 'true', String(triadForChord(buildChord('C', 'sus4')) === undefined));
+  addCase(cases, 'C major root position voice order', '1 3 5', generateTriadInversion(cMajorTriad, 0).voices.map(voice => voice.interval).join(' '));
+  addCase(cases, 'C major first inversion voice order', '3 5 1', generateTriadInversion(cMajorTriad, 1).voices.map(voice => voice.interval).join(' '));
+  addCase(cases, 'C major second inversion voice order', '5 1 3', generateTriadInversion(cMajorTriad, 2).voices.map(voice => voice.interval).join(' '));
+  const cMajorFirstInversionCandidates = findGuitarTriadVoicings(cMajorTriad, 1, { fretRange: { start: 0, end: 12 }, maxFretSpan: 4, maxResults: 16 });
+  addCase(cases, 'First inversion triad search finds playable guitar shapes', 'true', String(cMajorFirstInversionCandidates.length > 0));
+  addCase(cases, 'Triad guitar candidates keep first inversion voice order', 'true', String(cMajorFirstInversionCandidates.every(candidate => candidate.positions.map(position => position.interval).join(' ') === '3 5 1')));
+  addCase(cases, 'Triad guitar candidates have complete roles', 'true', String(cMajorFirstInversionCandidates.every(candidate => candidate.positions.every(position => Boolean(position.role && position.note)))));
+
   const gRoots = positionsForIntervals(parseNote('G'), ['1'], 'root');
   addCase(cases, 'G root exists at low E fret 3', 'true', String(gRoots.some(position => position.stringIndex === 0 && position.fret === 3)));
   addCase(cases, 'G root exists at high e fret 3', 'true', String(gRoots.some(position => position.stringIndex === 5 && position.fret === 3)));
@@ -83,6 +100,11 @@ export function evaluateMusicEngineContract(): MusicEngineContractResult {
     { stringIndex: 5, fret: 3, interval: 'b3', role: 'shapeTone', layer: 'pentatonic', variant: 'Box 2', colorId: 'pentatonic-2' }
   ], { focusLayer: 'pentatonic' });
   addCase(cases, 'Pentatonic boundary retains both box colors', 'pentatonic-1 pentatonic-2', pentatonicCollision[0]?.segments.map(segment => segment.colorId).join(' ') ?? '');
+  const triadCollision = resolveLayerCells([
+    { stringIndex: 3, fret: 9, interval: '3', role: 'chordTone', layer: 'triad', variant: '1st inversion', colorId: 'triad' },
+    { stringIndex: 3, fret: 9, interval: '3', role: 'chordTone', layer: 'arpeggio', colorId: 'arpeggio' }
+  ], { focusLayer: 'triad' });
+  addCase(cases, 'Triad focus wins shared chord-tone label', 'triad', triadCollision[0]?.primary.layer ?? '');
   const sparseMemberships = [
     { stringIndex: 0, fret: 0, interval: '1', role: 'root', layer: 'roots' },
     undefined
