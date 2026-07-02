@@ -38,6 +38,10 @@ fail() {
   exit 1
 }
 
+if ! grep -Fq ':root[data-theme] .after-hours-topbar .wordmark-mark.after-hours-wordmark-mark' src/after-hours-wordmark.css; then fail 'After Hours mark is not protected from theme overrides.'; fi
+if ! grep -Fq 'background:#050505' src/after-hours-wordmark.css; then fail 'After Hours mark no longer has a fixed dark background.'; fi
+if ! grep -Fq 'border:2px solid #fff' src/after-hours-wordmark.css; then fail 'After Hours mark no longer has a fixed white ring.'; fi
+
 if ! grep -Fq 'Core spaces' "$RUNNER_TEMP/home.html"; then fail 'Core home screen did not render.'; fi
 if ! grep -Fq '12-Bar Blues' "$RUNNER_TEMP/home.html"; then fail 'Restored Blues language did not render on Home.'; fi
 if grep -Fq 'Daily lick' "$RUNNER_TEMP/home.html"; then fail 'Legacy daily lick content remains on Home.'; fi
@@ -49,6 +53,9 @@ if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/home.html"; then fail 'H
 
 if ! grep -Fq 'Explore the neck.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard heading did not render.'; fi
 if ! grep -Fq 'all fifteen key signatures' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard fifteen-key guidance did not render.'; fi
+if ! grep -Fq 'ah-fretboard-key-interactive' "$RUNNER_TEMP/fretboard.html"; then fail 'Interactive study key did not render inside the Fretboard surface.'; fi
+if ! grep -Fq 'ah-fretboard-key-controls' "$RUNNER_TEMP/fretboard.html"; then fail 'Study key controls did not render inside the study key card.'; fi
+if grep -Fq 'class="interval-panel"' "$RUNNER_TEMP/fretboard.html"; then fail 'Standalone study key panel remains outside the Fretboard surface.'; fi
 if ! grep -Fq '>C♯<' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard sharp key option did not render.'; fi
 if ! grep -Fq '>C♭<' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard flat key option did not render.'; fi
 if ! grep -Fq '>Major<' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard major mode option did not render.'; fi

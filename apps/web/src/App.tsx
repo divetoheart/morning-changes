@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { HashRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { AfterHoursAutumnLeavesApp } from './AfterHoursAutumnLeavesApp';
+import { AfterHoursBluesApp } from './AfterHoursBluesApp';
 import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
 import { FretboardChordBuilder } from './FretboardChordBuilder';
 import { buildChord, createKey, noteToString, relativeMajorKey, STUDY_KEY_SIGNATURES, type Chord, type ScaleMode, type StudyKeyId, type StudyMode } from './lib/music';
@@ -57,7 +58,7 @@ function AppLayout() {
         <Route path="/fretboard" element={<FretboardScreen />} />
         <Route path="/after-hours" element={<AfterHoursScreen />} />
         <Route path="/after-hours/autumn-leaves" element={<AfterHoursAutumnLeavesApp />} />
-        <Route path="/after-hours/12-bar-blues" element={<AfterHoursAutumnLeavesApp />} />
+        <Route path="/after-hours/12-bar-blues" element={<AfterHoursBluesApp />} />
         <Route path="/tools" element={<ToolsScreen metronome={metronome} />} />
         <Route path="/learn" element={<Navigate replace to="/" />} />
         <Route path="/lesson/:lessonId" element={<Navigate replace to="/" />} />
@@ -102,9 +103,19 @@ function FretboardScreen() {
 
   return <>
     <ScreenHeader eyebrow="Fretboard" title="Explore the neck." copy="Choose one of all fifteen key signatures, set major or minor context, then build the chord you want to inspect." />
-    <section className="interval-panel"><div className="interval-panel-head"><div><span className="eyebrow">Study key</span><h3>{keyLabel}</h3></div><StudyKeyControls selectedKey={selectedKey} studyMode={studyMode} onKeyChange={setSelectedKey} onModeChange={setStudyMode} /></div></section>
-    <FretboardChordBuilder key={`${selectedKey}-${studyMode}`} tonic={selectedKey} studyMode={studyMode} onChordChange={setActiveChord} />
-    <AfterHoursFretboardCustomizer key={`${selectedKey}-${studyMode}`} keyLabel={keyLabel} majorRoot={cagedRoot} minorRoot={selectedKey} chords={[{ chord: activeChord, scaleMode }]} showChordSelector={false} description={<>Use the chord builder above for the active chord. CAGED follows {cagedLabel}; Pentatonic follows {selectedKey.replace('#', '♯').replace('b', '♭')} minor; Scale follows the selected study mode.</>} cagedLabel={cagedLabel} pentatonicLabel={`${selectedKey.replace('#', '♯').replace('b', '♭')} minor boxes`} />
+    <AfterHoursFretboardCustomizer
+      key={`${selectedKey}-${studyMode}`}
+      keyLabel={keyLabel}
+      majorRoot={cagedRoot}
+      minorRoot={selectedKey}
+      chords={[{ chord: activeChord, scaleMode }]}
+      showChordSelector={false}
+      studyKeyControls={<StudyKeyControls selectedKey={selectedKey} studyMode={studyMode} onKeyChange={setSelectedKey} onModeChange={setStudyMode} />}
+      beforeControls={<FretboardChordBuilder key={`${selectedKey}-${studyMode}`} tonic={selectedKey} studyMode={studyMode} onChordChange={setActiveChord} />}
+      description={<>Use the chord builder below for the active chord. CAGED follows {cagedLabel}; Pentatonic follows {selectedKey.replace('#', '♯').replace('b', '♭')} minor; Scale follows the selected study mode.</>}
+      cagedLabel={cagedLabel}
+      pentatonicLabel={`${selectedKey.replace('#', '♯').replace('b', '♭')} minor boxes`}
+    />
   </>;
 }
 

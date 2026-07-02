@@ -29,6 +29,7 @@ Do not recreate legacy lessons, paths, daily licks, exercises, practice extras, 
 Any `/after-hours` route has a distinct wordmark state:
 
 - `.after-hours-wordmark-mark` is a solid black circle with a white ring.
+- It keeps the normal wordmark mark's 37px footprint and must remain black in every theme, including Light and Student.
 - Main label is `After Hours`.
 - Subtitle is `Standards Library`.
 
@@ -44,17 +45,19 @@ After Hours is an authored setting. Its chord selector must remain restricted to
 ## Source map
 
 - `apps/web/src/App.tsx`
-  - Core routes, After Hours wordmark state, standards shelf, Fretboard key/mode controls.
+  - Core routes, real Blues route, standards shelf, and main Fretboard props.
 - `apps/web/src/FretboardChordBuilder.tsx`
   - Main-Fretboard-only text and interval-button chord builder.
 - `apps/web/src/AfterHoursFretboardCustomizer.tsx`
-  - One shared renderer for full-neck and standard applications. Supports optional authored selector hiding and English detail copy.
+  - One shared renderer for full-neck and standard applications. Owns the Study Key boxed display, optional Study Key controls, optional pre-control content, authored selector hiding, and English detail copy.
 - `apps/web/src/AfterHoursBluesApp.tsx`
   - The three Blues variants.
 - `apps/web/src/after-hours-wordmark.css`
-  - Solid black ringed After Hours mark.
+  - Theme-safe solid black ringed After Hours mark.
+- `apps/web/src/fretboard-key-hierarchy.css`
+  - Shared Study Key card hierarchy inside the Fretboard surface.
 - `apps/web/src/fretboard-builder.css`
-  - Additive responsive builder and study-key styling.
+  - Additive responsive chord-builder styling.
 - `apps/web/src/lib/music/study-keys.ts`
   - Fifteen conventional key signatures and major/minor study-mode types.
 - `apps/web/src/lib/music/harmony.ts`
@@ -80,7 +83,15 @@ chords={[{ chord, scaleMode }]}
 defaultLayers={{ triad: true, arpeggio: true }}
 ```
 
-For the main Fretboard, use the dedicated builder and `showChordSelector={false}`. The parent supplies the one active custom or typed chord.
+For the main Fretboard:
+
+```tsx
+showChordSelector={false}
+studyKeyControls={<StudyKeyControls ... />}
+beforeControls={<FretboardChordBuilder ... />}
+```
+
+The Study Key is not a separate page-level panel. It lives in the renderer header beside the Shapes and Voicings copy, using the same boxed eyebrow / large-key hierarchy at a compact size. Do not create an unrelated badge or overlay to imitate it.
 
 The renderer supports CAGED, pentatonic, Triads/inversions, arpeggio, scale context, Shell, Drop 2, focused ranges, and collision detail.
 
@@ -109,15 +120,15 @@ npm run build
 Browser smoke requires:
 
 - Home: core content and no legacy daily/path language.
-- Fretboard: fifteen-key guidance, C♯ and C♭ options, major/minor options, builder, layers, voicing controls, English-detail guidance, footer, no error boundary.
+- Fretboard: unified in-surface Study Key controls, no standalone `interval-panel`, builder, layers, voicing controls, English-detail guidance, footer, and no error boundary.
 - Autumn Leaves: After Hours mark, focused study, and authored voicing controls.
-- Blues: route plus all three variants and footer.
+- Blues: real Blues route plus all three variants and footer.
 
 Failure artifacts include Home, Fretboard, Autumn Leaves, Blues DOM captures, and preview logs.
 
 ## Next work
 
-1. Verify the deployed builder, key signatures, solid After Hours mark, and Blues shelf manually on desktop and mobile.
+1. Verify the deployed in-surface Study Key, real Blues route, and solid After Hours mark on desktop and mobile.
 2. Add a true two-octave scale-path generator and contract coverage.
 3. Carry compact-map state to the full-neck URL.
 4. Add ii–V–I voice-leading paths.

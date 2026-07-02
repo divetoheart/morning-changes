@@ -24,6 +24,7 @@ import './after-hours-final-polish.css';
 import './mobile-nav-guard.css';
 import './fretboard-focus.css';
 import './fretboard-builder.css';
+import './fretboard-key-hierarchy.css';
 
 const mountNode = document.querySelector('#root');
 
