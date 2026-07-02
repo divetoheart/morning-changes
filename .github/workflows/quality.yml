@@ -42,6 +42,13 @@ jobs:
             echo "failure_summary=$summary" >> "$GITHUB_OUTPUT"
           fi
           exit 0
+      - name: Upload music contract report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: music-contract-report
+          path: apps/web/.music-contract-report.json
+          if-no-files-found: warn
       - name: Contract result — ${{ steps.music_contract.outputs.failure_summary || 'passed' }}
         shell: bash
         run: test -z "${{ steps.music_contract.outputs.failure_summary }}"
