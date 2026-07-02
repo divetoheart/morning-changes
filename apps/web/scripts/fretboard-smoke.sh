@@ -49,6 +49,9 @@ if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/home.html"; then fail 'H
 
 if ! grep -Fq 'Explore the neck.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard heading did not render.'; fi
 if ! grep -Fq 'all fifteen key signatures' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard fifteen-key guidance did not render.'; fi
+if ! grep -Fq 'ah-fretboard-key-interactive' "$RUNNER_TEMP/fretboard.html"; then fail 'Interactive study key did not render inside the Fretboard surface.'; fi
+if ! grep -Fq 'ah-fretboard-key-controls' "$RUNNER_TEMP/fretboard.html"; then fail 'Study key controls did not render inside the study key card.'; fi
+if grep -Fq 'class="interval-panel"' "$RUNNER_TEMP/fretboard.html"; then fail 'Standalone study key panel remains outside the Fretboard surface.'; fi
 if ! grep -Fq '>C♯<' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard sharp key option did not render.'; fi
 if ! grep -Fq '>C♭<' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard flat key option did not render.'; fi
 if ! grep -Fq '>Major<' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard major mode option did not render.'; fi
