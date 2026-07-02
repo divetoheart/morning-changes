@@ -19,9 +19,15 @@ fi
 
 "$browser" --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=5000 --dump-dom 'http://127.0.0.1:4173/#/fretboard' > "$RUNNER_TEMP/fretboard.html"
 
-grep -Fq 'Explore the neck.' "$RUNNER_TEMP/fretboard.html"
-grep -Fq 'ah-fretboard-customizer' "$RUNNER_TEMP/fretboard.html"
-if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/fretboard.html"; then
-  echo "Fretboard route reached the application error boundary."
+fail() {
+  echo "$1"
+  echo '--- Fretboard DOM ---'
+  cat "$RUNNER_TEMP/fretboard.html"
+  echo '--- Preview server log ---'
+  cat "$RUNNER_TEMP/fretboard-preview.log"
   exit 1
-fi
+}
+
+if ! grep -Fq 'Explore the neck.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard heading did not render.'; fi
+if ! grep -Fq 'ah-fretboard-customizer' "$RUNNER_TEMP/fretboard.html"; then fail 'Shared Fretboard renderer did not render.'; fi
+if grep -Fq 'This screen could not load.' "$RUNNER_TEMP/fretboard.html"; then fail 'Fretboard route reached the application error boundary.'; fi
