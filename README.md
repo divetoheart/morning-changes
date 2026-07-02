@@ -27,7 +27,7 @@ Every After Hours route uses the same route-level wordmark state:
    Standards Library
 ```
 
-The mark is a solid black circle with a white ring. It is not a separate app shell or a semi-circle glyph.
+The mark is a solid black circle with a white ring, keeps the normal mark footprint, and remains dark in every theme. It is not a semi-circle glyph or a separate app shell.
 
 ## Fretboard builder and keys
 
@@ -39,6 +39,8 @@ The main Fretboard is the free-form workspace. It supports:
 - A tone-builder path that assembles an engine-backed custom chord from selected intervals.
 - CAGED, pentatonic, arpeggio, scale, triad/inversion, Shell, and Drop 2 layers.
 - Plain-English fret details using the engine’s spelled note, location, shape identity, and nearest root marker.
+
+The visible Study Key belongs inside the **Shapes and Voicings** Fretboard surface. It is one compact boxed hierarchy—eyebrow, large key/mode label, and key/mode controls—not a standalone panel above the map or a separate badge.
 
 After Hours does **not** use the free-form builder. Its active-chord selection stays limited to the authored chords in the selected standard.
 
