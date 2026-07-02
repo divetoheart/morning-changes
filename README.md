@@ -1,28 +1,46 @@
 # Morning Changes
 
-Morning Changes is now a deliberately small guitar workspace centered on real standards and a shared music engine.
+Morning Changes is a deliberately small guitar workspace centered on real standards and a shared music engine.
 
 ## Active product
 
-The active app is a Vite + React project in `apps/web` with four core spaces:
+The Vite + React app in `apps/web` has four core spaces:
 
 - Home: gateway to the active workspace.
-- Fretboard: shared full-neck exploration and voicing surface.
-- After Hours: standards library.
+- Fretboard: free-form full-neck inspection and voicing surface.
+- After Hours: authored standards library.
 - Tools: metronome.
 
-The only active standard currently is Autumn Leaves. It uses the same shared Fretboard renderer for a focused ii–V–I study in frets 7–11.
+After Hours currently contains two standards:
 
-The old lesson library, learning paths, daily lesson rotation, licks, exercises, practice extras, and lesson-progress profile have been removed. Retired routes redirect to Home until a new Learn rebuild is explicitly scoped.
+- Autumn Leaves: relative-major ii–V–I study in frets 7–11.
+- 12-Bar Blues: three study variants—Texas Flood, Crossroads, and The Thrill Is Gone.
+
+The old lesson library, learning paths, daily lesson rotation, licks, exercises, practice extras, and lesson-progress profile remain retired. Retired routes redirect Home until a new Learn rebuild is explicitly scoped.
 
 ## After Hours identity
 
-Any After Hours route flips the existing wordmark 180 degrees and changes the copy to:
+Every After Hours route uses the same route-level wordmark state:
 
 ```text
-After Hours
-Standards Library
+●  After Hours
+   Standards Library
 ```
+
+The mark is a solid black circle with a white ring. It is not a separate app shell or a semi-circle glyph.
+
+## Fretboard builder and keys
+
+The main Fretboard is the free-form workspace. It supports:
+
+- All 15 conventional key signatures: C, seven sharp signatures through C♯, and seven flat signatures through C♭.
+- Major or minor study context.
+- A typed chord-symbol entry path for built-in engine chords.
+- A tone-builder path that assembles an engine-backed custom chord from selected intervals.
+- CAGED, pentatonic, arpeggio, scale, triad/inversion, Shell, and Drop 2 layers.
+- Plain-English fret details using the engine’s spelled note, location, shape identity, and nearest root marker.
+
+After Hours does **not** use the free-form builder. Its active-chord selection stays limited to the authored chords in the selected standard.
 
 ## Release verification
 
@@ -34,13 +52,13 @@ Live build · <short commit>
 
 Use this footer as the source of truth for what is actually deployed in the browser. Every release update must also name a concrete visible behavior to look for. See `docs/RELEASE_VERIFICATION.md`.
 
-## Fretboard architecture
+## Engineering boundaries
 
-The shared music engine owns all marker data: note, interval, string/fret, role, and layer.
-
-The Fretboard supports full or focused ranges with CAGED, minor pentatonic, chord-tone/arpeggio, scale context, triads/inversions, Shell, and Drop 2 voicings. Compact standard studies reuse `AfterHoursFretboardCustomizer`; no separate local chord-chart system should be built.
-
-A dedicated two-octave scale-path generator is not yet implemented. The existing Scale layer is range-aware context, not a named two-octave route.
+- Keep music logic in `apps/web/src/lib/music`; UI consumes structured engine data.
+- Custom chords use `buildCustomChord`; do not create Fretboard-local note arrays.
+- `LayerMembership` includes note, interval, string/fret, role, layer, and optional shape identity so detail copy is engine-derived.
+- Compact standard studies reuse `AfterHoursFretboardCustomizer`; do not create parallel chord-chart components.
+- A dedicated two-octave scale-path generator is not yet implemented. The existing Scale layer is range-aware context, not a named two-octave route.
 
 ## Commands
 
@@ -55,13 +73,12 @@ npm run quality
 npm run preview
 ```
 
-GitHub Actions runs TypeScript, music contracts, production build, and browser smoke coverage for Home, Fretboard, and Autumn Leaves.
+GitHub Actions runs TypeScript, music contracts, production build, and browser smoke coverage for Home, Fretboard, Autumn Leaves, and 12-Bar Blues.
 
 ## Engineering rules
 
 - Preserve the existing visual identity unless design work is explicitly requested.
 - Do not use DOM patches, temporary adapters, or UI-only fixes for engine problems.
-- Keep music logic in `apps/web/src/lib/music`; Fretboard and After Hours consume it.
 - Do not restore retired lesson/daily content without an explicit rebuild work order.
 - Keep README, `docs/WORK_ORDER.md`, and `docs/AGENT_HANDOFF.md` current after significant work.
 - Green checks normally mean merge and deploy unless explicitly held.

@@ -1,1 +1,1 @@
-.after-hours-wordmark-mark{transform:rotate(180deg)}.after-hours-topbar .wordmark small{color:var(--gold-bright)}
+.after-hours-wordmark-mark{width:22px;height:22px;border:2px solid #fff;border-radius:999px;background:#050505;box-sizing:border-box;box-shadow:0 0 0 1px rgba(255,255,255,.12)}.after-hours-topbar .wordmark small{color:var(--gold-bright)}

@@ -2,8 +2,8 @@ import type { IntervalPosition } from './types';
 
 export type FretboardLayerId = 'caged' | 'pentatonic' | 'triad' | 'voicing' | 'arpeggio' | 'scale' | 'roots';
 
-/** The resolver needs semantic location/role data, not a duplicated note object. */
-export type LayerMembership = Pick<IntervalPosition, 'stringIndex' | 'fret' | 'interval' | 'role'> & {
+/** The resolver preserves the engine note, interval, role, and exact neck location for detail UI. */
+export type LayerMembership = Pick<IntervalPosition, 'stringIndex' | 'fret' | 'interval' | 'note' | 'role'> & {
   layer: FretboardLayerId;
   /** Named physical-shape identity, e.g. CAGED E-form. */
   variant?: string;

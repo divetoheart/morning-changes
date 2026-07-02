@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { HashRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { AfterHoursAutumnLeavesApp } from './AfterHoursAutumnLeavesApp';
 import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
-import { buildChord } from './lib/music';
-import { KEYS, type KeyName } from './lib/theory';
+import { FretboardChordBuilder } from './FretboardChordBuilder';
+import { buildChord, createKey, noteToString, relativeMajorKey, STUDY_KEY_SIGNATURES, type Chord, type ScaleMode, type StudyKeyId, type StudyMode } from './lib/music';
 import { useMetronome } from './lib/useMetronome';
 
 type IconName = 'home' | 'paths' | 'after' | 'tools' | 'tempo' | 'arrow';
@@ -18,12 +18,8 @@ const navItems: NavItem[] = [
 ];
 
 const standards: readonly StandardEntry[] = [
-  {
-    title: 'Autumn Leaves',
-    subtitle: 'Harmony map, focused ii–V–I studies, shell voicings, and an arpeggio play-along.',
-    focus: 'ii–V–I voice leading and minor cadences',
-    href: '#/after-hours/autumn-leaves'
-  }
+  { title: 'Autumn Leaves', subtitle: 'Harmony map, focused ii–V–I studies, shell voicings, and an arpeggio play-along.', focus: 'ii–V–I voice leading and minor cadences', href: '#/after-hours/autumn-leaves' },
+  { title: '12-Bar Blues', subtitle: 'Three complete study settings: slow Texas blues, high-energy electric blues, and minor blues.', focus: 'I–IV–V form · three recorded worlds', href: '#/after-hours/12-bar-blues' }
 ];
 
 function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
@@ -47,7 +43,7 @@ function AppLayout() {
   return <div className="app-shell">
     <header className={`app-topbar ${isAfterHours ? 'after-hours-topbar' : ''}`}>
       <NavLink className="wordmark" to="/">
-        <span className={`wordmark-mark ${isAfterHours ? 'after-hours-wordmark-mark' : ''}`}>◒</span>
+        <span className={`wordmark-mark ${isAfterHours ? 'after-hours-wordmark-mark' : ''}`} aria-hidden="true">{isAfterHours ? '' : '◒'}</span>
         <span><strong>{wordmarkTitle}</strong><small>{wordmarkSubtitle}</small></span>
       </NavLink>
       <nav className="desktop-nav" aria-label="Primary navigation">
@@ -61,7 +57,7 @@ function AppLayout() {
         <Route path="/fretboard" element={<FretboardScreen />} />
         <Route path="/after-hours" element={<AfterHoursScreen />} />
         <Route path="/after-hours/autumn-leaves" element={<AfterHoursAutumnLeavesApp />} />
-        <Route path="/after-hours/12-bar-blues" element={<Navigate replace to="/after-hours" />} />
+        <Route path="/after-hours/12-bar-blues" element={<AfterHoursAutumnLeavesApp />} />
         <Route path="/tools" element={<ToolsScreen metronome={metronome} />} />
         <Route path="/learn" element={<Navigate replace to="/" />} />
         <Route path="/lesson/:lessonId" element={<Navigate replace to="/" />} />
@@ -87,21 +83,33 @@ function HomeScreen() {
     <ScreenHeader eyebrow="Morning Changes" title="Keep the useful parts close." copy="After Hours, the fretboard workspace, and a metronome are the active core while the lesson library is rebuilt properly." />
     <section className="quiet-list core-space-list">
       <span className="list-heading">Core spaces</span>
-      <a className="compact-row row-link" href="#/after-hours"><span className="row-icon"><Icon name="after" /></span><span className="row-content"><span className="row-label">Standards library</span><strong>After Hours</strong><small>Apply the tools inside real music, starting with Autumn Leaves.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
-      <a className="compact-row row-link" href="#/fretboard"><span className="row-icon"><Icon name="paths" /></span><span className="row-content"><span className="row-label">Shared music engine</span><strong>Fretboard</strong><small>Shapes, chord tones, triads, voicings, and focused neck windows.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
+      <a className="compact-row row-link" href="#/after-hours"><span className="row-icon"><Icon name="after" /></span><span className="row-content"><span className="row-label">Standards library</span><strong>After Hours</strong><small>Apply the tools inside real music: Autumn Leaves, 12-Bar Blues, and what comes next.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
+      <a className="compact-row row-link" href="#/fretboard"><span className="row-icon"><Icon name="paths" /></span><span className="row-content"><span className="row-label">Shared music engine</span><strong>Fretboard</strong><small>Build chords, choose a key, then inspect shapes, tones, triads, and voicings.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
       <a className="compact-row row-link" href="#/tools"><span className="row-icon"><Icon name="tools" /></span><span className="row-content"><span className="row-label">Practice utility</span><strong>Tools</strong><small>Set a tempo and keep time without leaving the workspace.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
     </section>
   </>;
 }
 
 function FretboardScreen() {
-  const [selectedKey, setSelectedKey] = useState<KeyName>('C');
-  const selectedChord = useMemo(() => buildChord(selectedKey, 'major7'), [selectedKey]);
+  const [selectedKey, setSelectedKey] = useState<StudyKeyId>('C');
+  const [studyMode, setStudyMode] = useState<StudyMode>('major');
+  const [activeChord, setActiveChord] = useState<Chord>(() => buildChord('C', 'major7'));
+  const scaleMode: ScaleMode = studyMode === 'major' ? 'major' : 'naturalMinor';
+  const cagedContext = useMemo(() => studyMode === 'major' ? createKey(selectedKey, 'major') : relativeMajorKey(createKey(selectedKey, 'naturalMinor')), [selectedKey, studyMode]);
+  const cagedRoot = noteToString(cagedContext.tonic);
+  const cagedLabel = studyMode === 'major' ? `${cagedRoot} major forms` : `${cagedRoot} major · relative major`;
+  const keyLabel = `${selectedKey.replace('#', '♯').replace('b', '♭')} ${studyMode === 'major' ? 'major' : 'minor'}`;
+
   return <>
-    <ScreenHeader eyebrow="Fretboard" title="Explore the neck." copy="Choose a study key, then use the shared full-neck map to inspect shapes, chord tones, voicings, and overlaps." />
-    <section className="interval-panel"><div className="interval-panel-head"><div><span className="eyebrow">Study key</span><h3>{selectedKey} major</h3></div><KeySelector selectedKey={selectedKey} onKeyChange={setSelectedKey} /></div></section>
-    <AfterHoursFretboardCustomizer key={selectedKey} keyLabel={`${selectedKey} major`} majorRoot={selectedKey} minorRoot={selectedKey} chords={[{ chord: selectedChord, scaleMode: 'major' }]} description={<>Default layers are Pentatonic and Arpeggio. Turn on Triads, CAGED, Scale, Shell, or Drop 2 when you want that context.</>} cagedLabel={`${selectedKey} major forms`} pentatonicLabel={`${selectedKey} minor boxes`} />
+    <ScreenHeader eyebrow="Fretboard" title="Explore the neck." copy="Choose one of all fifteen key signatures, set major or minor context, then build the chord you want to inspect." />
+    <section className="interval-panel"><div className="interval-panel-head"><div><span className="eyebrow">Study key</span><h3>{keyLabel}</h3></div><StudyKeyControls selectedKey={selectedKey} studyMode={studyMode} onKeyChange={setSelectedKey} onModeChange={setStudyMode} /></div></section>
+    <FretboardChordBuilder key={`${selectedKey}-${studyMode}`} tonic={selectedKey} studyMode={studyMode} onChordChange={setActiveChord} />
+    <AfterHoursFretboardCustomizer key={`${selectedKey}-${studyMode}`} keyLabel={keyLabel} majorRoot={cagedRoot} minorRoot={selectedKey} chords={[{ chord: activeChord, scaleMode }]} showChordSelector={false} description={<>Use the chord builder above for the active chord. CAGED follows {cagedLabel}; Pentatonic follows {selectedKey.replace('#', '♯').replace('b', '♭')} minor; Scale follows the selected study mode.</>} cagedLabel={cagedLabel} pentatonicLabel={`${selectedKey.replace('#', '♯').replace('b', '♭')} minor boxes`} />
   </>;
+}
+
+function StudyKeyControls({ selectedKey, studyMode, onKeyChange, onModeChange }: { selectedKey: StudyKeyId; studyMode: StudyMode; onKeyChange: (key: StudyKeyId) => void; onModeChange: (mode: StudyMode) => void }) {
+  return <div className="study-key-controls"><label className="key-selector"><span>Key</span><select value={selectedKey} onChange={event => onKeyChange(event.target.value as StudyKeyId)}>{STUDY_KEY_SIGNATURES.map(key => <option key={key.id} value={key.id}>{key.label}</option>)}</select></label><label className="key-selector"><span>Mode</span><select value={studyMode} onChange={event => onModeChange(event.target.value as StudyMode)}><option value="major">Major</option><option value="minor">Minor</option></select></label></div>;
 }
 
 function AfterHoursScreen() {
@@ -118,10 +126,6 @@ function ToolsScreen({ metronome }: { metronome: ReturnType<typeof useMetronome>
     <ScreenHeader eyebrow="Tools" title="Keep time. Tune up." />
     <section className="metronome-panel"><span className="eyebrow">Metronome</span><div className="tempo-number">{metronome.tempo}</div><span className="tempo-caption">beats per minute · 4/4</span><div className="beat-row">{[0, 1, 2, 3].map(index => <span className={metronome.playing && metronome.beat === index ? 'active' : ''} key={index} />)}</div><input aria-label="Tempo" type="range" min="35" max="240" value={metronome.tempo} onChange={event => metronome.setTempo(Number(event.target.value))} /><div className="metronome-controls"><button className="secondary-button" type="button" onClick={() => metronome.setTempo(metronome.tempo - 1)} aria-label="Decrease tempo">−</button><button className="primary-button" type="button" onClick={metronome.toggle}>{metronome.playing ? 'Stop' : 'Start'} · {metronome.tempo} BPM</button><button className="secondary-button" type="button" onClick={() => metronome.setTempo(metronome.tempo + 1)} aria-label="Increase tempo">+</button><button className="secondary-button" type="button" onClick={metronome.tapTempo}>Tap</button></div></section>
   </>;
-}
-
-function KeySelector({ selectedKey, onKeyChange }: { selectedKey: KeyName; onKeyChange: (key: KeyName) => void }) {
-  return <label className="key-selector"><span>Key</span><select value={selectedKey} onChange={event => onKeyChange(event.target.value as KeyName)}>{KEYS.map(key => <option key={key} value={key}>{key}</option>)}</select></label>;
 }
 
 export default function App() {

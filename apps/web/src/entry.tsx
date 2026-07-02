@@ -23,6 +23,7 @@ import './after-hours-fixes.css';
 import './after-hours-final-polish.css';
 import './mobile-nav-guard.css';
 import './fretboard-focus.css';
+import './fretboard-builder.css';
 
 const mountNode = document.querySelector('#root');
 

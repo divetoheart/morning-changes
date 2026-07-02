@@ -14,47 +14,54 @@ Last updated: 2026-07-02
 
 ## Active core
 
-Navigation is intentionally limited to:
+Navigation is intentionally limited to Home, Fretboard, After Hours, and Tools.
 
-- Home
-- Fretboard
-- After Hours
-- Tools
-
-Home is a core-space gateway, not a daily lesson dashboard.
-
-Routes:
-
-- `/fretboard`: native shared fretboard workspace.
-- `/after-hours`: standards library.
-- `/after-hours/autumn-leaves`: active standard app.
+- `/fretboard`: flexible shared-map workspace.
+- `/after-hours`: authored standards library.
+- `/after-hours/autumn-leaves`: Autumn Leaves study.
+- `/after-hours/12-bar-blues`: 12-Bar Blues study.
 - `/tools`: metronome.
-- `/paths`: redirects to Fretboard for existing links.
-- `/learn`, `/lesson/*`, `/practice/*`, `/profile`, and `/progress`: redirect to Home because those systems are retired.
+- Retired lesson/profile/daily routes redirect Home.
 
-## After Hours wordmark
+Home remains a core-space gateway, not a daily lesson dashboard.
 
-On any `/after-hours` route:
+## After Hours identity and standards
 
-- Rotate the existing mark 180 degrees.
-- Change `Morning Changes` to `After Hours`.
-- Change the subtitle to `Standards Library`.
+Every `/after-hours` route shows:
 
-Keep this as a route state, not a separate visual redesign.
+- A solid black circular mark with a white ring.
+- `After Hours`.
+- `Standards Library`.
 
-## Retired content
+Do not bring back the old semi-circle glyph for this route state.
 
-The old lesson library, paths, daily lesson rotation, daily licks, daily exercises, practice-extra pages, lesson progress dashboard, and progress persistence are removed.
+The active standards are:
 
-Do not restore them, add placeholder cards, or recreate the old daily/practice flow unless the user explicitly starts a new rebuild work order.
+- Autumn Leaves: focused relative-major ii–V–I application at frets 7–11.
+- 12-Bar Blues: three authored variants—Texas Flood, Crossroads, and The Thrill Is Gone.
+
+After Hours is authored repertoire. Its active chord selector must stay limited to the real chords in the selected standard. Do not add the free-form Fretboard builder there.
 
 ## Fretboard architecture
 
-`AfterHoursFretboardCustomizer` is the one shared fretboard renderer for full-neck exploration and compact standard/lesson applications.
+`AfterHoursFretboardCustomizer` is the one shared renderer for full-neck exploration and compact standard studies.
 
-It supports full or focused ranges, active chords, Triads/inversions, CAGED, pentatonic, arpeggio, scale context, Shell, Drop 2, and the small full-neck handoff.
+The main `/fretboard` route is the free-form lab. It supports:
 
-Autumn Leaves is the first embedded use: relative-major ii–V–I in frets 7–11.
+- All 15 conventional key signatures, including C♯ and C♭.
+- Major and minor study context.
+- Typed built-in chord symbols.
+- Engine-backed custom chords built from interval buttons.
+- CAGED, pentatonic, arpeggio, scale, Triads/inversions, Shell, and Drop 2.
+- Plain-English detail text derived from layer membership note, interval, string/fret, shape identity, and nearest root.
+
+Custom chord construction belongs in `lib/music` through `buildCustomChord`. Never add page-local note tables.
+
+Layer memberships must preserve the spelled note alongside interval, role, string/fret, layer, and variant. This is required for the detail panel.
+
+## Retired content
+
+The old lesson library, paths, daily rotation, licks, exercises, practice extras, lesson dashboard, and progress persistence are removed. Do not restore them without a new explicit rebuild work order.
 
 ## Quality and release proof
 
@@ -69,15 +76,16 @@ npm run build
 
 Browser smoke verifies:
 
-1. Home has the core spaces and no legacy daily/lesson/path content.
-2. Fretboard has its renderer, Triads, voicing controls, footer, and no error boundary.
-3. Autumn Leaves has the After Hours wordmark state, focused map, footer, and no error boundary.
+1. Home remains core-only.
+2. Fretboard has 15-key controls, major/minor mode, chord builder, renderer, voicing controls, footer, and no error boundary.
+3. Autumn Leaves has the After Hours identity and focused map.
+4. 12-Bar Blues exposes all three study variants and no error boundary.
 
 The live footer is the deployment source of truth. See `docs/RELEASE_VERIFICATION.md`.
 
 ## Next work
 
-1. Verify the deployed core shell and After Hours wordmark manually.
+1. Verify the deployed builder and After Hours mark manually on desktop and mobile.
 2. Add a true two-octave scale-path generator.
 3. Carry focused-map state into the full-neck link.
 4. Add ii–V–I voice-leading paths.

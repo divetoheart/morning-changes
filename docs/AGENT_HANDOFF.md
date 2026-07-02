@@ -2,26 +2,19 @@
 
 Last updated: 2026-07-02
 
-## Product identity
+## Product identity and operating rules
 
 Morning Changes is Justin's guitar practice workspace. Preserve the existing visual identity. The user does not want generic dashboards, filler copy, broad redesigns, temporary fixes, or hand-coded music data.
 
-Be candid. Do not claim deployment or runtime proof that you do not have. Green checks normally mean merge and deploy unless the user explicitly says to hold.
+Be candid. Do not claim deployment or runtime proof you do not have. Green checks normally mean merge and deploy unless the user explicitly says to hold.
 
-Every significant update should refresh README, `docs/WORK_ORDER.md`, and this file. Every release message must include a concrete visible `Look for:` cue and the expected `Live build · <short commit>` footer value. See `docs/RELEASE_VERIFICATION.md`.
+Every significant update refreshes README, `docs/WORK_ORDER.md`, and this file. Every release message must include a concrete `Look for:` cue and the expected `Live build · <short commit>` footer value. See `docs/RELEASE_VERIFICATION.md`.
 
 ## Active app scope
 
-The app is intentionally reduced to four core spaces:
+The active app has four spaces: Home, Fretboard, After Hours, and Tools.
 
-- Home
-- Fretboard
-- After Hours
-- Tools
-
-Home is a simple gateway to those spaces.
-
-The old Learn/lesson/path/daily/profile ecosystem is retired. The following route families redirect to Home:
+Home is only a gateway. Retired routes redirect Home:
 
 - `#/learn`
 - `#/lesson/*`
@@ -29,42 +22,55 @@ The old Learn/lesson/path/daily/profile ecosystem is retired. The following rout
 - `#/profile`
 - `#/progress`
 
-Do not recreate legacy lessons, paths, daily licks, daily exercises, practice extras, premium prompts, or lesson progress unless the user explicitly starts a fresh rebuild effort.
+Do not recreate legacy lessons, paths, daily licks, exercises, practice extras, premium prompts, or lesson progress without a fresh rebuild order.
 
-## After Hours route state
+## After Hours
 
-Any path beginning `/after-hours` changes the shared wordmark state:
+Any `/after-hours` route has a distinct wordmark state:
 
-- Existing mark rotates 180 degrees through `.after-hours-wordmark-mark`.
-- Main label reads `After Hours`.
-- Subtitle reads `Standards Library`.
+- `.after-hours-wordmark-mark` is a solid black circle with a white ring.
+- Main label is `After Hours`.
+- Subtitle is `Standards Library`.
 
-This is deliberately a route state, not an alternative app shell.
+This is a route state, not a parallel app shell.
+
+Active standards:
+
+- Autumn Leaves: relative-major ii–V–I focused at frets 7–11.
+- 12-Bar Blues: Texas Flood, Crossroads, and The Thrill Is Gone variants.
+
+After Hours is an authored setting. Its chord selector must remain restricted to the chords of the selected standard. Never expose the free-form Fretboard builder inside it.
 
 ## Source map
 
 - `apps/web/src/App.tsx`
-  - Minimal route shell, core navigation, After Hours wordmark state, and core screens.
-- `apps/web/src/after-hours-wordmark.css`
-  - Small additive wordmark state styling.
+  - Core routes, After Hours wordmark state, standards shelf, Fretboard key/mode controls.
+- `apps/web/src/FretboardChordBuilder.tsx`
+  - Main-Fretboard-only text and interval-button chord builder.
 - `apps/web/src/AfterHoursFretboardCustomizer.tsx`
-  - One shared map renderer for full-neck and embedded standard applications.
-- `apps/web/src/AfterHoursAutumnPortBody.tsx`
-  - First focused composition: Autumn Leaves relative-major ii–V–I around 8th position / frets 7–11.
-- `apps/web/src/lib/music/`
-  - Canonical engine for pitch, harmony, fretboard geometry, layers, triads, and voicings.
+  - One shared renderer for full-neck and standard applications. Supports optional authored selector hiding and English detail copy.
+- `apps/web/src/AfterHoursBluesApp.tsx`
+  - The three Blues variants.
+- `apps/web/src/after-hours-wordmark.css`
+  - Solid black ringed After Hours mark.
+- `apps/web/src/fretboard-builder.css`
+  - Additive responsive builder and study-key styling.
+- `apps/web/src/lib/music/study-keys.ts`
+  - Fifteen conventional key signatures and major/minor study-mode types.
+- `apps/web/src/lib/music/harmony.ts`
+  - Built-in symbols and `buildCustomChord` for interval-selected chords.
+- `apps/web/src/lib/music/layers.ts`
+  - Shared marker membership includes spelled note, interval, string/fret, role, layer, and variant.
+- `apps/web/src/lib/music/contract.ts`
+  - Music correctness contract, including custom chords and fifteen signatures.
 - `apps/web/scripts/fretboard-smoke.sh`
-  - Browser smoke for Home, Fretboard, and Autumn Leaves.
-- `.github/workflows/quality.yml`
-  - TypeScript, contract, production build, and browser smoke with runtime capture.
-- `.github/workflows/deploy.yml`
-  - GitHub Pages build; injects commit metadata shown by the visible footer.
+  - Browser checks for Home, Fretboard, Autumn Leaves, and Blues.
 
 ## Shared Fretboard architecture
 
-Use `AfterHoursFretboardCustomizer`, never a lesson-local fretboard or static chord chart.
+Use `AfterHoursFretboardCustomizer`; never build a lesson-local static fretboard or parallel chord chart.
 
-Relevant props:
+For a standard/lesson application:
 
 ```ts
 fretRange={{ start: 7, end: 11 }}
@@ -74,16 +80,20 @@ chords={[{ chord, scaleMode }]}
 defaultLayers={{ triad: true, arpeggio: true }}
 ```
 
-It supports active-chord selection, CAGED, pentatonic, Triads/inversions, arpeggio, scale context, Shell, Drop 2, collision detail, and focused ranges.
+For the main Fretboard, use the dedicated builder and `showChordSelector={false}`. The parent supplies the one active custom or typed chord.
 
-The full-neck link does not yet preserve the compact map’s configuration. Scale is context, not a dedicated two-octave path. Do not claim either is implemented.
+The renderer supports CAGED, pentatonic, Triads/inversions, arpeggio, scale context, Shell, Drop 2, focused ranges, and collision detail.
+
+Scale is context, not a dedicated two-octave path. The full-neck link does not yet preserve compact-map configuration. Do not claim either is implemented.
 
 ## Engine expectations
 
-- `buildTriad`, `triadForChord`, `generateTriadInversion`, and `findGuitarTriadVoicings` belong to the shared engine.
-- Shell and Drop 2 candidates come from `generateVoicing` and `selectGuitarVoicingCandidate`.
-- Every marker must have engine-derived note, interval, string/fret, role, and layer membership.
-- The layer resolver rejects undefined memberships. An error boundary is containment, never a replacement for fixing source data.
+- `buildCustomChord` is the only interval-button builder path. It requires root `1`, spells every selected interval, and creates a readable chord label.
+- `parseChordSymbol` handles typed built-in chord symbols.
+- Custom chords can supply arpeggio/scale data and may derive a triad or usable voicing when their tone set supports it.
+- Every marker must carry engine-derived note, interval, string/fret, role, and layer membership.
+- Detail copy uses that data to explain what a selected marker is and where its nearest root lies.
+- Error boundaries contain route crashes; they do not replace source fixes.
 
 ## Validation
 
@@ -98,17 +108,18 @@ npm run build
 
 Browser smoke requires:
 
-- Home: core spaces, no legacy daily/lesson/path content, and live footer.
-- Fretboard: renderer, Triads, inversion, chord-voicing, Drop 2, footer, and no error boundary.
-- Autumn Leaves: After Hours wordmark state, focused map, expand link, voicing control, footer, and no error boundary.
+- Home: core content and no legacy daily/path language.
+- Fretboard: fifteen-key guidance, C♯ and C♭ options, major/minor options, builder, layers, voicing controls, English-detail guidance, footer, no error boundary.
+- Autumn Leaves: After Hours mark, focused study, and authored voicing controls.
+- Blues: route plus all three variants and footer.
 
-Failure artifacts include Home, Fretboard, Autumn Leaves DOM captures and preview logs.
+Failure artifacts include Home, Fretboard, Autumn Leaves, Blues DOM captures, and preview logs.
 
 ## Next work
 
-1. Verify the deployed core shell and After Hours wordmark on desktop and mobile.
+1. Verify the deployed builder, key signatures, solid After Hours mark, and Blues shelf manually on desktop and mobile.
 2. Add a true two-octave scale-path generator and contract coverage.
 3. Carry compact-map state to the full-neck URL.
 4. Add ii–V–I voice-leading paths.
 5. Add another standard only with a concrete practice outcome.
-6. Rebuild Learn later from a new work order—not from retired content.
+6. Rebuild Learn later from a new work order—not retired content.
