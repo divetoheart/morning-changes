@@ -5,6 +5,15 @@ export type FretboardLayerId = 'caged' | 'pentatonic' | 'arpeggio' | 'scale' | '
 /** The resolver needs semantic location/role data, not a duplicated note object. */
 export type LayerMembership = Pick<IntervalPosition, 'stringIndex' | 'fret' | 'interval' | 'role'> & {
   layer: FretboardLayerId;
+  /** Named physical-shape identity, e.g. CAGED E-form. */
+  variant?: string;
+  /** Stable visual identity, separate from app theme and layer membership. */
+  colorId?: string;
+};
+
+export type LayerVisualSegment = {
+  layer: FretboardLayerId;
+  colorId?: string;
 };
 
 export type LayerCell = {
@@ -14,9 +23,10 @@ export type LayerCell = {
   primary: LayerMembership;
   memberships: readonly LayerMembership[];
   marker: 'single' | 'agreement' | 'conflict';
+  /** A square marker means the visible/focus label is interval 1. */
   root: boolean;
-  /** Ordered membership list for a segmented border/ring renderer. */
-  segments: readonly FretboardLayerId[];
+  /** Ordered membership colors for a segmented border/ring renderer. */
+  segments: readonly LayerVisualSegment[];
 };
 
 export type LayerResolutionOptions = {
@@ -56,14 +66,18 @@ export function resolveLayerCells(memberships: readonly LayerMembership[], optio
     const primary = ordered[0];
     const uniqueIntervals = new Set(group.map(item => item.interval));
     const marker = group.length === 1 ? 'single' : uniqueIntervals.size === 1 ? 'agreement' : 'conflict';
-    const segments = [...new Set(ordered.map(item => item.layer))];
+    const segments = ordered.reduce<LayerVisualSegment[]>((result, membership) => {
+      const alreadyIncluded = result.some(segment => segment.layer === membership.layer && segment.colorId === membership.colorId);
+      if (!alreadyIncluded) result.push({ layer: membership.layer, colorId: membership.colorId });
+      return result;
+    }, []);
     return {
       stringIndex: primary.stringIndex,
       fret: primary.fret,
       primary,
       memberships: ordered,
       marker,
-      root: group.some(item => item.role === 'root' || item.interval === '1'),
+      root: primary.interval === '1',
       segments
     };
   }).sort((left, right) => left.stringIndex - right.stringIndex || left.fret - right.fret);
