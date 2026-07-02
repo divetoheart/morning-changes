@@ -5,7 +5,7 @@ import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
 import { FormMap } from './AfterHoursDiagrams';
 import { KeyArrangementReference } from './AfterHoursStandardSections';
 import { KeyNotation } from './MusicNotation';
-import { chordSymbol, createKey, type ScaleMode } from './lib/music';
+import { chordSymbol, createKey, functionSymbol, type ScaleMode } from './lib/music';
 
 const REFERENCES: Record<string, { title: string; copy: string; href: string }> = {
   'gm-bb': { title: 'Cannonball Adderley with Miles Davis · Somethin’ Else · recorded 1958', copy: 'The canonical modern-jazz arrangement: a G minor / B♭ major setting with Miles Davis’s spacious theme statement and Cannonball Adderley’s alto defining the session vocabulary for the tune.', href: 'https://www.youtube.com/watch?v=u37RF5xKNq8' },
@@ -28,15 +28,20 @@ export function AfterHoursAutumnPortBody() {
   const minorContext = useMemo(() => createKey(study.minorKey.split(' ')[0], 'naturalMinor'), [study.minorKey]);
   const majorContext = useMemo(() => createKey(study.majorKey.split(' ')[0], 'major'), [study.majorKey]);
   const keyPair = <><KeyNotation context={minorContext} /> / <KeyNotation context={majorContext} /></>;
+  const formProgression = useMemo(() => study.form.flatMap(section => section.bars).flatMap(bar => bar).map(cell => ({
+    chord: cell.chord,
+    scaleMode: scaleModeForAutumnCell(cell),
+    functionLabel: cell.function ? functionSymbol(cell.function) : undefined
+  })), [study.form]);
   const formChords = useMemo(() => {
     const seen = new Set<string>();
-    return study.form.flatMap(section => section.bars).flatMap(bar => bar).flatMap(cell => {
-      const symbol = chordSymbol(cell.chord);
-      if (seen.has(symbol)) return [];
+    return formProgression.filter(option => {
+      const symbol = chordSymbol(option.chord);
+      if (seen.has(symbol)) return false;
       seen.add(symbol);
-      return [{ chord: cell.chord, scaleMode: scaleModeForAutumnCell(cell) }];
+      return true;
     });
-  }, [study.form]);
+  }, [formProgression]);
 
   return <article className="ah-port ah-piece" data-music-context="true">
     <AutumnPortIntro />
@@ -62,12 +67,13 @@ export function AfterHoursAutumnPortBody() {
       majorRoot={study.majorKey.split(' ')[0]}
       minorRoot={study.minorKey.split(' ')[0]}
       chords={formChords}
-      defaultLayers={{ pentatonic: false, triad: false, arpeggio: true }}
+      progression={formProgression}
+      defaultLayers={{ pentatonic: false, triad: false, arpeggio: true, targets: false }}
       cagedLabel={<><KeyNotation context={majorContext} /> positions</>}
       pentatonicLabel={<><KeyNotation context={minorContext} /> boxes</>}
       eyebrow="Apply this in Autumn Leaves"
       heading="Whole form at 8th position."
-      description={<>Stay in one neighborhood while the form moves underneath you. Switch through every chord printed above, then add triads, CAGED, scale context, inversions, or chord voicings only when you need them.</>}
+      description={<>Stay in one neighborhood while the form moves underneath you. Switch through every chord printed above, then use target tones to hear where the guide tones actually resolve before adding shapes or voicings.</>}
     />
     <AutumnPortFooter study={study} onSwitchKey={setKeyId} />
   </article>;
