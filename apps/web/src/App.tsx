@@ -2,14 +2,15 @@ import { useMemo, useState } from 'react';
 import { HashRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { AfterHoursAutumnLeavesApp } from './AfterHoursAutumnLeavesApp';
 import { AfterHoursBluesApp } from './AfterHoursBluesApp';
-import { AfterHoursFretboardCustomizer } from './AfterHoursFretboardCustomizer';
+import { AfterHoursFretboardCustomizer, type FretboardChordOption } from './AfterHoursFretboardCustomizer';
 import { FretboardChordBuilder } from './FretboardChordBuilder';
-import { buildChord, createKey, noteToString, relativeMajorKey, STUDY_KEY_SIGNATURES, type Chord, type ScaleMode, type StudyKeyId, type StudyMode } from './lib/music';
+import { buildChord, buildFunctionalChord, createKey, functionSymbol, noteToString, relativeMajorKey, STUDY_KEY_SIGNATURES, type Chord, type ScaleMode, type StudyKeyId, type StudyMode } from './lib/music';
 import { useMetronome } from './lib/useMetronome';
 
 type IconName = 'home' | 'paths' | 'after' | 'tools' | 'tempo' | 'arrow';
 type NavItem = { to: string; label: string; mobileLabel?: string; detail?: string; icon: IconName; end?: boolean };
 type StandardEntry = { title: string; subtitle: string; focus: string; href: string };
+type PracticePath = 'free' | 'major-cadence' | 'minor-cadence' | 'blues';
 
 const navItems: NavItem[] = [
   { to: '/', label: 'Home', icon: 'home', end: true },
@@ -85,38 +86,82 @@ function HomeScreen() {
     <section className="quiet-list core-space-list">
       <span className="list-heading">Core spaces</span>
       <a className="compact-row row-link" href="#/after-hours"><span className="row-icon"><Icon name="after" /></span><span className="row-content"><span className="row-label">Standards library</span><strong>After Hours</strong><small>Apply the tools inside real music: Autumn Leaves, 12-Bar Blues, and what comes next.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
-      <a className="compact-row row-link" href="#/fretboard"><span className="row-icon"><Icon name="paths" /></span><span className="row-content"><span className="row-label">Shared music engine</span><strong>Fretboard</strong><small>Build chords, choose a key, then inspect shapes, tones, triads, and voicings.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
+      <a className="compact-row row-link" href="#/fretboard"><span className="row-icon"><Icon name="paths" /></span><span className="row-content"><span className="row-label">Shared music engine</span><strong>Fretboard</strong><small>Build chords, choose a key, then inspect shapes, tones, triads, voicings, and voice leading.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
       <a className="compact-row row-link" href="#/tools"><span className="row-icon"><Icon name="tools" /></span><span className="row-content"><span className="row-label">Practice utility</span><strong>Tools</strong><small>Set a tempo and keep time without leaving the workspace.</small></span><span className="row-action">Open <Icon name="arrow" size={16} /></span></a>
     </section>
   </>;
+}
+
+function practicePathFor(path: PracticePath, selectedKey: StudyKeyId, studyMode: StudyMode): readonly FretboardChordOption[] {
+  if (path === 'free') return [];
+  if (path === 'minor-cadence') {
+    const key = createKey(selectedKey, 'harmonicMinor');
+    return [
+      { chord: buildFunctionalChord(key, { degree: 'ii', quality: 'halfDiminished7', context: 'minor' }), scaleMode: 'locrian', functionLabel: functionSymbol({ degree: 'ii', quality: 'halfDiminished7', context: 'minor' }) },
+      { chord: buildFunctionalChord(key, { degree: 'V', quality: 'dominant7', context: 'minor' }), scaleMode: 'phrygianDominant', functionLabel: functionSymbol({ degree: 'V', quality: 'dominant7', context: 'minor' }) },
+      { chord: buildFunctionalChord(key, { degree: 'i', quality: 'minorMajor7', context: 'minor' }), scaleMode: 'harmonicMinor', functionLabel: functionSymbol({ degree: 'i', quality: 'minorMajor7', context: 'minor' }) }
+    ];
+  }
+  const key = createKey(selectedKey, studyMode === 'major' ? 'major' : 'naturalMinor');
+  if (path === 'blues') {
+    return [
+      { chord: buildFunctionalChord(key, { degree: 'I', quality: 'dominant7', context: 'major' }), scaleMode: 'mixolydian', functionLabel: 'I7' },
+      { chord: buildFunctionalChord(key, { degree: 'IV', quality: 'dominant7', context: 'major' }), scaleMode: 'mixolydian', functionLabel: 'IV7' },
+      { chord: buildFunctionalChord(key, { degree: 'V', quality: 'dominant7', context: 'major' }), scaleMode: 'mixolydian', functionLabel: 'V7' },
+      { chord: buildFunctionalChord(key, { degree: 'I', quality: 'dominant7', context: 'major' }), scaleMode: 'mixolydian', functionLabel: 'I7' }
+    ];
+  }
+  return [
+    { chord: buildFunctionalChord(key, { degree: 'ii', quality: 'minor7', context: 'major' }), scaleMode: 'dorian', functionLabel: 'ii7' },
+    { chord: buildFunctionalChord(key, { degree: 'V', quality: 'dominant7', context: 'major' }), scaleMode: 'mixolydian', functionLabel: 'V7' },
+    { chord: buildFunctionalChord(key, { degree: 'I', quality: 'major7', context: 'major' }), scaleMode: 'major', functionLabel: 'Imaj7' }
+  ];
 }
 
 function FretboardScreen() {
   const [selectedKey, setSelectedKey] = useState<StudyKeyId>('C');
   const [studyMode, setStudyMode] = useState<StudyMode>('major');
   const [activeChord, setActiveChord] = useState<Chord>(() => buildChord('C', 'major7'));
+  const [practicePath, setPracticePath] = useState<PracticePath>('free');
   const scaleMode: ScaleMode = studyMode === 'major' ? 'major' : 'naturalMinor';
   const cagedContext = useMemo(() => studyMode === 'major' ? createKey(selectedKey, 'major') : relativeMajorKey(createKey(selectedKey, 'naturalMinor')), [selectedKey, studyMode]);
   const cagedRoot = noteToString(cagedContext.tonic);
   const cagedLabel = studyMode === 'major' ? `${cagedRoot} major forms` : `${cagedRoot} major · relative major`;
   const keyLabel = `${selectedKey.replace('#', '♯').replace('b', '♭')} ${studyMode === 'major' ? 'major' : 'minor'}`;
+  const progression = useMemo(() => practicePathFor(practicePath, selectedKey, studyMode), [practicePath, selectedKey, studyMode]);
+  const mapChords = useMemo(() => {
+    if (progression.length === 0) return [{ chord: activeChord, scaleMode }];
+    const seen = new Set<string>();
+    return progression.filter(option => {
+      const symbol = `${option.functionLabel ?? ''}-${noteToString(option.chord.root)}-${option.chord.quality}`;
+      if (seen.has(symbol)) return false;
+      seen.add(symbol);
+      return true;
+    });
+  }, [activeChord, progression, scaleMode]);
+  const freeMode = practicePath === 'free';
 
   return <>
-    <ScreenHeader eyebrow="Fretboard" title="Explore the neck." copy="Choose one of all fifteen key signatures, set major or minor context, then build the chord you want to inspect." />
+    <ScreenHeader eyebrow="Fretboard" title="Explore the neck." copy="Build one chord freely, or use a real harmonic movement to see the guide tones your ear should chase next." />
     <AfterHoursFretboardCustomizer
-      key={`${selectedKey}-${studyMode}`}
+      key={`${selectedKey}-${studyMode}-${practicePath}`}
       keyLabel={keyLabel}
       majorRoot={cagedRoot}
       minorRoot={selectedKey}
-      chords={[{ chord: activeChord, scaleMode }]}
-      showChordSelector={false}
+      chords={mapChords}
+      progression={progression}
+      showChordSelector={!freeMode}
       studyKeyControls={<StudyKeyControls selectedKey={selectedKey} studyMode={studyMode} onKeyChange={setSelectedKey} onModeChange={setStudyMode} />}
-      beforeControls={<FretboardChordBuilder key={`${selectedKey}-${studyMode}`} tonic={selectedKey} studyMode={studyMode} onChordChange={setActiveChord} />}
-      description={<>Use the chord builder below for the active chord. CAGED follows {cagedLabel}; Pentatonic follows {selectedKey.replace('#', '♯').replace('b', '♭')} minor; Scale follows the selected study mode.</>}
+      beforeControls={<><FretboardPracticePathPicker value={practicePath} onChange={setPracticePath} />{freeMode && <FretboardChordBuilder key={`${selectedKey}-${studyMode}`} tonic={selectedKey} studyMode={studyMode} onChordChange={setActiveChord} />}</>}
+      description={freeMode ? <>Use Free chord to inspect any harmony you can name. CAGED follows {cagedLabel}; Pentatonic follows {selectedKey.replace('#', '♯').replace('b', '♭')} minor; choose a deliberate scale and label language under More options.</> : <>This is a real ordered change. Select a chord, read the two guide-tone motions below, then turn on Targets to find the destination notes in the same position.</>}
       cagedLabel={cagedLabel}
       pentatonicLabel={`${selectedKey.replace('#', '♯').replace('b', '♭')} minor boxes`}
     />
   </>;
+}
+
+function FretboardPracticePathPicker({ value, onChange }: { value: PracticePath; onChange: (value: PracticePath) => void }) {
+  return <section className="fretboard-practice-context"><div><span className="eyebrow">Harmonic motion</span><h3>Study a change, not only a chord.</h3><p>These are compact, playable models for hearing guide tones resolve before you take them into a standard.</p></div><label className="key-selector"><span>Practice change</span><select value={value} onChange={event => onChange(event.target.value as PracticePath)}><option value="free">Free chord</option><option value="major-cadence">Major ii–V–I</option><option value="minor-cadence">Minor iiø–V–i</option><option value="blues">Dominant blues skeleton</option></select></label></section>;
 }
 
 function StudyKeyControls({ selectedKey, studyMode, onKeyChange, onModeChange }: { selectedKey: StudyKeyId; studyMode: StudyMode; onKeyChange: (key: StudyKeyId) => void; onModeChange: (mode: StudyMode) => void }) {

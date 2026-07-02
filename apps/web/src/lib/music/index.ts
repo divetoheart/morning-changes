@@ -6,5 +6,6 @@ export * from './fretboard';
 export * from './shapes';
 export * from './layers';
 export * from './voicings';
+export * from './voice-leading';
 export * from './notation';
 export * from './study-keys';

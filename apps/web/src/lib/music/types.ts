@@ -27,7 +27,11 @@ export type ScaleMode =
   | 'phrygian'
   | 'lydian'
   | 'mixolydian'
-  | 'locrian';
+  | 'locrian'
+  | 'lydianDominant'
+  | 'phrygianDominant'
+  | 'altered'
+  | 'minorBlues';
 
 export type KeyContext = {
   tonic: SpelledNote;
@@ -46,12 +50,21 @@ export type ChordQuality =
   | 'augmented'
   | 'sus2'
   | 'sus4'
+  | 'dominant7sus4'
+  | 'major6'
+  | 'minor6'
+  | 'major69'
+  | 'minorMajor7'
   | 'add9'
   | 'add11'
   | 'add13'
   | 'dominant9'
   | 'dominant11'
   | 'dominant13'
+  | 'dominant7b9'
+  | 'dominant7Sharp9'
+  | 'dominant7Sharp11'
+  | 'dominant7Flat13'
   | 'major9'
   | 'major11'
   | 'major13'

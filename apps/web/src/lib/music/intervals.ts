@@ -35,7 +35,11 @@ export const SCALE_FORMULAS: Record<ScaleMode, readonly IntervalName[]> = {
   phrygian: ['1', 'b2', 'b3', '4', '5', 'b6', 'b7'],
   lydian: ['1', '2', '3', '#4', '5', '6', '7'],
   mixolydian: ['1', '2', '3', '4', '5', '6', 'b7'],
-  locrian: ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7']
+  locrian: ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7'],
+  lydianDominant: ['1', '2', '3', '#4', '5', '6', 'b7'],
+  phrygianDominant: ['1', 'b2', '3', '4', '5', 'b6', 'b7'],
+  altered: ['1', 'b2', '#2', '3', 'b5', 'b13', 'b7'],
+  minorBlues: ['1', 'b3', '4', 'b5', '5', 'b7']
 };
 
 export type BuiltInChordQuality = Exclude<ChordQuality, 'custom'>;
@@ -52,12 +56,21 @@ export const CHORD_FORMULAS: Record<BuiltInChordQuality, readonly IntervalName[]
   augmented: ['1', '3', '#5'],
   sus2: ['1', '2', '5'],
   sus4: ['1', '4', '5'],
+  dominant7sus4: ['1', '4', '5', 'b7'],
+  major6: ['1', '3', '5', '6'],
+  minor6: ['1', 'b3', '5', '6'],
+  major69: ['1', '3', '5', '6', '9'],
+  minorMajor7: ['1', 'b3', '5', '7'],
   add9: ['1', '3', '5', '9'],
   add11: ['1', '3', '5', '11'],
   add13: ['1', '3', '5', '13'],
   dominant9: ['1', '3', '5', 'b7', '9'],
   dominant11: ['1', '3', '5', 'b7', '9', '11'],
   dominant13: ['1', '3', '5', 'b7', '9', '13'],
+  dominant7b9: ['1', '3', '5', 'b7', 'b9'],
+  dominant7Sharp9: ['1', '3', '5', 'b7', '#9'],
+  dominant7Sharp11: ['1', '3', '5', 'b7', '#11'],
+  dominant7Flat13: ['1', '3', '5', 'b7', 'b13'],
   major9: ['1', '3', '5', '7', '9'],
   major11: ['1', '3', '5', '7', '9', '11'],
   major13: ['1', '3', '5', '7', '9', '13'],
