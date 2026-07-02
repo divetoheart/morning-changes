@@ -38,7 +38,9 @@ export const SCALE_FORMULAS: Record<ScaleMode, readonly IntervalName[]> = {
   locrian: ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7']
 };
 
-export const CHORD_FORMULAS: Record<ChordQuality, readonly IntervalName[]> = {
+export type BuiltInChordQuality = Exclude<ChordQuality, 'custom'>;
+
+export const CHORD_FORMULAS: Record<BuiltInChordQuality, readonly IntervalName[]> = {
   major: ['1', '3', '5'],
   minor: ['1', 'b3', '5'],
   dominant7: ['1', '3', '5', 'b7'],
